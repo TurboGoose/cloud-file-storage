@@ -9,14 +9,14 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import ru.turbogoose.cloud.models.User;
-import ru.turbogoose.cloud.services.RegistrationService;
+import ru.turbogoose.cloud.services.UserService;
 import ru.turbogoose.cloud.util.UserValidator;
 
 @Controller
 @RequiredArgsConstructor
 public class AuthenticationController {
-    private final RegistrationService registrationService;
     private final UserValidator userValidator;
+    private final UserService userService;
 
     @GetMapping("/login")
     public String getLoginForm() {
@@ -35,7 +35,7 @@ public class AuthenticationController {
         if (bindingResult.hasErrors()) {
             return "/signup";
         }
-        registrationService.register(user);
+        userService.createUser(user);
         return "forward:/login";
     }
 }
