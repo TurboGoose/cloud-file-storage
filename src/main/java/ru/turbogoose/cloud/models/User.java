@@ -3,8 +3,10 @@ package ru.turbogoose.cloud.models;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
+@NoArgsConstructor
 @Entity
 @Table(name = "users")
 public class User {
@@ -16,4 +18,9 @@ public class User {
     private String username;
     @Column(name = "password")
     private String password;
+
+    public User(String username, String password) {
+        this.username = username;
+        this.password = password;
+    }
 }

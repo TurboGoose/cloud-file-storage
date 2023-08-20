@@ -7,21 +7,17 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ru.turbogoose.cloud.exceptions.UsernameAlreadyExistsException;
 import ru.turbogoose.cloud.models.User;
 import ru.turbogoose.cloud.repositories.UserRepository;
 
 import java.util.List;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
 public class UserService implements UserDetailsService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
-
-    public Optional<User> getUserByUsername(String username) {
-        return userRepository.findByUsername(username);
-    }
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
@@ -33,7 +29,17 @@ public class UserService implements UserDetailsService {
 
     @Transactional
     public void createUser(User user) {
+        if (user == null) {
+            return;
+        }
+        validateUniqueUsername(user.getUsername());
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         userRepository.save(user);
+    }
+
+    public void validateUniqueUsername(String username) {
+        if (userRepository.existsByUsername(username)) {
+            throw new UsernameAlreadyExistsException(username);
+        }
     }
 }

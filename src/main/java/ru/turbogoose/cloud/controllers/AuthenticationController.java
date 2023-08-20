@@ -8,14 +8,13 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
+import ru.turbogoose.cloud.exceptions.UsernameAlreadyExistsException;
 import ru.turbogoose.cloud.models.User;
 import ru.turbogoose.cloud.services.UserService;
-import ru.turbogoose.cloud.util.UserValidator;
 
 @Controller
 @RequiredArgsConstructor
 public class AuthenticationController {
-    private final UserValidator userValidator;
     private final UserService userService;
 
     @GetMapping("/login")
@@ -31,11 +30,17 @@ public class AuthenticationController {
 
     @PostMapping("/signup")
     public String signUpUser(@ModelAttribute @Valid User user, BindingResult bindingResult) {
-        userValidator.validate(user, bindingResult);
         if (bindingResult.hasErrors()) {
             return "/signup";
         }
-        userService.createUser(user);
+        try {
+            userService.createUser(user);
+        } catch (UsernameAlreadyExistsException exc) {
+            bindingResult.rejectValue("username", "", exc.getMessage());
+        }
+        if (bindingResult.hasErrors()) {
+            return "/signup";
+        }
         return "forward:/login";
     }
 }
