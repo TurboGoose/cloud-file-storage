@@ -3,7 +3,7 @@ package ru.turbogoose.cloud.util;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-public class NavigationHelper {
+public class PathHelper {
     public static Map<String, String> assembleBreadcrumbsMapFromPath(String path) {
         Map<String, String> folderPath = new LinkedHashMap<>();
         if (path != null) {
@@ -21,5 +21,20 @@ public class NavigationHelper {
             }
         }
         return folderPath;
+    }
+
+//    public static Map<String, String> {
+//
+//    }
+
+    public static String extractObjectName(String objectPath) {
+        if (objectPath == null || objectPath.isBlank()) {
+            throw new IllegalArgumentException("Wrong object path: " + objectPath);
+        }
+        String[] split = objectPath.split("/");
+        if (split.length == 0) {
+            throw new IllegalArgumentException("Wrong object path: " + objectPath);
+        }
+        return split[split.length - 1];
     }
 }

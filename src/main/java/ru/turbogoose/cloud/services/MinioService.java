@@ -4,6 +4,7 @@ import io.minio.*;
 import io.minio.errors.ErrorResponseException;
 import io.minio.messages.Item;
 import org.springframework.stereotype.Service;
+import ru.turbogoose.cloud.util.PathHelper;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
@@ -64,7 +65,8 @@ public class MinioService {
                             .build());
             List<String> objects = new ArrayList<>();
             for (Result<Item> result : results) {
-                objects.add(result.get().objectName());
+                String objectName = result.get().objectName();
+                objects.add(objectName); //TODO: todo remove folder name itself
             }
             return objects;
         } catch (Exception exc) {
@@ -159,7 +161,7 @@ public class MinioService {
             for (Result<Item> res : folderObjects) {
                 Item item = res.get();
                 String oldPath = item.objectName();
-                String objectName = extractObjectName(oldPath);
+                String objectName = PathHelper.extractObjectName(oldPath);
                 String newPath = newFolderPath + objectName;
 
                 client.copyObject(
@@ -185,16 +187,7 @@ public class MinioService {
         }
     }
 
-    private static String extractObjectName(String objectPath) {
-        String[] split = objectPath.split("/");
-        if (split.length <= 1) {
-            throw new IllegalArgumentException("Wrong object path: " + objectPath);
-        }
-        if (objectPath.endsWith("/")) {
-            return split[split.length - 2] + "/";
-        }
-        return split[split.length - 1];
-    }
+
 
     public void deleteFile(String filePath) {
         validateFilePath(filePath);

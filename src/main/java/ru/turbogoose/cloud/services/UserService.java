@@ -17,6 +17,7 @@ import ru.turbogoose.cloud.repositories.UserRepository;
 public class UserService implements UserDetailsService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final MinioService minioService;
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
@@ -34,6 +35,12 @@ public class UserService implements UserDetailsService {
         validateUniqueUsername(user.getUsername());
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         userRepository.save(user);
+        createUserHomeFolder(user.getId());
+    }
+
+    private void createUserHomeFolder(int userId) {
+        String userHomeFolderPath = String.format("user-%d-files/", userId);
+        minioService.createFolder(userHomeFolderPath);
     }
 
     public void validateUniqueUsername(String username) {

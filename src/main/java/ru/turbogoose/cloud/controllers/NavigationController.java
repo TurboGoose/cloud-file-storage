@@ -6,10 +6,9 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import ru.turbogoose.cloud.exceptions.MinioObjectNotExistsException;
 import ru.turbogoose.cloud.models.security.UserDetailsImpl;
 import ru.turbogoose.cloud.services.NavigationService;
-import ru.turbogoose.cloud.util.NavigationHelper;
+import ru.turbogoose.cloud.util.PathHelper;
 
 import java.util.List;
 
@@ -24,11 +23,12 @@ public class NavigationController {
             @RequestParam(required = false) String path,
             Model model) {
         int userId = userDetails.getId();
+        String folderPath = path == null ? "" : path + "/";
         try {
-            List<String> objectsInFolder = navigationService.getObjectsInFolder(userId, path);
+            List<String> objectsInFolder = navigationService.getObjectsInFolder(userId, folderPath);
             model.addAttribute("objects", objectsInFolder);
-            model.addAttribute("breadcrumbs", NavigationHelper.assembleBreadcrumbsMapFromPath(path));
-        } catch (MinioObjectNotExistsException ignore) {
+            model.addAttribute("breadcrumbs", PathHelper.assembleBreadcrumbsMapFromPath(path));
+        } catch (Exception exc) {
             model.addAttribute("wrongPath", path);
         }
         return "folder";
