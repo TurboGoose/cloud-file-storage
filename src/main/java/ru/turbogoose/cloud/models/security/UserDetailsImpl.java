@@ -11,7 +11,6 @@ import java.util.Collection;
 
 @RequiredArgsConstructor
 public class UserDetailsImpl implements UserDetails {
-    @Getter
     private final User user;
 
     @Override
@@ -47,5 +46,9 @@ public class UserDetailsImpl implements UserDetails {
     @Override
     public boolean isEnabled() {
         return true;
+    }
+
+    public int getId() {
+        return user.getId();
     }
 }

@@ -5,11 +5,29 @@
   <title>Folder</title>
 </head>
 <body>
-<div>
-  <span><a th:href="@{/}">root</a></span>
-  <span th:each="entry : ${breadcrumbs}" th:with="folderName=${entry.key}, path=${entry.value}">
+
+<div th:if="${wrongPath}">
+  <h2>Wrong path!</h2>
+  <p th:text="'Folder \'' + ${wrongPath} + '\' not exists :('"></p>
+  <br>
+  <a th:href="@{/}">Go home</a>
+</div>
+
+<div th:unless="${wrongPath}">
+  <div>
+    <span><a th:href="@{/}">root</a></span>
+    <span th:each="entry : ${breadcrumbs}" th:with="folderName=${entry.key}, path=${entry.value}">
     / <a th:href="@{'/?path=' + ${path}}" th:text="${folderName}"></a>
   </span>
+  </div>
+
+  <br>
+
+  <div th:if="${objects}">
+    <ul>
+      <li th:each="obj : ${objects}" th:text="${obj}"></li>
+    </ul>
+  </div>
 </div>
 </body>
 </html>
