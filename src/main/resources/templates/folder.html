@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Folder</title>
+</head>
+<body>
+<div>
+  <span><a th:href="@{/}">root</a></span>
+  <span th:each="entry : ${breadcrumbs}" th:with="folderName=${entry.key}, path=${entry.value}">
+    / <a th:href="@{'/?path=' + ${path}}" th:text="${folderName}"></a>
+  </span>
+</div>
+</body>
+</html>
