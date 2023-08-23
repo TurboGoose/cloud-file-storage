@@ -4,6 +4,7 @@ import io.minio.*;
 import io.minio.errors.ErrorResponseException;
 import io.minio.messages.Item;
 import org.springframework.stereotype.Service;
+import ru.turbogoose.cloud.models.MinioObject;
 import ru.turbogoose.cloud.util.PathHelper;
 
 import java.io.ByteArrayInputStream;
@@ -55,7 +56,7 @@ public class MinioService {
         }
     }
 
-    public List<String> listFolderObjects(String folderPath) {
+    public List<MinioObject> listFolderObjects(String folderPath) {
         validateFolderPath(folderPath);
         try {
             Iterable<Result<Item>> results = client.listObjects(
@@ -63,10 +64,12 @@ public class MinioService {
                             .bucket(ROOT_BUCKET)
                             .prefix(folderPath)
                             .build());
-            List<String> objects = new ArrayList<>();
+            List<MinioObject> objects = new ArrayList<>();
             for (Result<Item> result : results) {
                 String objectName = result.get().objectName();
-                objects.add(objectName); //TODO: todo remove folder name itself
+                if (!objectName.equals(folderPath)) {
+                    objects.add(new MinioObject(objectName));
+                }
             }
             return objects;
         } catch (Exception exc) {

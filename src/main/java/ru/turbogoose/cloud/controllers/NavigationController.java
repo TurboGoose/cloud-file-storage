@@ -20,9 +20,8 @@ public class NavigationController {
             @AuthenticationPrincipal UserDetailsImpl userDetails,
             @RequestParam(required = false) String path,
             Model model) {
-        int userId = userDetails.getId();
         try {
-            model.addAttribute("objects", navigationService.getObjectsInFolder(userId, path));
+            model.addAttribute("objects", navigationService.getObjectsInFolder(userDetails.getId(), path));
             model.addAttribute("breadcrumbs", PathHelper.assembleBreadcrumbsMapFromPath(path));
         } catch (Exception exc) {
             exc.printStackTrace();

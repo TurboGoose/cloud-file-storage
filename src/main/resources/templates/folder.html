@@ -24,9 +24,9 @@
   <br>
 
   <ul>
-    <li th:each="entry : ${objects}" th:with="objectName=${entry.key},objectPath=${entry.value}">
-      <a th:if="${objectPath}" th:href="@{'/?path=' + ${objectPath}}" th:text="${objectName}"></a>
-      <span th:unless="${objectPath}" th:text="${objectName}"></span>
+    <li th:each="obj : ${objects}" th:with="name=${obj.getObjectName()},path=${obj.toUrlParam()}">
+      <a th:if="${obj.isFolder()}" th:href="@{'/?path=' + ${path}}" th:text="${name}"></a>
+      <span th:unless="${obj.isFolder()}" th:text="${name}"></span>
     </li>
   </ul>
 </div>

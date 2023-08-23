@@ -23,14 +23,14 @@ public class PathHelper {
         return folderPath;
     }
 
-    public static String excludeFirstFolder(String objectPath) {
-        return objectPath.substring(objectPath.indexOf("/") + 1);
-    }
-
     public static String extractObjectName(String objectPath) {
         if (objectPath == null || objectPath.isBlank()) {
-            throw new IllegalArgumentException("Wrong object path: " + objectPath);
+            throw new IllegalArgumentException("Object path cannot be null");
         }
+        if (objectPath.isBlank()) {
+            throw new IllegalArgumentException("Object path cannot be blank");
+        }
+
         String[] split = objectPath.split("/");
         if (split.length == 0) {
             throw new IllegalArgumentException("Wrong object path: " + objectPath);
