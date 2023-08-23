@@ -4,7 +4,7 @@ import io.minio.*;
 import io.minio.errors.ErrorResponseException;
 import io.minio.messages.Item;
 import org.springframework.stereotype.Service;
-import ru.turbogoose.cloud.models.MinioObject;
+import ru.turbogoose.cloud.models.MinioObjectPath;
 import ru.turbogoose.cloud.util.PathHelper;
 
 import java.io.ByteArrayInputStream;
@@ -56,19 +56,20 @@ public class MinioService {
         }
     }
 
-    public List<MinioObject> listFolderObjects(String folderPath) {
+    public List<MinioObjectPath> listFolderObjects(MinioObjectPath folderPath) {
         validateFolderPath(folderPath);
+        String folderAbsolutePath = folderPath.getAbsolutePath();
         try {
             Iterable<Result<Item>> results = client.listObjects(
                     ListObjectsArgs.builder()
                             .bucket(ROOT_BUCKET)
-                            .prefix(folderPath)
+                            .prefix(folderAbsolutePath)
                             .build());
-            List<MinioObject> objects = new ArrayList<>();
+            List<MinioObjectPath> objects = new ArrayList<>();
             for (Result<Item> result : results) {
-                String objectName = result.get().objectName();
-                if (!objectName.equals(folderPath)) {
-                    objects.add(new MinioObject(objectName));
+                String objectAbsolutePath = result.get().objectName();
+                if (!objectAbsolutePath.equals(folderAbsolutePath)) {
+                    objects.add(MinioObjectPath.parseAbsolute(objectAbsolutePath));
                 }
             }
             return objects;
@@ -91,19 +92,25 @@ public class MinioService {
         }
     }
 
+    private void validateFolderPath(MinioObjectPath folderPath) {
+        if (!folderPath.isFolder()) {
+            throw new IllegalArgumentException("Passed path is not a file");
+        }
+    }
+
     private void validateFilePath(String filePath) {
         if (filePath.endsWith("/")) {
             throw new IllegalArgumentException("Passed path is not a file");
         }
     }
 
-    public void createFolder(String folderPath) {
+    public void createFolder(MinioObjectPath folderPath) {
         validateFolderPath(folderPath);
         try {
             client.putObject(
                     PutObjectArgs.builder()
                             .bucket(ROOT_BUCKET)
-                            .object(folderPath)
+                            .object(folderPath.getAbsolutePath())
                             .stream(new ByteArrayInputStream(new byte[]{}), 0, -1)
                             .build());
         } catch (Exception exc) {

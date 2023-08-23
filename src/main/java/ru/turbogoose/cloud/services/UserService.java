@@ -8,6 +8,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.turbogoose.cloud.exceptions.UsernameAlreadyExistsException;
+import ru.turbogoose.cloud.models.MinioObjectPath;
 import ru.turbogoose.cloud.models.User;
 import ru.turbogoose.cloud.models.security.UserDetailsImpl;
 import ru.turbogoose.cloud.repositories.UserRepository;
@@ -39,8 +40,7 @@ public class UserService implements UserDetailsService {
     }
 
     private void createUserHomeFolder(int userId) {
-        String userHomeFolderPath = String.format("user-%d-files/", userId);
-        minioService.createFolder(userHomeFolderPath);
+        minioService.createFolder(MinioObjectPath.parseAbstractFolder("/", userId));
     }
 
     public void validateUniqueUsername(String username) {

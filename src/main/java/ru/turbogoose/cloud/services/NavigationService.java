@@ -2,38 +2,27 @@ package ru.turbogoose.cloud.services;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import ru.turbogoose.cloud.models.MinioObject;
+import ru.turbogoose.cloud.models.MinioObjectPath;
 
-import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
+
+import static ru.turbogoose.cloud.util.PathHelper.concatPaths;
 
 @Service
 @RequiredArgsConstructor
 public class NavigationService {
     private final MinioService minioService;
 
-    public List<MinioObject> getObjectsInFolder(int userId, String folderPath) {
-        try {
-            MinioObject minioObject = MinioObject.parse(folderPath, userId);
-            return minioService.listFolderObjects(minioObject.getAbsolutePath());
-        } catch (Exception exc) {
-            throw new RuntimeException(exc);
-        }
+    public List<MinioObjectPath> getObjectsInFolder(int userId, String folderPath) {
+        folderPath = folderPath == null ? "/" : folderPath;
+        return minioService.listFolderObjects(MinioObjectPath.parseAbstractFolder(folderPath, userId));
     }
 
     public String createFolder(int userId, String prefix, String postfix) {
-        MinioObject minioObject = MinioObject.parse(concatPaths(prefix, postfix), userId);
-        minioService.createFolder(minioObject.getAbsolutePath());
-        return minioObject.toUrlParam();
-    }
-
-    private static String concatPaths(String prefix, String postfix) {
-        return Stream.concat(
-                        Arrays.stream(prefix.split("/")),
-                        Arrays.stream(postfix.split("/")))
-                .filter(s -> !s.isBlank())
-                .collect(Collectors.joining("/"));
+        // TODO: add validation for correct postfix format
+        MinioObjectPath folderPath = MinioObjectPath.parseAbstractFolder(concatPaths(prefix, postfix), userId);
+        // TODO: add validation for object non-existence
+        minioService.createFolder(folderPath);
+        return folderPath.getAbstractPath();
     }
 }
