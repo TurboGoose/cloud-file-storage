@@ -17,15 +17,22 @@
   <div>
     <span><a th:href="@{/}">root</a></span>
     <span th:each="entry : ${breadcrumbs}" th:with="folderName=${entry.key}, path=${entry.value}">
-    / <a th:href="@{'/?path=' + ${path}}" th:text="${folderName}"></a>
+    / <a th:href="@{/(path=${path})}" th:text="${folderName}"></a>
   </span>
   </div>
 
   <br>
+  <form th:method="POST" th:action="@{/(prefix=${param.path})}">
+    <label for="path">Enter new folder path: </label>
+    <input id="path" type="text" name="postfix">
+    <input type="submit" value="create">
+<!--    <span style="color: red" th:if="${#fields.hasErrors('name')}" th:errors="*{name}"></span>-->
+  </form>
 
+  <br>
   <ul>
     <li th:each="obj : ${objects}" th:with="name=${obj.getObjectName()},path=${obj.toUrlParam()}">
-      <a th:if="${obj.isFolder()}" th:href="@{'/?path=' + ${path}}" th:text="${name}"></a>
+      <a th:if="${obj.isFolder()}" th:href="@{/(path=${path})}" th:text="${name}"></a>
       <span th:unless="${obj.isFolder()}" th:text="${name}"></span>
     </li>
   </ul>

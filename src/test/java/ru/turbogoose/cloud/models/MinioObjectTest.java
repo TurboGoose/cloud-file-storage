@@ -9,9 +9,9 @@ class MinioObjectTest {
 
     @Test
     void fromUrlParam() {
-        assertThat(MinioObject.fromUrlParam(null, 1), is(new MinioObject("user-1-files/")));
-        assertThat(MinioObject.fromUrlParam("", 1), is(new MinioObject("user-1-files/")));
-        assertThat(MinioObject.fromUrlParam("path/to/folder", 1),
+        assertThat(MinioObject.parse(null, 1), is(new MinioObject("user-1-files/")));
+        assertThat(MinioObject.parse("", 1), is(new MinioObject("user-1-files/")));
+        assertThat(MinioObject.parse("path/to/folder", 1),
                 is(new MinioObject("user-1-files/path/to/folder/")));
     }
 

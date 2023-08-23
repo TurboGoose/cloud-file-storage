@@ -16,7 +16,7 @@ public class MinioObject {
     @Getter
     private final String absolutePath;
 
-    public static MinioObject fromUrlParam(String path, int userId) {
+    public static MinioObject parse(String path, int userId) {
         String folderPath = path == null || path.isBlank() ? "" : path + "/";
         return new MinioObject(getUserHomeFolderPath(userId) + folderPath);
     }
