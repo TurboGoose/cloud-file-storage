@@ -23,11 +23,12 @@
 
   <br>
 
-  <div th:if="${objects}">
-    <ul>
-      <li th:each="obj : ${objects}" th:text="${obj}"></li>
-    </ul>
-  </div>
+  <ul>
+    <li th:each="entry : ${objects}" th:with="objectName=${entry.key},objectPath=${entry.value}">
+      <a th:if="${objectPath}" th:href="@{'/?path=' + ${objectPath}}" th:text="${objectName}"></a>
+      <span th:unless="${objectPath}" th:text="${objectName}"></span>
+    </li>
+  </ul>
 </div>
 </body>
 </html>

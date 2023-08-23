@@ -23,9 +23,9 @@ public class PathHelper {
         return folderPath;
     }
 
-//    public static Map<String, String> {
-//
-//    }
+    public static String excludeFirstFolder(String objectPath) {
+        return objectPath.substring(objectPath.indexOf("/") + 1);
+    }
 
     public static String extractObjectName(String objectPath) {
         if (objectPath == null || objectPath.isBlank()) {

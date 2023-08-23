@@ -10,8 +10,6 @@ import ru.turbogoose.cloud.models.security.UserDetailsImpl;
 import ru.turbogoose.cloud.services.NavigationService;
 import ru.turbogoose.cloud.util.PathHelper;
 
-import java.util.List;
-
 @Controller
 @RequiredArgsConstructor
 public class NavigationController {
@@ -23,12 +21,11 @@ public class NavigationController {
             @RequestParam(required = false) String path,
             Model model) {
         int userId = userDetails.getId();
-        String folderPath = path == null ? "" : path + "/";
         try {
-            List<String> objectsInFolder = navigationService.getObjectsInFolder(userId, folderPath);
-            model.addAttribute("objects", objectsInFolder);
+            model.addAttribute("objects", navigationService.getObjectsInFolder(userId, path));
             model.addAttribute("breadcrumbs", PathHelper.assembleBreadcrumbsMapFromPath(path));
         } catch (Exception exc) {
+            exc.printStackTrace();
             model.addAttribute("wrongPath", path);
         }
         return "folder";
