@@ -8,10 +8,10 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-public class NavigationService {
+public class FolderService {
     private final MinioService minioService;
 
-    public List<MinioObjectPath> getObjectsInFolder(int userId, String folderPath) {
+    public List<MinioObjectPath> getFolderObjects(int userId, String folderPath) {
         folderPath = folderPath == null ? "/" : folderPath;
         return minioService.listFolderObjects(MinioObjectPath.parseAbstractFolder(folderPath, userId));
     }

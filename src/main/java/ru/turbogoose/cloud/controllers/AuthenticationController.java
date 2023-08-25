@@ -19,19 +19,19 @@ public class AuthenticationController {
 
     @GetMapping("/login")
     public String getLoginForm() {
-        return "login";
+        return "auth/login";
     }
 
     @GetMapping("/signup")
     public String getSignupForm(Model model) {
         model.addAttribute("user", new User());
-        return "signup";
+        return "auth/signup";
     }
 
     @PostMapping("/signup")
-    public String signUpUser(@ModelAttribute @Valid User user, BindingResult bindingResult) {
+    public String signUpUser(@ModelAttribute("user") @Valid User user, BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
-            return "signup";
+            return "auth/signup";
         }
         try {
             userService.createUser(user);
@@ -39,7 +39,7 @@ public class AuthenticationController {
             bindingResult.rejectValue("username", "", exc.getMessage());
         }
         if (bindingResult.hasErrors()) {
-            return "signup";
+            return "auth/signup";
         }
         return "redirect:/login";
     }

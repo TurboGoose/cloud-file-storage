@@ -12,39 +12,39 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import ru.turbogoose.cloud.dto.FolderCreationDto;
 import ru.turbogoose.cloud.models.security.UserDetailsImpl;
-import ru.turbogoose.cloud.services.NavigationService;
+import ru.turbogoose.cloud.services.FolderService;
 import ru.turbogoose.cloud.util.PathHelper;
 
 @Controller
 @RequiredArgsConstructor
-public class NavigationController {
-    private final NavigationService navigationService;
+public class FolderController {
+    private final FolderService folderService;
 
     @GetMapping
-    public String showFolder(
+    public String listFolder(
             @AuthenticationPrincipal UserDetailsImpl userDetails,
             @RequestParam(required = false) String path,
-            @ModelAttribute FolderCreationDto newFolderPath,
+            @ModelAttribute("newFolderPath") FolderCreationDto folderCreationDto,
             Model model) {
         try {
-            model.addAttribute("objects", navigationService.getObjectsInFolder(userDetails.getId(), path));
+            model.addAttribute("objects", folderService.getFolderObjects(userDetails.getId(), path));
             model.addAttribute("breadcrumbs", PathHelper.assembleBreadcrumbsMapFromPath(path));
         } catch (Exception exc) {
             exc.printStackTrace();
             model.addAttribute("wrongPath", path);
         }
-        return "folder";
+        return "folders/list";
     }
 
     @PostMapping
     public String createFolder(
             @AuthenticationPrincipal UserDetailsImpl userDetails,
-            @ModelAttribute @Valid FolderCreationDto newFolderPath, BindingResult bindingResult,
+            @ModelAttribute("newFolderPath") @Valid FolderCreationDto folderCreationDto, BindingResult bindingResult,
             Model model) {
         if (bindingResult.hasErrors()) {
-            return showFolder(userDetails, newFolderPath.getPrefix(), newFolderPath, model);
+            return listFolder(userDetails, folderCreationDto.getPrefix(), folderCreationDto, model);
         }
-        String createdPath = navigationService.createFolder(userDetails.getId(), newFolderPath.getFullPath());
+        String createdPath = folderService.createFolder(userDetails.getId(), folderCreationDto.getFullPath());
         return "redirect:/?path=" + createdPath;
     }
 }

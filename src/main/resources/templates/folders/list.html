@@ -23,12 +23,11 @@
 
   <br>
   <form method="POST" th:action="@{/}" th:object="${newFolderPath}">
+    <input type="hidden" th:field="*{prefix}" th:value="${param.path}">
     <label for="postfix">Enter new folder path: </label>
     <input id="postfix" type="text" th:field="*{postfix}">
-    <span style="color: red" th:if="${#fields.hasErrors('postfix')}" th:errors="*{postfix}"></span>
-
-    <input type="hidden" th:field="*{prefix}" th:value="${param.path}">
     <input type="submit" value="create">
+    <span style="color: red" th:if="${#fields.hasErrors('postfix')}" th:errors="*{postfix}"></span>
   </form>
 
   <br>
