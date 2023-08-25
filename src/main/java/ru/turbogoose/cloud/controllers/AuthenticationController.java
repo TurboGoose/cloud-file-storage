@@ -35,12 +35,10 @@ public class AuthenticationController {
         }
         try {
             userService.createUser(user);
+            return "redirect:/login";
         } catch (UsernameAlreadyExistsException exc) {
-            bindingResult.rejectValue("username", "", exc.getMessage());
-        }
-        if (bindingResult.hasErrors()) {
+            bindingResult.rejectValue("username", "user.alreadyExists", exc.getMessage());
             return "auth/signup";
         }
-        return "redirect:/login";
     }
 }

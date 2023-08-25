@@ -79,13 +79,13 @@ public class MinioService {
         }
     }
 
-    public void createFile(String filePath, InputStream fileInputStream) {
+    public void createFile(MinioObjectPath filePath, InputStream fileInputStream) {
         validateFilePath(filePath);
         try {
             client.putObject(
                     PutObjectArgs.builder()
                             .bucket(ROOT_BUCKET)
-                            .object(filePath)
+                            .object(filePath.getAbsolutePath())
                             .stream(fileInputStream, -1, 10485760)
                             .build());
         } catch (Exception exc) {
@@ -95,12 +95,12 @@ public class MinioService {
 
     private void validateFolderPath(MinioObjectPath folderPath) {
         if (!folderPath.isFolder()) {
-            throw new IllegalArgumentException("Passed path is not a file");
+            throw new IllegalArgumentException("Passed path is not a folder");
         }
     }
 
-    private void validateFilePath(String filePath) {
-        if (filePath.endsWith("/")) {
+    private void validateFilePath(MinioObjectPath filePath) {
+        if (filePath.isFolder()) {
             throw new IllegalArgumentException("Passed path is not a file");
         }
     }
@@ -119,13 +119,7 @@ public class MinioService {
         }
     }
 
-    private void validateFolderPath(String folderPath) {
-        if (!folderPath.endsWith("/")) {
-            throw new IllegalArgumentException("Passed path is not a folder");
-        }
-    }
-
-    public void moveFile(String oldFilePath, String newFilePath) {
+    public void moveFile(MinioObjectPath oldFilePath, MinioObjectPath newFilePath) {
         validateFilePath(oldFilePath);
         validateFilePath(newFilePath);
 
@@ -137,24 +131,24 @@ public class MinioService {
             client.copyObject(
                     CopyObjectArgs.builder()
                             .bucket(ROOT_BUCKET)
-                            .object(newFilePath)
+                            .object(newFilePath.getAbsolutePath())
                             .source(CopySource.builder()
                                     .bucket(ROOT_BUCKET)
-                                    .object(oldFilePath)
+                                    .object(oldFilePath.getAbsolutePath())
                                     .build())
                             .build());
 
             client.removeObject(
                     RemoveObjectArgs.builder()
                             .bucket(ROOT_BUCKET)
-                            .object(oldFilePath)
+                            .object(oldFilePath.getAbsolutePath())
                             .build());
         } catch (Exception exc) {
             throw new RuntimeException(exc);
         }
     }
 
-    public void moveFolder(String oldFolderPath, String newFolderPath) {
+    public void moveFolder(MinioObjectPath oldFolderPath, MinioObjectPath newFolderPath) {
         validateFolderPath(oldFolderPath);
         validateFolderPath(newFolderPath);
 
@@ -165,7 +159,7 @@ public class MinioService {
         Iterable<Result<Item>> folderObjects = client.listObjects(
                 ListObjectsArgs.builder()
                         .bucket(ROOT_BUCKET)
-                        .prefix(oldFolderPath)
+                        .prefix(oldFolderPath.getAbsolutePath())
                         .build());
 
         try {
@@ -190,7 +184,7 @@ public class MinioService {
                 client.removeObject(
                         RemoveObjectArgs.builder()
                                 .bucket(ROOT_BUCKET)
-                                .object(oldFolderPath)
+                                .object(oldFolderPath.getAbsolutePath())
                                 .build());
             }
         } catch (Exception exc) {
@@ -199,22 +193,22 @@ public class MinioService {
     }
 
 
-    public void deleteFile(String filePath) {
+    public void deleteFile(MinioObjectPath filePath) {
         validateFilePath(filePath);
         deleteObject(filePath);
     }
 
-    public void deleteFolder(String folderPath) {
+    public void deleteFolder(MinioObjectPath folderPath) {
         validateFolderPath(folderPath);
         deleteObject(folderPath);
     }
 
-    private void deleteObject(String objectPath) {
+    private void deleteObject(MinioObjectPath objectPath) {
         try {
             client.removeObject(
                     RemoveObjectArgs.builder()
                             .bucket(ROOT_BUCKET)
-                            .object(objectPath)
+                            .object(objectPath.getAbsolutePath())
                             .build());
         } catch (Exception exc) {
             throw new RuntimeException(exc);

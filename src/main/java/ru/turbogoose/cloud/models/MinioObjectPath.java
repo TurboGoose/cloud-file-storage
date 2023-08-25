@@ -47,7 +47,7 @@ public class MinioObjectPath {
     }
 
     private static MinioObjectPath parsePath(String homeFolder, String path, boolean isFolder) {
-        String[] splitPath = path.isEmpty() ? new String[0] : path.split("/");
+        String[] splitPath = path == null || path.isEmpty() ? new String[0] : path.split("/");
         return new MinioObjectPath(homeFolder, splitPath, isFolder);
     }
 

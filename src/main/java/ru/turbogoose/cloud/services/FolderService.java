@@ -13,7 +13,6 @@ public class FolderService {
     private final MinioService minioService;
 
     public List<MinioObjectPath> getFolderObjects(int userId, String folderPath) {
-        folderPath = folderPath == null ? "/" : folderPath;
         return minioService.listFolderObjects(MinioObjectPath.parseAbstractFolder(folderPath, userId));
     }
 

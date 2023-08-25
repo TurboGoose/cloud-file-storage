@@ -49,7 +49,7 @@ public class FolderController {
             String createdPath = folderService.createFolder(userDetails.getId(), folderCreationDto.getFullPath());
             return "redirect:/?path=" + createdPath;
         } catch (FolderAlreadyExistsException exc) {
-            bindingResult.rejectValue("postfix", "", "This path already exists");
+            bindingResult.rejectValue("postfix", "folder.alreadyExists", "This folder already exists");
             return listFolder(userDetails, folderCreationDto.getPrefix(), folderCreationDto, model);
         }
     }
