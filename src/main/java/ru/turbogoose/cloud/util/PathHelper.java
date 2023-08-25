@@ -9,7 +9,7 @@ import java.util.stream.Stream;
 public class PathHelper {
     public static Map<String, String> assembleBreadcrumbsMapFromPath(String path) {
         Map<String, String> folderPath = new LinkedHashMap<>();
-        if (path != null) {
+        if (path != null && !path.isEmpty()) {
             StringBuilder sb = new StringBuilder();
             String[] split = path.split("/");
             boolean first = true;
