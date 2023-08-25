@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import ru.turbogoose.cloud.dto.FolderCreationDto;
+import ru.turbogoose.cloud.exceptions.FolderAlreadyExistsException;
 import ru.turbogoose.cloud.models.security.UserDetailsImpl;
 import ru.turbogoose.cloud.services.FolderService;
 import ru.turbogoose.cloud.util.PathHelper;
@@ -44,7 +45,12 @@ public class FolderController {
         if (bindingResult.hasErrors()) {
             return listFolder(userDetails, folderCreationDto.getPrefix(), folderCreationDto, model);
         }
-        String createdPath = folderService.createFolder(userDetails.getId(), folderCreationDto.getFullPath());
-        return "redirect:/?path=" + createdPath;
+        try {
+            String createdPath = folderService.createFolder(userDetails.getId(), folderCreationDto.getFullPath());
+            return "redirect:/?path=" + createdPath;
+        } catch (FolderAlreadyExistsException exc) {
+            bindingResult.rejectValue("postfix", "", "This path already exists");
+            return listFolder(userDetails, folderCreationDto.getPrefix(), folderCreationDto, model);
+        }
     }
 }

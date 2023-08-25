@@ -2,6 +2,7 @@ package ru.turbogoose.cloud.services;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import ru.turbogoose.cloud.exceptions.FolderAlreadyExistsException;
 import ru.turbogoose.cloud.models.MinioObjectPath;
 
 import java.util.List;
@@ -18,7 +19,9 @@ public class FolderService {
 
     public String createFolder(int userId, String folderPath) {
         MinioObjectPath minioFolderPath = MinioObjectPath.parseAbstractFolder(folderPath, userId);
-        // TODO: add validation for object non-existence
+        if (minioService.isObjectExist(minioFolderPath)) {
+            throw new FolderAlreadyExistsException(minioFolderPath.getAbsolutePath());
+        }
         minioService.createFolder(minioFolderPath);
         return minioFolderPath.getAbstractPath();
     }

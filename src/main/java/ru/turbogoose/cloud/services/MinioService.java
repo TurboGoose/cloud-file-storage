@@ -42,12 +42,13 @@ public class MinioService {
         }
     }
 
-    public boolean isObjectExist(String objectPath) {
+    public boolean isObjectExist(MinioObjectPath minioObjectPath) {
         try {
             client.statObject(
                     StatObjectArgs.builder()
                             .bucket(ROOT_BUCKET)
-                            .object(objectPath).build());
+                            .object(minioObjectPath.getAbsolutePath())
+                            .build());
             return true;
         } catch (ErrorResponseException exc) {
             return false;
@@ -196,7 +197,6 @@ public class MinioService {
             throw new RuntimeException(exc);
         }
     }
-
 
 
     public void deleteFile(String filePath) {
