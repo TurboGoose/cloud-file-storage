@@ -31,7 +31,7 @@ public class AuthenticationController {
     @PostMapping("/signup")
     public String signUpUser(@ModelAttribute @Valid User user, BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
-            return "/signup";
+            return "signup";
         }
         try {
             userService.createUser(user);
@@ -39,8 +39,8 @@ public class AuthenticationController {
             bindingResult.rejectValue("username", "", exc.getMessage());
         }
         if (bindingResult.hasErrors()) {
-            return "/signup";
+            return "signup";
         }
-        return "forward:/login";
+        return "redirect:/login";
     }
 }
