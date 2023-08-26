@@ -55,8 +55,8 @@ public class FolderController {
     @GetMapping("/folder/rename")
     public String getRenameFolderForm(
             @RequestParam String path,
+            @ModelAttribute("folderRenameDto") FolderRenameDto renameDto,
             Model model) {
-        model.addAttribute("folderRenameDto", new FolderRenameDto());
         model.addAttribute("breadcrumbs", PathHelper.assembleBreadcrumbsMapFromPath(path));
         return "folders/rename";
     }
@@ -65,16 +65,17 @@ public class FolderController {
     public String renameFolder(
             @AuthenticationPrincipal UserDetailsImpl userDetails,
             @RequestParam String path,
-            @ModelAttribute("folderRenameDto") @Valid FolderRenameDto renameDto, BindingResult bindingResult) {
+            @ModelAttribute("folderRenameDto") @Valid FolderRenameDto renameDto, BindingResult bindingResult,
+            Model model) {
         if (bindingResult.hasErrors()) {
-            return "folders/rename";
+            return getRenameFolderForm(path, renameDto, model);
         }
         try {
             String newFolderPath = folderService.renameFolder(userDetails.getId(), path, renameDto.getNewName());
             return "redirect:/?path=" + newFolderPath;
         } catch (FolderAlreadyExistsException exc) {
             bindingResult.rejectValue("newName", "folder.alreadyExists", "Folder with this name already exists");
-            return "folders/rename";
+            return getRenameFolderForm(path, renameDto, model);
         }
     }
 }
