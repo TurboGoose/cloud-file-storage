@@ -6,11 +6,9 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 import ru.turbogoose.cloud.dto.FolderCreationDto;
+import ru.turbogoose.cloud.dto.FolderRenameDto;
 import ru.turbogoose.cloud.exceptions.FolderAlreadyExistsException;
 import ru.turbogoose.cloud.models.security.UserDetailsImpl;
 import ru.turbogoose.cloud.services.FolderService;
@@ -51,6 +49,29 @@ public class FolderController {
         } catch (FolderAlreadyExistsException exc) {
             bindingResult.rejectValue("postfix", "folder.alreadyExists", "This folder already exists");
             return listFolder(userDetails, folderCreationDto.getPrefix(), folderCreationDto, model);
+        }
+    }
+
+    @GetMapping("/folder/rename")
+    public String getRenameFolderForm(Model model) {
+        model.addAttribute("folderRenameDto", new FolderRenameDto());
+        return "folders/rename";
+    }
+
+    @PutMapping
+    public String renameFolder(
+            @AuthenticationPrincipal UserDetailsImpl userDetails,
+            @RequestParam String path,
+            @ModelAttribute("folderRenameDto") @Valid FolderRenameDto renameDto, BindingResult bindingResult) {
+        if (bindingResult.hasErrors()) {
+            return "folders/rename";
+        }
+        try {
+            String newFolderPath = folderService.renameFolder(userDetails.getId(), path, renameDto.getNewName());
+            return "redirect:/?path=" + newFolderPath;
+        } catch (FolderAlreadyExistsException exc) {
+            bindingResult.rejectValue("newName", "folder.alreadyExists", "Folder with this name already exists");
+            return "folders/rename";
         }
     }
 }

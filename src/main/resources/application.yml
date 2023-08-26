@@ -5,6 +5,11 @@ spring:
     password: bebra
     url: jdbc:postgresql://localhost:5432/cloud_storage
 
+
   jpa:
     hibernate:
       ddl-auto: validate
+  mvc:
+    hiddenmethod:
+      filter:
+        enabled: true

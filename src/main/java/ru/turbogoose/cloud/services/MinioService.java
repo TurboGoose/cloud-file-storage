@@ -156,6 +156,8 @@ public class MinioService {
             return;
         }
 
+        createFolder(newFolderPath);
+
         Iterable<Result<Item>> folderObjects = client.listObjects(
                 ListObjectsArgs.builder()
                         .bucket(ROOT_BUCKET)

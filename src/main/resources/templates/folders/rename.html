@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Rename folder</title>
+</head>
+<body>
+<form th:method="PUT" th:action="@{/(path=${param.path})}" th:object="${folderRenameDto}">
+  <label for="name">Enter new folder name: </label>
+  <input id="name" type="text" th:field="*{newName}">
+  <span style="color: red" th:if="${#fields.hasErrors('newName')}" th:errors="*{newName}"></span>
+
+  <br>
+  <input type="submit" value="Rename">
+</form>
+</body>
+</html>

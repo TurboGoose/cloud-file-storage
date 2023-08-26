@@ -24,4 +24,14 @@ public class FolderService {
         minioService.createFolder(minioFolderPath);
         return minioFolderPath.getAbstractPath();
     }
+
+    public String renameFolder(int userId, String folderPath, String newName) {
+        MinioObjectPath oldPath = MinioObjectPath.parseAbstractFolder(folderPath, userId);
+        MinioObjectPath newPath = oldPath.setObjectName(newName);
+        if (minioService.isObjectExist(newPath)) {
+            throw new FolderAlreadyExistsException(newPath.getAbsolutePath());
+        }
+        minioService.moveFolder(oldPath, newPath);
+        return newPath.getAbstractPath();
+    }
 }

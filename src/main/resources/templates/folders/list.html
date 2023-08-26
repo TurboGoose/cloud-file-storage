@@ -21,6 +21,11 @@
   </span>
   </div>
 
+  <div th:if="${param.path}">
+    <br>
+    <a th:href="@{/folder/rename(path=${param.path})}">Rename current folder</a>
+  </div>
+
   <br>
   <form method="POST" th:action="@{/}" th:object="${newFolderPath}">
     <input type="hidden" th:field="*{prefix}" th:value="${param.path}">

@@ -5,6 +5,7 @@ import lombok.EqualsAndHashCode;
 import lombok.RequiredArgsConstructor;
 import lombok.ToString;
 
+import java.util.Arrays;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -56,6 +57,15 @@ public class MinioObjectPath {
             return "/"; // root folder
         }
         return path[path.length - 1];
+    }
+
+    public MinioObjectPath setObjectName(String objectName) {
+        if (path.length == 0) {
+            throw new IllegalStateException("Cannot rename root folder");
+        }
+        String[] newPath = Arrays.copyOf(path, path.length);
+        newPath[path.length - 1] = objectName;
+        return new MinioObjectPath(homeFolder, newPath, isFolder);
     }
 
     public boolean isFolder() {
