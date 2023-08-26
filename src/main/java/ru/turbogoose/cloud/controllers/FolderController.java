@@ -53,8 +53,11 @@ public class FolderController {
     }
 
     @GetMapping("/folder/rename")
-    public String getRenameFolderForm(Model model) {
+    public String getRenameFolderForm(
+            @RequestParam String path,
+            Model model) {
         model.addAttribute("folderRenameDto", new FolderRenameDto());
+        model.addAttribute("breadcrumbs", PathHelper.assembleBreadcrumbsMapFromPath(path));
         return "folders/rename";
     }
 

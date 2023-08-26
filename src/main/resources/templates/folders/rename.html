@@ -5,6 +5,8 @@
   <title>Rename folder</title>
 </head>
 <body>
+<div th:include="fragments::breadcrumbs (${breadcrumbs})"></div>
+
 <form th:method="PUT" th:action="@{/(path=${param.path})}" th:object="${folderRenameDto}">
   <label for="name">Enter new folder name: </label>
   <input id="name" type="text" th:field="*{newName}">
