@@ -44,8 +44,7 @@ public class FolderController {
             return listFolder(userDetails, folderCreationDto.getPrefix(), folderCreationDto, model);
         }
         try {
-            // TODO: change argument to FolderCreationDto
-            String createdPath = folderService.createFolder(userDetails.getId(), folderCreationDto.getFullPath());
+            String createdPath = folderService.createFolder(userDetails.getId(), folderCreationDto);
             return "redirect:/?path=" + createdPath;
         } catch (FolderAlreadyExistsException exc) {
             bindingResult.rejectValue("postfix", "folder.alreadyExists", "This folder already exists");

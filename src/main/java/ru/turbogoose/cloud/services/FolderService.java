@@ -2,6 +2,7 @@ package ru.turbogoose.cloud.services;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import ru.turbogoose.cloud.dto.FolderCreationDto;
 import ru.turbogoose.cloud.dto.FolderMoveDto;
 import ru.turbogoose.cloud.exceptions.FolderAlreadyExistsException;
 import ru.turbogoose.cloud.models.MinioObjectPath;
@@ -17,9 +18,8 @@ public class FolderService {
         return minioService.listFolderObjects(MinioObjectPath.parseAbstractFolder(folderPath, userId));
     }
 
-    // TODO: change argument type to FolderCreationDto
-    public String createFolder(int userId, String folderPath) {
-        MinioObjectPath minioFolderPath = MinioObjectPath.parseAbstractFolder(folderPath, userId);
+    public String createFolder(int userId, FolderCreationDto folderCreationDto) {
+        MinioObjectPath minioFolderPath = MinioObjectPath.parseAbstractFolder(folderCreationDto.getFullPath(), userId);
         if (minioService.isObjectExist(minioFolderPath)) {
             throw new FolderAlreadyExistsException(minioFolderPath.getAbsolutePath());
         }
