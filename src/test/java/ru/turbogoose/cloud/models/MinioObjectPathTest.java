@@ -50,4 +50,20 @@ class MinioObjectPathTest {
         assertThat(MinioObjectPath.parseAbsolute("user-1-files/path/").isFolder(), is(true));
         assertThat(MinioObjectPath.parseAbsolute("user-1-files/path/pic.png").isFolder(), is(false));
     }
+
+    @Test
+    void testIsInFolder() {
+        assertThat(MinioObjectPath.parseAbsolute("user-1-files/").isFolder(), is(true));
+        MinioObjectPath folder1 = MinioObjectPath.parseAbsolute("user-1-files/path/");
+        MinioObjectPath file1 = MinioObjectPath.parseAbsolute("user-1-files/path/pic.png");
+        MinioObjectPath folder2 = MinioObjectPath.parseAbsolute("user-1-files/path/another/");
+        MinioObjectPath file2 = MinioObjectPath.parseAbsolute("user-1-files/path/another/pic.png");
+
+        assertThat(file1.isInFolder(folder1), is(true));
+        assertThat(file2.isInFolder(folder1), is(true));
+        assertThat(folder2.isInFolder(folder1), is(true));
+
+        assertThat(file1.isInFolder(folder2), is(false));
+        assertThat(folder1.isInFolder(folder2), is(false));
+    }
 }

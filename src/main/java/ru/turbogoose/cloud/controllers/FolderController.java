@@ -8,7 +8,7 @@ import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import ru.turbogoose.cloud.dto.FolderCreationDto;
-import ru.turbogoose.cloud.dto.FolderRenameDto;
+import ru.turbogoose.cloud.dto.FolderMoveDto;
 import ru.turbogoose.cloud.exceptions.FolderAlreadyExistsException;
 import ru.turbogoose.cloud.models.security.UserDetailsImpl;
 import ru.turbogoose.cloud.services.FolderService;
@@ -23,7 +23,7 @@ public class FolderController {
     public String listFolder(
             @AuthenticationPrincipal UserDetailsImpl userDetails,
             @RequestParam(required = false) String path,
-            @ModelAttribute("newFolderPath") FolderCreationDto folderCreationDto,
+            @ModelAttribute("folderCreationDto") FolderCreationDto folderCreationDto,
             Model model) {
         try {
             model.addAttribute("objects", folderService.getFolderObjects(userDetails.getId(), path));
@@ -38,12 +38,13 @@ public class FolderController {
     @PostMapping
     public String createFolder(
             @AuthenticationPrincipal UserDetailsImpl userDetails,
-            @ModelAttribute("newFolderPath") @Valid FolderCreationDto folderCreationDto, BindingResult bindingResult,
+            @ModelAttribute("folderCreationDto") @Valid FolderCreationDto folderCreationDto, BindingResult bindingResult,
             Model model) {
         if (bindingResult.hasErrors()) {
             return listFolder(userDetails, folderCreationDto.getPrefix(), folderCreationDto, model);
         }
         try {
+            // TODO: change argument to FolderCreationDto
             String createdPath = folderService.createFolder(userDetails.getId(), folderCreationDto.getFullPath());
             return "redirect:/?path=" + createdPath;
         } catch (FolderAlreadyExistsException exc) {
@@ -55,27 +56,37 @@ public class FolderController {
     @GetMapping("/folder/rename")
     public String getRenameFolderForm(
             @RequestParam String path,
-            @ModelAttribute("folderRenameDto") FolderRenameDto renameDto,
+            @ModelAttribute("folderMoveDto") FolderMoveDto moveDto,
             Model model) {
         model.addAttribute("breadcrumbs", PathHelper.assembleBreadcrumbsMapFromPath(path));
         return "folders/rename";
     }
 
-    @PutMapping
-    public String renameFolder(
+    @GetMapping("/folder/move")
+    public String getMoveFolderForm(
             @AuthenticationPrincipal UserDetailsImpl userDetails,
             @RequestParam String path,
-            @ModelAttribute("folderRenameDto") @Valid FolderRenameDto renameDto, BindingResult bindingResult,
+            @ModelAttribute("folderMoveDto") FolderMoveDto moveDto,
+            Model model) {
+        model.addAttribute("targetFolders", folderService.getTargetFolderForMove(userDetails.getId(), path));
+        model.addAttribute("breadcrumbs", PathHelper.assembleBreadcrumbsMapFromPath(path));
+        return "folders/move";
+    }
+
+    @PutMapping
+    public String moveFolder(
+            @AuthenticationPrincipal UserDetailsImpl userDetails,
+            @ModelAttribute("folderMoveDto") @Valid FolderMoveDto moveDto, BindingResult bindingResult,
             Model model) {
         if (bindingResult.hasErrors()) {
-            return getRenameFolderForm(path, renameDto, model);
+            return getRenameFolderForm(moveDto.getOldFolderPath(), moveDto, model);
         }
         try {
-            String newFolderPath = folderService.renameFolder(userDetails.getId(), path, renameDto.getNewName());
+            String newFolderPath = folderService.moveFolder(userDetails.getId(), moveDto);
             return "redirect:/?path=" + newFolderPath;
         } catch (FolderAlreadyExistsException exc) {
             bindingResult.rejectValue("newName", "folder.alreadyExists", "Folder with this name already exists");
-            return getRenameFolderForm(path, renameDto, model);
+            return getRenameFolderForm(moveDto.getOldFolderPath(), moveDto, model);
         }
     }
 }

@@ -17,6 +17,10 @@ public class MinioObjectPath {
     private final String[] path;
     private final boolean isFolder;
 
+    public static MinioObjectPath getRootFolder(int userId) {
+        return parseAbstractFolder("/", userId);
+    }
+
     public static MinioObjectPath parseAbstractFolder(String path, int userId) {
         return parsePath(getUserHomeFolderPath(userId), path, true);
     }
@@ -79,6 +83,20 @@ public class MinioObjectPath {
             absolutePath += joinedPath + (isFolder ? "/" : "");
         }
         return absolutePath;
+    }
+
+    public boolean isInFolder(MinioObjectPath folderPath) {
+        if (!folderPath.isFolder ||
+                !this.homeFolder.equals(folderPath.homeFolder) ||
+                this.path.length <= folderPath.path.length) {
+            return false;
+        }
+        for (int i = 0; i < folderPath.path.length; i++) {
+            if (!this.path[i].equals(folderPath.path[i])) {
+                return false;
+            }
+        }
+        return true;
     }
 
     public String getAbstractPath() {

@@ -17,12 +17,12 @@
 
   <div th:if="${param.path}">
     <br>
-    <a th:href="@{/folder/rename(path=${param.path})}">Rename current folder</a>
+    <p><a th:href="@{/folder/rename(path=${param.path})}">Rename</a> or <a th:href="@{/folder/move(path=${param.path})}">move</a> current folder</p>
   </div>
 
   <br>
-  <form method="POST" th:action="@{/}" th:object="${newFolderPath}">
-    <input type="hidden" th:field="*{prefix}" th:value="${param.path}">
+  <form method="POST" th:action="@{/}" th:object="${folderCreationDto}">
+    <input type="hidden" name="prefix" th:value="${param.path}">
     <label for="postfix">Enter new folder path: </label>
     <input id="postfix" type="text" th:field="*{postfix}">
     <input type="submit" value="create">

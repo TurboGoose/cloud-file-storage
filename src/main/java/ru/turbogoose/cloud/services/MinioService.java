@@ -169,7 +169,7 @@ public class MinioService {
                 Item item = res.get();
                 String oldPath = item.objectName();
                 String objectName = PathHelper.extractObjectName(oldPath);
-                String newPath = newFolderPath + objectName;
+                String newPath = newFolderPath.getAbsolutePath() + objectName;
 
                 client.copyObject(
                         CopyObjectArgs.builder()
