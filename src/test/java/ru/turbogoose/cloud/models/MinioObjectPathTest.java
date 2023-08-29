@@ -13,11 +13,11 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class MinioObjectPathTest {
 
-    public static ObjectPath pathOf(String path) {
-        return MinioObjectPath.parse(path, 1);
+    public static MinioObjectPath pathOf(String path) {
+        return MinioObjectPath.parse(1, path);
     }
 
-    public static ObjectPath fullPathOf(String fullPath) {
+    public static MinioObjectPath fullPathOf(String fullPath) {
         return MinioObjectPath.parse(fullPath);
     }
 
@@ -49,6 +49,7 @@ class MinioObjectPathTest {
 
         @ParameterizedTest
         @NullAndEmptySource
+        @ValueSource(strings = "wrong-home-folder-format")
         public void parsingFullPathFails(String fullPath) {
             assertThrows(IllegalArgumentException.class, () -> fullPathOf(fullPath));
         }
@@ -76,8 +77,13 @@ class MinioObjectPathTest {
             /file.txt         -> /file.txt
             /path/to/file.txt -> /path/to/file.txt
             """)
-    public void getRelativePath(String path, String expectedPath) {
+    public void getPath(String path, String expectedPath) {
         assertThat(pathOf(path).getPath(), is(expectedPath));
+    }
+
+    @Test
+    public void getRootFolder() {
+        assertThat(MinioObjectPath.getRootFolder(1).getFullPath(), is("user-1-files/"));
     }
 
     @ParameterizedTest
@@ -95,7 +101,7 @@ class MinioObjectPathTest {
 
     @ParameterizedTest
     @CsvSource(textBlock = """
-            /,      /any/path,              true
+            /,      /any/path/,            true
             /path/, /path/to/,             true
             /path/, /path/pic.png,         true
             /path/, /path/to/pic.png,      true
@@ -107,16 +113,16 @@ class MinioObjectPathTest {
             /path/, /another/path/pic.png, false
             /path/, /pic.png,              false
             """)
-    public void isInFolder(String checkedObjectPath, String folderPath, boolean isInFolder) {
-        ObjectPath checkedObject = pathOf(checkedObjectPath);
-        ObjectPath folder = pathOf(folderPath);
+    public void isInFolder(String folderPath, String checkedObjectPath, boolean isInFolder) {
+        MinioObjectPath checkedObject = pathOf(checkedObjectPath);
+        MinioObjectPath folder = pathOf(folderPath);
         assertThat(checkedObject.isInFolder(folder), is(isInFolder));
     }
 
     @Test
     public void isInFolderForFileFails() {
-        ObjectPath checkedFile = pathOf("/path/to/file.txt");
-        ObjectPath invalidFileObject = pathOf("/path/pic.png");
+        MinioObjectPath checkedFile = pathOf("/path/to/file.txt");
+        MinioObjectPath invalidFileObject = pathOf("/path/pic.png");
         assertThrows(IllegalArgumentException.class, () -> checkedFile.isInFolder(invalidFileObject));
     }
 
@@ -153,7 +159,7 @@ class MinioObjectPathTest {
 
     @Test
     public void renamingRootFolderFails() {
-        ObjectPath rootFolder = pathOf("/");
+        MinioObjectPath rootFolder = pathOf("/");
         assertThrows(IllegalStateException.class, () -> rootFolder.renameObject("bebroot"));
     }
 }

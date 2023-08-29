@@ -3,121 +3,128 @@ package ru.turbogoose.cloud.models;
 import lombok.AccessLevel;
 import lombok.EqualsAndHashCode;
 import lombok.RequiredArgsConstructor;
-import lombok.ToString;
 
-import java.util.Arrays;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 @EqualsAndHashCode
-@ToString
 @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
-public class MinioObjectPath implements ObjectPath {
+public class MinioObjectPath {
     private final String homeFolder;
-    private final String[] path;
-    private final boolean isFolder;
+    private final String objectPath;
 
-    public static MinioObjectPath getRootFolder(int userId) {
-        return parse("/", userId);
+    public static MinioObjectPath parse(String fullPath) {
+        validatePathIsNotNullAndNotEmpty(fullPath);
+        Pattern pattern = Pattern.compile("^(?<home>user-\\d+-files)(?<path>/.*)$");
+        Matcher matcher = pattern.matcher(fullPath);
+        if (!matcher.matches()) {
+            throw new IllegalArgumentException("Wrong path format: " + fullPath);
+        }
+        String homeFolder = matcher.group("home");
+        String objectPath = matcher.group("path");
+        validatePathFormat(objectPath);
+        return new MinioObjectPath(homeFolder, objectPath);
     }
 
-    public static MinioObjectPath parse(String path, int userId) {
-        return parsePath(getUserHomeFolderPath(userId), path, true);
+    public static MinioObjectPath parse(int userId, String objectPath) {
+        validatePathIsNotNullAndNotEmpty(objectPath);
+        validatePathFormat(objectPath);
+        String homeFolder = getUserHomeFolderName(userId);
+        return new MinioObjectPath(homeFolder, objectPath);
     }
 
-    private static String getUserHomeFolderPath(int userId) {
+    private static void validatePathIsNotNullAndNotEmpty(String path) {
+        if (path == null) {
+            throw new IllegalArgumentException("Path cannot be null");
+        }
+        if (path.isEmpty()) {
+            throw new IllegalArgumentException("Path cannot be empty");
+        }
+    }
+
+    private static void validatePathFormat(String path) {
+        Pattern pattern = Pattern.compile("(^/([\\w !.*'()\\-]+/)*$|^/?([\\w !.*'()\\-]+/)*[\\w !.*'()\\-]+$)");
+        Matcher matcher = pattern.matcher(path);
+        if (!matcher.matches()) {
+            throw new IllegalArgumentException("Invalid path format: " + path);
+        }
+    }
+
+    private static String getUserHomeFolderName(int userId) {
         return String.format("user-%d-files", userId);
     }
 
-    public static MinioObjectPath parse(String absolutePath) {
-        Pattern pattern = Pattern.compile("^(?<home>user-\\d-files)/(?<path>.*)$");
-        Matcher matcher = pattern.matcher(absolutePath);
-        if (!matcher.matches()) {
-            throw new IllegalArgumentException("Wrong path format: " + absolutePath);
-        }
-
-        String homeFolder = matcher.group("home");
-        if (homeFolder == null) {
-            throw new IllegalArgumentException("Home folder is not present in absolute path");
-        }
-
-        String path = matcher.group("path");
-        if (path == null) {
-            throw new IllegalArgumentException("Path is not present in absolute path");
-        }
-
-        boolean isFolder = absolutePath.endsWith("/");
-
-        return parsePath(homeFolder, path, isFolder);
+    public static MinioObjectPath getRootFolder(int userId) {
+        return parse(userId, "/");
     }
 
-    private static MinioObjectPath parsePath(String homeFolder, String path, boolean isFolder) {
-        String[] splitPath = path == null || path.isEmpty() ? new String[0] : path.split("/");
-        return new MinioObjectPath(homeFolder, splitPath, isFolder);
-    }
-
-    @Override
     public String getObjectName() {
-        if (path.length == 0) {
-            return "/"; // root folder
+        if (objectPath.equals("/")) {
+            return "";
         }
-        return path[path.length - 1];
+        String path = objectPath;
+        if (isFolder()) {
+            path = path.substring(0, path.length() - 1);
+        }
+        return path.substring(path.lastIndexOf("/") + 1);
     }
 
-    public MinioObjectPath setObjectName(String objectName) {
-        if (path.length == 0) {
+    public String getPath() {
+        return objectPath;
+    }
+
+    public String getFullPath() {
+        return homeFolder + objectPath;
+    }
+
+    public boolean isFolder() {
+        return objectPath.endsWith("/");
+    }
+
+    public boolean isInFolder(MinioObjectPath folderPath) {
+        if (!folderPath.isFolder()) {
+            throw new IllegalArgumentException(String.format(
+                    "isInFolder() for objectPath %s failed, because passed object is not a folder: %s",
+                    this, folderPath));
+        }
+        return this.homeFolder.equals(folderPath.homeFolder) &&
+                this.objectPath.startsWith(folderPath.objectPath) &&
+                this.objectPath.length() > folderPath.objectPath.length();
+    }
+
+    public MinioObjectPath replacePrefix(String prefixToReplace, String replacement) {
+        validateFolderPathFormat(prefixToReplace);
+        validateFolderPathFormat(replacement);
+        if (!objectPath.startsWith(prefixToReplace)) {
+            return this;
+        }
+        String newObjectPath = objectPath.replaceFirst(prefixToReplace, replacement);
+        return new MinioObjectPath(homeFolder, newObjectPath);
+    }
+
+    private void validateFolderPathFormat(String folderPath) {
+        Pattern pattern = Pattern.compile("^/([\\w !.*'()\\-]+/)*$");
+        Matcher matcher = pattern.matcher(folderPath);
+        if (!matcher.matches()) {
+            throw new IllegalArgumentException("Invalid folder path format: " + folderPath);
+        }
+    }
+
+    public MinioObjectPath renameObject(String newName) {
+        if (objectPath.equals("/")) {
             throw new IllegalStateException("Cannot rename root folder");
         }
-        String[] newPath = Arrays.copyOf(path, path.length);
-        newPath[path.length - 1] = objectName;
-        return new MinioObjectPath(homeFolder, newPath, isFolder);
-    }
-
-    @Override
-    public boolean isFolder() {
-        return isFolder;
-    }
-
-    @Override
-    public String getFullPath() {
-        String absolutePath = homeFolder + "/";
-        String joinedPath = String.join("/", path);
-        if (!joinedPath.isBlank()) {
-            absolutePath += joinedPath + (isFolder ? "/" : "");
+        String pathWithoutName = objectPath;
+        if (isFolder()) {
+            pathWithoutName = pathWithoutName.substring(0, pathWithoutName.length() - 1);
         }
-        return absolutePath;
+        pathWithoutName = pathWithoutName.substring(0, pathWithoutName.lastIndexOf("/") + 1);
+        String newObjectPath = pathWithoutName + newName + (isFolder() ? "/" : "");
+        return new MinioObjectPath(homeFolder, newObjectPath);
     }
 
     @Override
-    public boolean isInFolder(ObjectPath folderPath) {
-//        if (!folderPath.isFolder ||
-//                !this.homeFolder.equals(folderPath.homeFolder) ||
-//                this.path.length <= folderPath.path.length) {
-//            return false;
-//        }
-//        for (int i = 0; i < folderPath.path.length; i++) {
-//            if (!this.path[i].equals(folderPath.path[i])) {
-//                return false;
-//            }
-//        }
-        return true;
-    }
-
-    @Override
-    public ObjectPath replacePrefix(String prefixToReplace, String replacement) {
-        return null;
-    }
-
-    @Override
-    public ObjectPath renameObject(String name) {
-        return null;
-    }
-
-    @Override
-    public String getPath() {
-        if (path.length == 0) {
-            return "/"; // root folder case
-        }
-        return String.join("/", path);
+    public String toString() {
+        return getFullPath();
     }
 }

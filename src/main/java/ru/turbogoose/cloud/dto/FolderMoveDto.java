@@ -13,12 +13,12 @@ public class FolderMoveDto {
 
     public MinioObjectPath getNewFolderPath(int userId) {
         return newName != null
-                ? MinioObjectPath.parse(oldFolderPath, userId).setObjectName(newName)
-                : MinioObjectPath.parse(newFolderPath, userId);
+                ? MinioObjectPath.parse(userId, oldFolderPath).renameObject(newName)
+                : MinioObjectPath.parse(userId, newFolderPath);
     }
 
     public MinioObjectPath getOldObjectPath(int userId) {
-        return MinioObjectPath.parse(oldFolderPath, userId);
+        return MinioObjectPath.parse(userId, oldFolderPath);
     }
 
     public boolean isRenameAction() {

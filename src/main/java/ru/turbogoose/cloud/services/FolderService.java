@@ -20,7 +20,7 @@ public class FolderService {
 
     public Map<String, String> getFolderObjects(int userId, String folderPath) {
         folderPath = ObjectPathMapper.fromUrlParam(folderPath);
-        List<MinioObjectPath> objectPaths = minioService.listFolderObjects(MinioObjectPath.parse(folderPath, userId));
+        List<MinioObjectPath> objectPaths = minioService.listFolderObjects(MinioObjectPath.parse(userId, folderPath));
         return objectPaths.stream()
                 .collect(Collectors.toMap(
                         MinioObjectPath::getObjectName,
@@ -30,7 +30,7 @@ public class FolderService {
     }
 
     public String createFolder(int userId, FolderCreationDto folderCreationDto) {
-        MinioObjectPath minioFolderPath = MinioObjectPath.parse(folderCreationDto.getFullPath(), userId);
+        MinioObjectPath minioFolderPath = MinioObjectPath.parse(userId, folderCreationDto.getFullPath());
         if (minioService.isObjectExist(minioFolderPath)) {
             throw new FolderAlreadyExistsException(minioFolderPath.getFullPath());
         }
@@ -57,7 +57,7 @@ public class FolderService {
     }
 
     public List<String> getTargetFolderForMove(int userId, String folderPath) {
-        MinioObjectPath folderPathToMove = MinioObjectPath.parse(folderPath, userId);
+        MinioObjectPath folderPathToMove = MinioObjectPath.parse(userId, folderPath);
         MinioObjectPath rootFolderPath = MinioObjectPath.getRootFolder(userId);
         return minioService.listFolderObjects(rootFolderPath).stream()
                 .filter(path -> path.isFolder() && !path.isInFolder(folderPathToMove))
