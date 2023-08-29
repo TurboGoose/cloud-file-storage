@@ -32,8 +32,8 @@
   <br>
   <ul>
     <li th:each="entry : ${objects}" th:with="name=${entry.key},path=${entry.value}">
-      <a th:if="${path}" th:href="@{/(path=${path})}" th:text="${name}"></a>
-      <span th:unless="${path}" th:text="${name}"></span>
+      <span th:if="${path.isEmpty()}" th:text="${name}"></span>
+      <a th:unless="${path.isEmpty()}" th:href="@{/(path=${path})}" th:text="${name}"></a>
     </li>
   </ul>
 </div>
