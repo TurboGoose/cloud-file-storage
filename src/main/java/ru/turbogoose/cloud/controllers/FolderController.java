@@ -93,17 +93,17 @@ public class FolderController {
     @PutMapping("/folder/move")
     public String moveFolder(
             @AuthenticationPrincipal UserDetailsImpl userDetails,
-            @ModelAttribute("folderMoveDto") @Valid ObjectMoveDto folderObjectMoveDto, BindingResult bindingResult,
+            @ModelAttribute("objectMoveDto") @Valid ObjectMoveDto objectMoveDto, BindingResult bindingResult,
             Model model) {
         if (bindingResult.hasErrors()) {
-            return getMoveFolderForm(userDetails, folderObjectMoveDto.getOldObjectPath(), folderObjectMoveDto, model);
+            return getMoveFolderForm(userDetails, objectMoveDto.getOldObjectPath(), objectMoveDto, model);
         }
         try {
-            String newFolderPath = folderService.moveFolder(userDetails.getId(), folderObjectMoveDto);
+            String newFolderPath = folderService.moveFolder(userDetails.getId(), objectMoveDto);
             return "redirect:/?path=" + newFolderPath;
         } catch (ObjectAlreadyExistsException exc) {
             bindingResult.rejectValue("newName", "folder.alreadyExists", "Folder with this name already exists");
-            return getMoveFolderForm(userDetails, folderObjectMoveDto.getOldObjectPath(), folderObjectMoveDto, model);
+            return getMoveFolderForm(userDetails, objectMoveDto.getOldObjectPath(), objectMoveDto, model);
         }
     }
 }
