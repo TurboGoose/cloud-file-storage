@@ -57,19 +57,23 @@ public class MinioService {
     }
 
     public List<MinioObjectPath> listFolderObjects(MinioObjectPath folderPath) {
+        return listFolderObjects(folderPath, false);
+    }
+
+    public List<MinioObjectPath> listFolderObjects(MinioObjectPath folderPath, boolean recursive) {
         validateFolderPath(folderPath);
-        String folderAbsolutePath = folderPath.getFullPath();
         try {
             Iterable<Result<Item>> results = client.listObjects(
                     ListObjectsArgs.builder()
                             .bucket(ROOT_BUCKET)
-                            .prefix(folderAbsolutePath)
+                            .prefix(folderPath.getFullPath())
+                            .recursive(recursive)
                             .build());
             List<MinioObjectPath> objects = new ArrayList<>();
             for (Result<Item> result : results) {
-                String objectAbsolutePath = result.get().objectName();
-                if (!objectAbsolutePath.equals(folderAbsolutePath)) {
-                    objects.add(MinioObjectPath.parse(objectAbsolutePath));
+                String objectPath = result.get().objectName();
+                if (!objectPath.equals(folderPath.getFullPath())) {
+                    objects.add(MinioObjectPath.parse(objectPath));
                 }
             }
             return objects;
