@@ -47,7 +47,7 @@ public class MinioService {
             client.statObject(
                     StatObjectArgs.builder()
                             .bucket(ROOT_BUCKET)
-                            .object(minioObjectPath.getAbsolutePath())
+                            .object(minioObjectPath.getFullPath())
                             .build());
             return true;
         } catch (ErrorResponseException exc) {
@@ -59,7 +59,7 @@ public class MinioService {
 
     public List<MinioObjectPath> listFolderObjects(MinioObjectPath folderPath) {
         validateFolderPath(folderPath);
-        String folderAbsolutePath = folderPath.getAbsolutePath();
+        String folderAbsolutePath = folderPath.getFullPath();
         try {
             Iterable<Result<Item>> results = client.listObjects(
                     ListObjectsArgs.builder()
@@ -70,7 +70,7 @@ public class MinioService {
             for (Result<Item> result : results) {
                 String objectAbsolutePath = result.get().objectName();
                 if (!objectAbsolutePath.equals(folderAbsolutePath)) {
-                    objects.add(MinioObjectPath.parseAbsolute(objectAbsolutePath));
+                    objects.add(MinioObjectPath.parse(objectAbsolutePath));
                 }
             }
             return objects;
@@ -85,7 +85,7 @@ public class MinioService {
             client.putObject(
                     PutObjectArgs.builder()
                             .bucket(ROOT_BUCKET)
-                            .object(filePath.getAbsolutePath())
+                            .object(filePath.getFullPath())
                             .stream(fileInputStream, -1, 10485760)
                             .build());
         } catch (Exception exc) {
@@ -111,7 +111,7 @@ public class MinioService {
             client.putObject(
                     PutObjectArgs.builder()
                             .bucket(ROOT_BUCKET)
-                            .object(folderPath.getAbsolutePath())
+                            .object(folderPath.getFullPath())
                             .stream(new ByteArrayInputStream(new byte[]{}), 0, -1)
                             .build());
         } catch (Exception exc) {
@@ -131,17 +131,17 @@ public class MinioService {
             client.copyObject(
                     CopyObjectArgs.builder()
                             .bucket(ROOT_BUCKET)
-                            .object(newFilePath.getAbsolutePath())
+                            .object(newFilePath.getFullPath())
                             .source(CopySource.builder()
                                     .bucket(ROOT_BUCKET)
-                                    .object(oldFilePath.getAbsolutePath())
+                                    .object(oldFilePath.getFullPath())
                                     .build())
                             .build());
 
             client.removeObject(
                     RemoveObjectArgs.builder()
                             .bucket(ROOT_BUCKET)
-                            .object(oldFilePath.getAbsolutePath())
+                            .object(oldFilePath.getFullPath())
                             .build());
         } catch (Exception exc) {
             throw new RuntimeException(exc);
@@ -161,7 +161,7 @@ public class MinioService {
         Iterable<Result<Item>> folderObjects = client.listObjects(
                 ListObjectsArgs.builder()
                         .bucket(ROOT_BUCKET)
-                        .prefix(oldFolderPath.getAbsolutePath())
+                        .prefix(oldFolderPath.getFullPath())
                         .build());
 
         try {
@@ -169,7 +169,7 @@ public class MinioService {
                 Item item = res.get();
                 String oldPath = item.objectName();
                 String objectName = PathHelper.extractObjectName(oldPath);
-                String newPath = newFolderPath.getAbsolutePath() + objectName;
+                String newPath = newFolderPath.getFullPath() + objectName;
 
                 client.copyObject(
                         CopyObjectArgs.builder()
@@ -186,7 +186,7 @@ public class MinioService {
                 client.removeObject(
                         RemoveObjectArgs.builder()
                                 .bucket(ROOT_BUCKET)
-                                .object(oldFolderPath.getAbsolutePath())
+                                .object(oldFolderPath.getFullPath())
                                 .build());
             }
         } catch (Exception exc) {
@@ -210,7 +210,7 @@ public class MinioService {
             client.removeObject(
                     RemoveObjectArgs.builder()
                             .bucket(ROOT_BUCKET)
-                            .object(objectPath.getAbsolutePath())
+                            .object(objectPath.getFullPath())
                             .build());
         } catch (Exception exc) {
             throw new RuntimeException(exc);

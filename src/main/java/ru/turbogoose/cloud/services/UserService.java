@@ -40,7 +40,7 @@ public class UserService implements UserDetailsService {
     }
 
     private void createUserHomeFolder(int userId) {
-        minioService.createFolder(MinioObjectPath.parseAbstractFolder("/", userId));
+        minioService.createFolder(MinioObjectPath.getRootFolder(userId));
     }
 
     public void validateUniqueUsername(String username) {

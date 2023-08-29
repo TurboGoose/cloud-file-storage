@@ -12,16 +12,16 @@ import java.util.regex.Pattern;
 @EqualsAndHashCode
 @ToString
 @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
-public class MinioObjectPath {
+public class MinioObjectPath implements ObjectPath {
     private final String homeFolder;
     private final String[] path;
     private final boolean isFolder;
 
     public static MinioObjectPath getRootFolder(int userId) {
-        return parseAbstractFolder("/", userId);
+        return parse("/", userId);
     }
 
-    public static MinioObjectPath parseAbstractFolder(String path, int userId) {
+    public static MinioObjectPath parse(String path, int userId) {
         return parsePath(getUserHomeFolderPath(userId), path, true);
     }
 
@@ -29,7 +29,7 @@ public class MinioObjectPath {
         return String.format("user-%d-files", userId);
     }
 
-    public static MinioObjectPath parseAbsolute(String absolutePath) {
+    public static MinioObjectPath parse(String absolutePath) {
         Pattern pattern = Pattern.compile("^(?<home>user-\\d-files)/(?<path>.*)$");
         Matcher matcher = pattern.matcher(absolutePath);
         if (!matcher.matches()) {
@@ -56,6 +56,7 @@ public class MinioObjectPath {
         return new MinioObjectPath(homeFolder, splitPath, isFolder);
     }
 
+    @Override
     public String getObjectName() {
         if (path.length == 0) {
             return "/"; // root folder
@@ -72,11 +73,13 @@ public class MinioObjectPath {
         return new MinioObjectPath(homeFolder, newPath, isFolder);
     }
 
+    @Override
     public boolean isFolder() {
         return isFolder;
     }
 
-    public String getAbsolutePath() {
+    @Override
+    public String getFullPath() {
         String absolutePath = homeFolder + "/";
         String joinedPath = String.join("/", path);
         if (!joinedPath.isBlank()) {
@@ -85,21 +88,33 @@ public class MinioObjectPath {
         return absolutePath;
     }
 
-    public boolean isInFolder(MinioObjectPath folderPath) {
-        if (!folderPath.isFolder ||
-                !this.homeFolder.equals(folderPath.homeFolder) ||
-                this.path.length <= folderPath.path.length) {
-            return false;
-        }
-        for (int i = 0; i < folderPath.path.length; i++) {
-            if (!this.path[i].equals(folderPath.path[i])) {
-                return false;
-            }
-        }
+    @Override
+    public boolean isInFolder(ObjectPath folderPath) {
+//        if (!folderPath.isFolder ||
+//                !this.homeFolder.equals(folderPath.homeFolder) ||
+//                this.path.length <= folderPath.path.length) {
+//            return false;
+//        }
+//        for (int i = 0; i < folderPath.path.length; i++) {
+//            if (!this.path[i].equals(folderPath.path[i])) {
+//                return false;
+//            }
+//        }
         return true;
     }
 
-    public String getAbstractPath() {
+    @Override
+    public ObjectPath replacePrefix(String prefixToReplace, String replacement) {
+        return null;
+    }
+
+    @Override
+    public ObjectPath renameObject(String name) {
+        return null;
+    }
+
+    @Override
+    public String getPath() {
         if (path.length == 0) {
             return "/"; // root folder case
         }
