@@ -5,17 +5,28 @@ import org.springframework.stereotype.Service;
 import ru.turbogoose.cloud.dto.FolderCreationDto;
 import ru.turbogoose.cloud.dto.FolderMoveDto;
 import ru.turbogoose.cloud.exceptions.FolderAlreadyExistsException;
+import ru.turbogoose.cloud.mappers.ObjectPathMapper;
 import ru.turbogoose.cloud.models.MinioObjectPath;
 
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class FolderService {
     private final MinioService minioService;
 
-    public List<MinioObjectPath> getFolderObjects(int userId, String folderPath) {
-        return minioService.listFolderObjects(MinioObjectPath.parse(folderPath, userId));
+    public Map<String, String> getFolderObjects(int userId, String folderPath) {
+        folderPath = ObjectPathMapper.fromUrlParam(folderPath);
+        List<MinioObjectPath> objectPaths = minioService.listFolderObjects(MinioObjectPath.parse(folderPath, userId));
+        return objectPaths.stream()
+                .collect(Collectors.toMap(
+                        MinioObjectPath::getObjectName,
+                        p -> p.isFolder() ? ObjectPathMapper.toUrlParam(p.getPath()) : "",
+                        (p1, p2) -> p1,
+                        LinkedHashMap::new));
     }
 
     public String createFolder(int userId, FolderCreationDto folderCreationDto) {
