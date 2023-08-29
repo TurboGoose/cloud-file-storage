@@ -166,17 +166,18 @@ public class MinioService {
         try {
             for (Result<Item> res : folderObjects) {
                 Item item = res.get();
-                MinioObjectPath oldPath = MinioObjectPath.parse(item.objectName());
-                MinioObjectPath newPath = oldPath.replacePrefix(oldPath.getPath(), newFolderPath.getPath());
+                MinioObjectPath oldSubFolderObjectPath = MinioObjectPath.parse(item.objectName());
+                MinioObjectPath newSubFolderObjectPath = oldSubFolderObjectPath.replacePrefix(
+                        oldFolderPath.getPath(), newFolderPath.getPath());
 
                 client.copyObject(
                         CopyObjectArgs.builder()
                                 .bucket(ROOT_BUCKET)
-                                .object(newPath.getFullPath())
+                                .object(newSubFolderObjectPath.getFullPath())
                                 .source(
                                         CopySource.builder()
                                                 .bucket(ROOT_BUCKET)
-                                                .object(oldPath.getFullPath())
+                                                .object(oldSubFolderObjectPath.getFullPath())
                                                 .build()
                                 )
                                 .build());
@@ -184,7 +185,7 @@ public class MinioService {
                 client.removeObject(
                         RemoveObjectArgs.builder()
                                 .bucket(ROOT_BUCKET)
-                                .object(oldFolderPath.getFullPath())
+                                .object(oldSubFolderObjectPath.getFullPath())
                                 .build());
             }
         } catch (Exception exc) {
