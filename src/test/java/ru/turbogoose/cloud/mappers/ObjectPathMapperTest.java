@@ -21,6 +21,8 @@ class ObjectPathMapperTest {
 
     @ParameterizedTest
     @CsvSource(delimiterString = "->", textBlock = """
+                      -> ''
+            ''        -> ''
             /         -> ''
             /path/    -> path
             /path/to/ -> path/to

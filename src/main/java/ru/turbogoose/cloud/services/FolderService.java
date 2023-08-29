@@ -3,8 +3,9 @@ package ru.turbogoose.cloud.services;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.turbogoose.cloud.dto.FolderCreationDto;
-import ru.turbogoose.cloud.dto.FolderMoveDto;
-import ru.turbogoose.cloud.exceptions.FolderAlreadyExistsException;
+import ru.turbogoose.cloud.dto.ObjectMoveDto;
+import ru.turbogoose.cloud.dto.ObjectRenameDto;
+import ru.turbogoose.cloud.exceptions.ObjectAlreadyExistsException;
 import ru.turbogoose.cloud.mappers.ObjectPathMapper;
 import ru.turbogoose.cloud.models.MinioObjectPath;
 
@@ -30,38 +31,43 @@ public class FolderService {
     }
 
     public String createFolder(int userId, FolderCreationDto folderCreationDto) {
-        MinioObjectPath minioFolderPath = MinioObjectPath.parse(userId, folderCreationDto.getFullPath());
+        String folderPath = ObjectPathMapper.fromUrlParam(folderCreationDto.getFullPath());
+        MinioObjectPath minioFolderPath = MinioObjectPath.parse(userId, folderPath);
         if (minioService.isObjectExist(minioFolderPath)) {
-            throw new FolderAlreadyExistsException(minioFolderPath.getFullPath());
+            throw new ObjectAlreadyExistsException(minioFolderPath.getFullPath());
         }
         minioService.createFolder(minioFolderPath);
-        return minioFolderPath.getPath();
+        return ObjectPathMapper.toUrlParam(minioFolderPath.getPath());
     }
 
-    public String moveFolder(int userId, FolderMoveDto moveDto) {
-        MinioObjectPath oldPath = moveDto.getOldObjectPath(userId);
-        MinioObjectPath newPath = moveDto.getNewFolderPath(userId);
-
-        if (moveDto.isRenameAction()) {
-            if (minioService.isObjectExist(newPath)) {
-                throw new FolderAlreadyExistsException(newPath.getFullPath());
-            }
-        } else {
-            if (!minioService.isObjectExist(newPath)) {
-                minioService.createFolder(newPath);
-            }
+    public String moveFolder(int userId, ObjectMoveDto objectMoveDto) {
+        MinioObjectPath oldFolderPath = MinioObjectPath.parse(userId,
+                ObjectPathMapper.fromUrlParam(objectMoveDto.getOldObjectPath()));
+        MinioObjectPath newFolderPath = MinioObjectPath.parse(userId,
+                ObjectPathMapper.fromUrlParam(objectMoveDto.getNewObjectPath()));
+        if (!minioService.isObjectExist(newFolderPath)) {
+            minioService.createFolder(newFolderPath);
         }
-
-        minioService.moveFolder(oldPath, newPath);
-        return newPath.getPath();
+        minioService.moveFolder(oldFolderPath, newFolderPath);
+        return ObjectPathMapper.toUrlParam(newFolderPath.getPath());
     }
 
-    public List<String> getTargetFolderForMove(int userId, String folderPath) {
-        MinioObjectPath folderPathToMove = MinioObjectPath.parse(userId, folderPath);
+    public String renameFolder(int userId, ObjectRenameDto objectRenameDto) {
+        MinioObjectPath oldObjectPath = MinioObjectPath.parse(userId, ObjectPathMapper.fromUrlParam(objectRenameDto.getObjectPath()));
+        MinioObjectPath newObjectPath = oldObjectPath.renameObject(objectRenameDto.getNewName());
+        if (minioService.isObjectExist(newObjectPath)) {
+            throw new ObjectAlreadyExistsException(newObjectPath.getFullPath());
+        }
+        minioService.moveFolder(oldObjectPath, newObjectPath);
+        return ObjectPathMapper.toUrlParam(newObjectPath.getPath());
+    }
+
+    public List<String> getFoldersCandidatesForMove(int userId, String folderPath) {
+        MinioObjectPath folderPathToMove = MinioObjectPath.parse(userId, ObjectPathMapper.fromUrlParam(folderPath));
         MinioObjectPath rootFolderPath = MinioObjectPath.getRootFolder(userId);
         return minioService.listFolderObjects(rootFolderPath).stream()
                 .filter(path -> path.isFolder() && !path.isInFolder(folderPathToMove))
-                .map(MinioObjectPath::getPath)
+                .map(path -> ObjectPathMapper.toUrlParam(path.getPath()))
                 .toList();
     }
 }

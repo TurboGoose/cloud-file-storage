@@ -8,8 +8,9 @@ import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import ru.turbogoose.cloud.dto.FolderCreationDto;
-import ru.turbogoose.cloud.dto.FolderMoveDto;
-import ru.turbogoose.cloud.exceptions.FolderAlreadyExistsException;
+import ru.turbogoose.cloud.dto.ObjectMoveDto;
+import ru.turbogoose.cloud.dto.ObjectRenameDto;
+import ru.turbogoose.cloud.exceptions.ObjectAlreadyExistsException;
 import ru.turbogoose.cloud.models.security.UserDetailsImpl;
 import ru.turbogoose.cloud.services.FolderService;
 import ru.turbogoose.cloud.util.PathHelper;
@@ -46,7 +47,7 @@ public class FolderController {
         try {
             String createdPath = folderService.createFolder(userDetails.getId(), folderCreationDto);
             return "redirect:/?path=" + createdPath;
-        } catch (FolderAlreadyExistsException exc) {
+        } catch (ObjectAlreadyExistsException exc) {
             bindingResult.rejectValue("postfix", "folder.alreadyExists", "This folder already exists");
             return listFolder(userDetails, folderCreationDto.getPrefix(), folderCreationDto, model);
         }
@@ -55,37 +56,54 @@ public class FolderController {
     @GetMapping("/folder/rename")
     public String getRenameFolderForm(
             @RequestParam String path,
-            @ModelAttribute("folderMoveDto") FolderMoveDto moveDto,
+            @ModelAttribute("objectRenameDto") ObjectRenameDto objectRenameDto,
             Model model) {
         model.addAttribute("breadcrumbs", PathHelper.assembleBreadcrumbsMapFromPath(path));
         return "folders/rename";
+    }
+
+    @PutMapping("folder/rename")
+    public String renameFolder(
+            @AuthenticationPrincipal UserDetailsImpl userDetails,
+            @ModelAttribute("objectRenameDto") @Valid ObjectRenameDto objectRenameDto, BindingResult bindingResult,
+            Model model) {
+        if (bindingResult.hasErrors()) {
+            return getRenameFolderForm(objectRenameDto.getObjectPath(), objectRenameDto, model);
+        }
+        try {
+            String newFolderPath = folderService.renameFolder(userDetails.getId(), objectRenameDto);
+            return "redirect:/?path=" + newFolderPath;
+        } catch (ObjectAlreadyExistsException exc) {
+            bindingResult.rejectValue("newName", "folder.alreadyExists", "Folder with this name already exists");
+            return getRenameFolderForm(objectRenameDto.getObjectPath(), objectRenameDto, model);
+        }
     }
 
     @GetMapping("/folder/move")
     public String getMoveFolderForm(
             @AuthenticationPrincipal UserDetailsImpl userDetails,
             @RequestParam String path,
-            @ModelAttribute("folderMoveDto") FolderMoveDto moveDto,
+            @ModelAttribute("objectMoveDto") ObjectMoveDto objectMoveDto,
             Model model) {
-        model.addAttribute("targetFolders", folderService.getTargetFolderForMove(userDetails.getId(), path));
+        model.addAttribute("moveCandidates", folderService.getFoldersCandidatesForMove(userDetails.getId(), path));
         model.addAttribute("breadcrumbs", PathHelper.assembleBreadcrumbsMapFromPath(path));
         return "folders/move";
     }
 
-    @PutMapping
+    @PutMapping("/folder/move")
     public String moveFolder(
             @AuthenticationPrincipal UserDetailsImpl userDetails,
-            @ModelAttribute("folderMoveDto") @Valid FolderMoveDto moveDto, BindingResult bindingResult,
+            @ModelAttribute("folderMoveDto") @Valid ObjectMoveDto folderObjectMoveDto, BindingResult bindingResult,
             Model model) {
         if (bindingResult.hasErrors()) {
-            return getRenameFolderForm(moveDto.getOldFolderPath(), moveDto, model);
+            return getMoveFolderForm(userDetails, folderObjectMoveDto.getOldObjectPath(), folderObjectMoveDto, model);
         }
         try {
-            String newFolderPath = folderService.moveFolder(userDetails.getId(), moveDto);
+            String newFolderPath = folderService.moveFolder(userDetails.getId(), folderObjectMoveDto);
             return "redirect:/?path=" + newFolderPath;
-        } catch (FolderAlreadyExistsException exc) {
+        } catch (ObjectAlreadyExistsException exc) {
             bindingResult.rejectValue("newName", "folder.alreadyExists", "Folder with this name already exists");
-            return getRenameFolderForm(moveDto.getOldFolderPath(), moveDto, model);
+            return getMoveFolderForm(userDetails, folderObjectMoveDto.getOldObjectPath(), folderObjectMoveDto, model);
         }
     }
 }

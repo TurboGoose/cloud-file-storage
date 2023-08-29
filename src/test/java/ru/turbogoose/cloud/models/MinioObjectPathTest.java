@@ -105,8 +105,8 @@ class MinioObjectPathTest {
             /path/, /path/to/,             true
             /path/, /path/pic.png,         true
             /path/, /path/to/pic.png,      true
-
-            /path/, /path/,                false
+            /path/, /path/,                true
+            
             /path/, /another/path/,        false
             /path/, /,                     false
             

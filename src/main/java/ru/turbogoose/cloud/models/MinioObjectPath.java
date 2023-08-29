@@ -88,8 +88,7 @@ public class MinioObjectPath {
                     this, folderPath));
         }
         return this.homeFolder.equals(folderPath.homeFolder) &&
-                this.objectPath.startsWith(folderPath.objectPath) &&
-                this.objectPath.length() > folderPath.objectPath.length();
+                this.objectPath.startsWith(folderPath.objectPath);
     }
 
     public MinioObjectPath replacePrefix(String prefixToReplace, String replacement) {

@@ -5,18 +5,18 @@
   <title>Move folder</title>
 </head>
 <body>
-<div th:include="fragments::breadcrumbs (${breadcrumbs})"></div>
+<div th:insert="~{fragments::breadcrumbs (${breadcrumbs})}"></div>
 
-<form th:method="PUT" th:action="@{/}" th:object="${folderMoveDto}">
+<form th:method="PUT" th:action="@{/folder/move}" th:object="${folderMoveDto}">
   <label for="location">Choose new folder location: </label>
   <br>
 
-  <select id="location" th:field="*{newFolderPath}">
-    <option th:each="folderPath : ${targetFolders}" th:value="${folderPath}" th:text="${folderPath}"></option>
+  <select id="location" th:field="*{newObjectPath}">
+    <option th:each="folderPath : ${moveCandidates}" th:value="${folderPath}" th:text="${folderPath}"></option>
   </select>
 
-  <input type="hidden" name="oldFolderPath" th:value="${param.path}">
-  <span style="color: red" th:if="${#fields.hasErrors('newName')}" th:errors="*{newName}"></span>
+  <input type="hidden" name="oldObjectPath" th:value="${param.path}">
+  <span style="color: red" th:if="${#fields.hasErrors('newObjectPath')}" th:errors="*{newObjectPath}"></span>
   <br>
   <input type="submit" value="Move">
 </form>

@@ -5,7 +5,6 @@ import io.minio.errors.ErrorResponseException;
 import io.minio.messages.Item;
 import org.springframework.stereotype.Service;
 import ru.turbogoose.cloud.models.MinioObjectPath;
-import ru.turbogoose.cloud.util.PathHelper;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
@@ -95,13 +94,13 @@ public class MinioService {
 
     private void validateFolderPath(MinioObjectPath folderPath) {
         if (!folderPath.isFolder()) {
-            throw new IllegalArgumentException("Passed path is not a folder");
+            throw new IllegalArgumentException("Passed path is not a folder: " + folderPath.getFullPath());
         }
     }
 
     private void validateFilePath(MinioObjectPath filePath) {
         if (filePath.isFolder()) {
-            throw new IllegalArgumentException("Passed path is not a file");
+            throw new IllegalArgumentException("Passed path is not a file: " + filePath.getFullPath());
         }
     }
 
@@ -167,18 +166,17 @@ public class MinioService {
         try {
             for (Result<Item> res : folderObjects) {
                 Item item = res.get();
-                String oldPath = item.objectName();
-                String objectName = PathHelper.extractObjectName(oldPath);
-                String newPath = newFolderPath.getFullPath() + objectName;
+                MinioObjectPath oldPath = MinioObjectPath.parse(item.objectName());
+                MinioObjectPath newPath = oldPath.replacePrefix(oldPath.getPath(), newFolderPath.getPath());
 
                 client.copyObject(
                         CopyObjectArgs.builder()
                                 .bucket(ROOT_BUCKET)
-                                .object(newPath)
+                                .object(newPath.getFullPath())
                                 .source(
                                         CopySource.builder()
                                                 .bucket(ROOT_BUCKET)
-                                                .object(oldPath)
+                                                .object(oldPath.getFullPath())
                                                 .build()
                                 )
                                 .build());
