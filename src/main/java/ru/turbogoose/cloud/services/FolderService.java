@@ -64,9 +64,10 @@ public class FolderService {
 
     public List<String> getMoveCandidatesForFolder(int userId, String folderPath) {
         MinioObjectPath folderPathToMove = MinioObjectPath.parse(userId, ObjectPathMapper.fromUrlParam(folderPath));
+        MinioObjectPath parentFolderPath = MinioObjectPath.parse(userId, folderPathToMove.getPathWithoutObjectName());
         MinioObjectPath rootFolderPath = MinioObjectPath.getRootFolder(userId);
-        return minioService.listFolderObjects(rootFolderPath, true).stream()
-                .filter(path -> path.isFolder() && !path.isInFolder(folderPathToMove))
+        return minioService.listFolderObjectsRecursive(rootFolderPath).stream()
+                .filter(path -> path.isFolder() && !path.isInFolder(folderPathToMove) && !path.equals(parentFolderPath))
                 .map(path -> ObjectPathMapper.toUrlParam(path.getPath()))
                 .toList();
     }

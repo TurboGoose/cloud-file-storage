@@ -59,10 +59,15 @@ public class MinioService {
     }
 
     public List<MinioObjectPath> listFolderObjects(MinioObjectPath folderPath) {
-        return listFolderObjects(folderPath, false);
+        return listFolderObjectsWithParams(folderPath, false, false);
     }
 
-    public List<MinioObjectPath> listFolderObjects(MinioObjectPath folderPath, boolean recursive) {
+    public List<MinioObjectPath> listFolderObjectsRecursive(MinioObjectPath folderPath) {
+        return listFolderObjectsWithParams(folderPath, true, true);
+    }
+
+    private List<MinioObjectPath> listFolderObjectsWithParams(
+            MinioObjectPath folderPath, boolean recursive, boolean includeSelf) {
         validateFolderPath(folderPath);
         try {
             Iterable<Result<Item>> results = client.listObjects(
@@ -74,9 +79,10 @@ public class MinioService {
             List<MinioObjectPath> objects = new ArrayList<>();
             for (Result<Item> result : results) {
                 String objectPath = result.get().objectName();
-                if (!objectPath.equals(folderPath.getFullPath())) {
-                    objects.add(MinioObjectPath.parse(objectPath));
+                if (objectPath.equals(folderPath.getFullPath()) && !includeSelf) {
+                    continue;
                 }
+                objects.add(MinioObjectPath.parse(objectPath));
             }
             return objects;
         } catch (Exception exc) {
@@ -213,7 +219,7 @@ public class MinioService {
 
     public void deleteFolder(MinioObjectPath folderPath) {
         validateFolderPath(folderPath);
-        List<DeleteObject> objectsToDelete = listFolderObjects(folderPath, true).stream()
+        List<DeleteObject> objectsToDelete = listFolderObjectsRecursive(folderPath).stream()
                 .map(path -> new DeleteObject(path.getFullPath()))
                 .toList();
         try {

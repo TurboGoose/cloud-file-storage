@@ -23,7 +23,7 @@ class ObjectPathMapperTest {
     @CsvSource(delimiterString = "->", textBlock = """
                       -> ''
             ''        -> ''
-            /         -> ''
+            /         -> /
             /path/    -> path
             /path/to/ -> path/to
             """)

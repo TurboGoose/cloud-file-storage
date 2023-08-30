@@ -62,7 +62,7 @@ public class FolderController {
         return "folders/rename";
     }
 
-    @PutMapping("folder/rename")
+    @PatchMapping
     public String renameFolder(
             @AuthenticationPrincipal UserDetailsImpl userDetails,
             @ModelAttribute("objectRenameDto") @Valid ObjectRenameDto objectRenameDto, BindingResult bindingResult,
@@ -90,7 +90,7 @@ public class FolderController {
         return "folders/move";
     }
 
-    @PutMapping("/folder/move")
+    @PutMapping
     public String moveFolder(
             @AuthenticationPrincipal UserDetailsImpl userDetails,
             @ModelAttribute("objectMoveDto") @Valid ObjectMoveDto objectMoveDto, BindingResult bindingResult,
@@ -113,5 +113,6 @@ public class FolderController {
             @RequestParam String path) {
         String parentFolder = folderService.deleteFolder(userDetails.getId(), path);
         return "redirect:/?path=" + parentFolder;
+//        return "redirect:/"  + (parentFolder.equals("/") ? "" : "?path=" + parentFolder);
     }
 }

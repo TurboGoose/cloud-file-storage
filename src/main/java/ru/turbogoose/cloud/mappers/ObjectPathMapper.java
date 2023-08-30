@@ -9,8 +9,11 @@ public class ObjectPathMapper {
     }
 
     public static String toUrlParam(String path) {
-        if (path==null || path.isEmpty() || path.equals("/")) {
+        if (path == null || path.isEmpty()) {
             return "";
+        }
+        if (path.equals("/")) {
+            return "/";
         }
         if (!path.endsWith("/")) {
             return path.substring(1);

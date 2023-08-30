@@ -29,7 +29,7 @@ public class MinioObjectPath {
     public static MinioObjectPath parse(int userId, String objectPath) {
         validatePathIsNotNullAndNotEmpty(objectPath);
         validatePathFormat(objectPath);
-        String homeFolder = getUserHomeFolderName(userId);
+        String homeFolder = getUserHomeFolder(userId);
         return new MinioObjectPath(homeFolder, objectPath);
     }
 
@@ -48,7 +48,7 @@ public class MinioObjectPath {
         }
     }
 
-    private static String getUserHomeFolderName(int userId) {
+    private static String getUserHomeFolder(int userId) {
         return String.format("user-%d-files", userId);
     }
 
