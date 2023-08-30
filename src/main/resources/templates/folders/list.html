@@ -29,11 +29,11 @@
 
   <br>
   <form method="POST" th:action="@{/}" th:object="${folderCreationDto}">
-    <input type="hidden" name="prefix" th:value="${param.path}">
-    <label for="postfix">Enter new folder path: </label>
-    <input id="postfix" type="text" th:field="*{postfix}">
+    <input type="hidden" name="parentFolderPath" th:value="${param.path}">
+    <label for="name">Enter new folder name: </label>
+    <input id="name" type="text" th:field="*{newFolderName}">
     <input type="submit" value="create">
-    <span style="color: red" th:if="${#fields.hasErrors('postfix')}" th:errors="*{postfix}"></span>
+    <span style="color: red" th:if="${#fields.hasErrors('newFolderName')}" th:errors="*{newFolderName}"></span>
   </form>
 
   <br>

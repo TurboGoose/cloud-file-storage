@@ -1,10 +1,7 @@
 package ru.turbogoose.cloud.util;
 
-import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class PathHelper {
     public static Map<String, String> assembleBreadcrumbsMapFromPath(String path) {
@@ -39,13 +36,5 @@ public class PathHelper {
             throw new IllegalArgumentException("Wrong object path: " + objectPath);
         }
         return split[split.length - 1];
-    }
-
-    public static String concatPaths(String prefix, String postfix) {
-        return Stream.concat(
-                        Arrays.stream(prefix.split("/")),
-                        Arrays.stream(postfix.split("/")))
-                .filter(s -> !s.isBlank())
-                .collect(Collectors.joining("/"));
     }
 }

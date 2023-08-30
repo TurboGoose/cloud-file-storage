@@ -31,13 +31,14 @@ public class FolderService {
     }
 
     public String createFolder(int userId, FolderCreationDto folderCreationDto) {
-        String folderPath = ObjectPathMapper.fromUrlParam(folderCreationDto.getFullPath());
-        MinioObjectPath minioFolderPath = MinioObjectPath.parse(userId, folderPath);
-        if (minioService.isObjectExist(minioFolderPath)) {
-            throw new ObjectAlreadyExistsException(minioFolderPath.getFullPath());
+        String parentFolder = ObjectPathMapper.fromUrlParam(folderCreationDto.getParentFolderPath());
+        MinioObjectPath newFolderPath = MinioObjectPath.parse(userId, parentFolder)
+                .append(folderCreationDto.getNewFolderName() + "/");
+        if (minioService.isObjectExist(newFolderPath)) {
+            throw new ObjectAlreadyExistsException(newFolderPath.getFullPath());
         }
-        minioService.createFolder(minioFolderPath);
-        return ObjectPathMapper.toUrlParam(minioFolderPath.getPath());
+        minioService.createFolder(newFolderPath);
+        return ObjectPathMapper.toUrlParam(newFolderPath.getPath());
     }
 
     public String moveFolder(int userId, ObjectMoveDto objectMoveDto) {

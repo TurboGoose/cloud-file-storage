@@ -42,14 +42,14 @@ public class FolderController {
             @ModelAttribute("folderCreationDto") @Valid FolderCreationDto folderCreationDto, BindingResult bindingResult,
             Model model) {
         if (bindingResult.hasErrors()) {
-            return listFolder(userDetails, folderCreationDto.getPrefix(), folderCreationDto, model);
+            return listFolder(userDetails, folderCreationDto.getParentFolderPath(), folderCreationDto, model);
         }
         try {
             String createdPath = folderService.createFolder(userDetails.getId(), folderCreationDto);
             return "redirect:/?path=" + createdPath;
         } catch (ObjectAlreadyExistsException exc) {
             bindingResult.rejectValue("postfix", "folder.alreadyExists", "This folder already exists");
-            return listFolder(userDetails, folderCreationDto.getPrefix(), folderCreationDto, model);
+            return listFolder(userDetails, folderCreationDto.getParentFolderPath(), folderCreationDto, model);
         }
     }
 
@@ -112,7 +112,6 @@ public class FolderController {
             @AuthenticationPrincipal UserDetailsImpl userDetails,
             @RequestParam String path) {
         String parentFolder = folderService.deleteFolder(userDetails.getId(), path);
-        return "redirect:/?path=" + parentFolder;
-//        return "redirect:/"  + (parentFolder.equals("/") ? "" : "?path=" + parentFolder);
+        return "redirect:/"  + (parentFolder.equals("/") ? "" : "?path=" + parentFolder);
     }
 }
