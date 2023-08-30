@@ -42,11 +42,9 @@ public class MinioObjectPath {
         }
     }
 
-    private static void validatePathFormat(String path) {
-        Pattern pattern = Pattern.compile("(^/([\\w !.*'()\\-]+/)*$|^/?([\\w !.*'()\\-]+/)*[\\w !.*'()\\-]+$)");
-        Matcher matcher = pattern.matcher(path);
-        if (!matcher.matches()) {
-            throw new IllegalArgumentException("Invalid path format: " + path);
+    private static void validatePathFormat(String objectPath) {
+        if (!objectPath.matches("(^/([\\w !.*'()\\-]+/)*$|^/?([\\w !.*'()\\-]+/)*[\\w !.*'()\\-]+$)")) {
+            throw new IllegalArgumentException("Invalid path format: " + objectPath);
         }
     }
 
@@ -77,6 +75,17 @@ public class MinioObjectPath {
         return homeFolder + objectPath;
     }
 
+    public String getPathWithoutObjectName() {
+        if (objectPath.equals("/")) {
+            throw new UnsupportedOperationException("Root folder has no path without object name");
+        }
+        String path = objectPath;
+        if (isFolder()) {
+            path = path.substring(0, path.length() - 1);
+        }
+        return path.substring(0, path.lastIndexOf("/") + 1);
+    }
+
     public boolean isFolder() {
         return objectPath.endsWith("/");
     }
@@ -102,16 +111,14 @@ public class MinioObjectPath {
     }
 
     private void validateFolderPathFormat(String folderPath) {
-        Pattern pattern = Pattern.compile("^/([\\w !.*'()\\-]+/)*$");
-        Matcher matcher = pattern.matcher(folderPath);
-        if (!matcher.matches()) {
+        if (!folderPath.matches("^/([\\w !.*'()\\-]+/)*$")) {
             throw new IllegalArgumentException("Invalid folder path format: " + folderPath);
         }
     }
 
     public MinioObjectPath renameObject(String newName) {
         if (objectPath.equals("/")) {
-            throw new IllegalStateException("Cannot rename root folder");
+            throw new UnsupportedOperationException("Cannot rename root folder");
         }
         String pathWithoutName = objectPath;
         if (isFolder()) {

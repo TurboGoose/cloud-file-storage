@@ -85,7 +85,7 @@ public class FolderController {
             @RequestParam String path,
             @ModelAttribute("objectMoveDto") ObjectMoveDto objectMoveDto,
             Model model) {
-        model.addAttribute("moveCandidates", folderService.getFoldersCandidatesForMove(userDetails.getId(), path));
+        model.addAttribute("moveCandidates", folderService.getMoveCandidatesForFolder(userDetails.getId(), path));
         model.addAttribute("breadcrumbs", PathHelper.assembleBreadcrumbsMapFromPath(path));
         return "folders/move";
     }

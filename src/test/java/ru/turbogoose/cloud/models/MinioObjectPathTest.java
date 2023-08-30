@@ -81,6 +81,23 @@ class MinioObjectPathTest {
         assertThat(pathOf(path).getPath(), is(expectedPath));
     }
 
+    @ParameterizedTest
+    @CsvSource(delimiterString = "->", textBlock = """
+            /path/             -> /
+            /path/to/          -> /path/
+            /path/to/file.txt  -> /path/to/
+            """)
+    public void getPathWithoutObjectName(String path, String expectedPathWithoutName) {
+        assertThat(pathOf(path).getPathWithoutObjectName(), is(expectedPathWithoutName));
+    }
+
+    @Test
+    public void getPathWithoutObjectNameForRootFolderFails() {
+        MinioObjectPath root = pathOf("/");
+        assertThrows(UnsupportedOperationException.class, root::getPathWithoutObjectName);
+    }
+
+
     @Test
     public void getRootFolder() {
         assertThat(MinioObjectPath.getRootFolder(1).getFullPath(), is("user-1-files/"));
@@ -160,6 +177,6 @@ class MinioObjectPathTest {
     @Test
     public void renamingRootFolderFails() {
         MinioObjectPath rootFolder = pathOf("/");
-        assertThrows(IllegalStateException.class, () -> rootFolder.renameObject("bebroot"));
+        assertThrows(UnsupportedOperationException.class, () -> rootFolder.renameObject("bebroot"));
     }
 }

@@ -159,8 +159,6 @@ public class MinioService {
             return;
         }
 
-        createFolder(newFolderPath);
-
         Iterable<Result<Item>> folderObjects = client.listObjects(
                 ListObjectsArgs.builder()
                         .bucket(ROOT_BUCKET)
@@ -172,7 +170,7 @@ public class MinioService {
                 Item item = res.get();
                 MinioObjectPath oldSubFolderObjectPath = MinioObjectPath.parse(item.objectName());
                 MinioObjectPath newSubFolderObjectPath = oldSubFolderObjectPath.replacePrefix(
-                        oldFolderPath.getPath(), newFolderPath.getPath());
+                        oldFolderPath.getPathWithoutObjectName(), newFolderPath.getPath());
 
                 client.copyObject(
                         CopyObjectArgs.builder()

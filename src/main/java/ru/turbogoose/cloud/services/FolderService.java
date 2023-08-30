@@ -49,6 +49,7 @@ public class FolderService {
             minioService.createFolder(newFolderPath);
         }
         minioService.moveFolder(oldFolderPath, newFolderPath);
+
         return ObjectPathMapper.toUrlParam(newFolderPath.getPath());
     }
 
@@ -62,7 +63,7 @@ public class FolderService {
         return ObjectPathMapper.toUrlParam(newObjectPath.getPath());
     }
 
-    public List<String> getFoldersCandidatesForMove(int userId, String folderPath) {
+    public List<String> getMoveCandidatesForFolder(int userId, String folderPath) {
         MinioObjectPath folderPathToMove = MinioObjectPath.parse(userId, ObjectPathMapper.fromUrlParam(folderPath));
         MinioObjectPath rootFolderPath = MinioObjectPath.getRootFolder(userId);
         return minioService.listFolderObjects(rootFolderPath, true).stream()
