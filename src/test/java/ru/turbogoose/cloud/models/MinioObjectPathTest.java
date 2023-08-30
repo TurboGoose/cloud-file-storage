@@ -210,4 +210,16 @@ class MinioObjectPathTest {
         MinioObjectPath rootFolder = pathOf("/");
         assertThrows(UnsupportedOperationException.class, () -> rootFolder.renameObject("bebroot"));
     }
+
+    @ParameterizedTest
+    @CsvSource(delimiterString = "->", textBlock = """
+            /                 -> true
+            /path/            -> false
+            /path/to/         -> false
+            /file.txt         -> false
+            /path/to/file.txt -> false
+            """)
+    public void isRootFolder(String path, boolean isRootFolder) {
+        assertThat(pathOf(path).isRootFolder(), is(isRootFolder));
+    }
 }

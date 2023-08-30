@@ -19,6 +19,12 @@
     <br>
     <p><a th:href="@{/folder/rename(path=${param.path})}">Rename</a> or <a th:href="@{/folder/move(path=${param.path})}">move</a> current folder</p>
   </div>
+  <div>
+    <br>
+    <form th:method="DELETE" th:action="@{/(path=${param.path})}">
+      <input type="submit" value="Delete this folder">
+    </form>
+  </div>
 
   <br>
   <form method="POST" th:action="@{/}" th:object="${folderCreationDto}">

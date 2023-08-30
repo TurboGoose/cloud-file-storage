@@ -56,6 +56,10 @@ public class MinioObjectPath {
         return parse(userId, "/");
     }
 
+    public boolean isRootFolder() {
+        return objectPath.equals("/");
+    }
+
     public String getObjectName() {
         if (objectPath.equals("/")) {
             return "";

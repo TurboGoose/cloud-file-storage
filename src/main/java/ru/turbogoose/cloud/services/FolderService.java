@@ -70,4 +70,14 @@ public class FolderService {
                 .map(path -> ObjectPathMapper.toUrlParam(path.getPath()))
                 .toList();
     }
+
+    public String deleteFolder(int userId, String folderPath) {
+        MinioObjectPath folderPathToDelete = MinioObjectPath.parse(userId, ObjectPathMapper.fromUrlParam(folderPath));
+        if (folderPathToDelete.isRootFolder()) {
+            throw new IllegalArgumentException("Cannot delete root folder");
+        }
+        minioService.deleteFolder(folderPathToDelete);
+        String parentFolder = folderPathToDelete.getPathWithoutObjectName();
+        return ObjectPathMapper.toUrlParam(parentFolder);
+    }
 }

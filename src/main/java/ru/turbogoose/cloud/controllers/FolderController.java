@@ -29,7 +29,7 @@ public class FolderController {
         try {
             model.addAttribute("objects", folderService.getFolderObjects(userDetails.getId(), path));
             model.addAttribute("breadcrumbs", PathHelper.assembleBreadcrumbsMapFromPath(path));
-        } catch (Exception exc) {
+        } catch (Exception exc) { // TODO: replace for FolderNotExistsException
             exc.printStackTrace();
             model.addAttribute("wrongPath", path);
         }
@@ -105,5 +105,13 @@ public class FolderController {
             bindingResult.rejectValue("newName", "folder.alreadyExists", "Folder with this name already exists");
             return getMoveFolderForm(userDetails, objectMoveDto.getOldObjectPath(), objectMoveDto, model);
         }
+    }
+
+    @DeleteMapping
+    public String deleteFolder(
+            @AuthenticationPrincipal UserDetailsImpl userDetails,
+            @RequestParam String path) {
+        String parentFolder = folderService.deleteFolder(userDetails.getId(), path);
+        return "redirect:/?path=" + parentFolder;
     }
 }

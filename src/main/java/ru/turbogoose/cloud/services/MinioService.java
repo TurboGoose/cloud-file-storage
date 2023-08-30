@@ -2,6 +2,8 @@ package ru.turbogoose.cloud.services;
 
 import io.minio.*;
 import io.minio.errors.ErrorResponseException;
+import io.minio.messages.DeleteError;
+import io.minio.messages.DeleteObject;
 import io.minio.messages.Item;
 import org.springframework.stereotype.Service;
 import ru.turbogoose.cloud.models.MinioObjectPath;
@@ -198,21 +200,31 @@ public class MinioService {
 
     public void deleteFile(MinioObjectPath filePath) {
         validateFilePath(filePath);
-        deleteObject(filePath);
-    }
-
-    public void deleteFolder(MinioObjectPath folderPath) {
-        validateFolderPath(folderPath);
-        deleteObject(folderPath);
-    }
-
-    private void deleteObject(MinioObjectPath objectPath) {
         try {
             client.removeObject(
                     RemoveObjectArgs.builder()
                             .bucket(ROOT_BUCKET)
-                            .object(objectPath.getFullPath())
+                            .object(filePath.getFullPath())
                             .build());
+        } catch (Exception exc) {
+            throw new RuntimeException(exc);
+        }
+    }
+
+    public void deleteFolder(MinioObjectPath folderPath) {
+        validateFolderPath(folderPath);
+        List<DeleteObject> objectsToDelete = listFolderObjects(folderPath, true).stream()
+                .map(path -> new DeleteObject(path.getFullPath()))
+                .toList();
+        try {
+            Iterable<Result<DeleteError>> results = client.removeObjects(
+                    RemoveObjectsArgs.builder()
+                            .bucket(ROOT_BUCKET)
+                            .objects(objectsToDelete)
+                            .build());
+            for (Result<DeleteError> result : results) {
+                result.get(); // TODO: add logging of DeleteError here
+            }
         } catch (Exception exc) {
             throw new RuntimeException(exc);
         }
