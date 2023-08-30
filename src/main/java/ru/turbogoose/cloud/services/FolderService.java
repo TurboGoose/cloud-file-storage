@@ -49,8 +49,7 @@ public class FolderService {
             minioService.createFolder(newFolderPath);
         }
         minioService.moveFolder(oldFolderPath, newFolderPath);
-
-        return ObjectPathMapper.toUrlParam(newFolderPath.getPath());
+        return ObjectPathMapper.toUrlParam(newFolderPath.append(oldFolderPath.getObjectName() + "/").getPath());
     }
 
     public String renameFolder(int userId, ObjectRenameDto objectRenameDto) {

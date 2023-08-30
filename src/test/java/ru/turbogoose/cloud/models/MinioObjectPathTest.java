@@ -158,8 +158,39 @@ class MinioObjectPathTest {
             /path/to/file.txt, /other/prefix/,    /replacement/,            /path/to/file.txt
             """)
     public void replacePrefix(String path, String prefixToReplace, String replacement, String expectedPath) {
-        String actualRelativePath = pathOf(path).replacePrefix(prefixToReplace, replacement).getPath();
-        assertThat(actualRelativePath, is(expectedPath));
+        String actualPath = pathOf(path).replacePrefix(prefixToReplace, replacement).getPath();
+        assertThat(actualPath, is(expectedPath));
+    }
+
+    @ParameterizedTest
+    @CsvSource(textBlock = """
+            /,        path/,     /path/
+            /,        file.txt,  /file.txt
+            /path/,   '',        /path/
+            /path/,   to/,       /path/to/
+            /path/,   file.txt,  /path/file.txt
+            """)
+    public void appendObjectToFolder(String folderPath, String appendedObject, String expectedPath) {
+        String actualPath = pathOf(folderPath).append(appendedObject).getPath();
+        assertThat(actualPath, is(expectedPath));
+    }
+
+    @Test
+    public void appendNullObjectToFolderFails() {
+        MinioObjectPath folderPath = pathOf("/path/");
+        assertThrows(IllegalArgumentException.class, () -> folderPath.append(null));
+    }
+
+    @ParameterizedTest
+    @CsvSource(textBlock = """
+            /file.txt,        ''
+            /file.txt,        folder/
+            /file.txt,        pic.png
+            /path/file.txt,   folder/
+            /path/file.txt,   pic.png
+            """)
+    public void appendObjectToFileFails(String filePath, String appendedObject) {
+        assertThrows(UnsupportedOperationException.class, () -> pathOf(filePath).append(appendedObject));
     }
 
     @ParameterizedTest
@@ -170,8 +201,8 @@ class MinioObjectPathTest {
             /path/to/file.txt, pic.png,    /path/to/pic.png
             """)
     public void renameObject(String path, String newName, String expectedPath) {
-        String actualRelativePath = pathOf(path).renameObject(newName).getPath();
-        assertThat(actualRelativePath, is(expectedPath));
+        String actualPath = pathOf(path).renameObject(newName).getPath();
+        assertThat(actualPath, is(expectedPath));
     }
 
     @Test

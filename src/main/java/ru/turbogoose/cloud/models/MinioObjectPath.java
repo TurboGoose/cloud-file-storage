@@ -110,6 +110,17 @@ public class MinioObjectPath {
         return new MinioObjectPath(homeFolder, newObjectPath);
     }
 
+    public MinioObjectPath append(String objectName) {
+        if (!isFolder()) {
+            throw new UnsupportedOperationException("Cannot append for path that is not a folder: " + this);
+        }
+        if (objectName == null) {
+            throw new IllegalArgumentException("Cannot append null value for path: " + this);
+        }
+        String newObjectPath = objectPath + objectName;
+        return new MinioObjectPath(homeFolder, newObjectPath);
+    }
+
     private void validateFolderPathFormat(String folderPath) {
         if (!folderPath.matches("^/([\\w !.*'()\\-]+/)*$")) {
             throw new IllegalArgumentException("Invalid folder path format: " + folderPath);
