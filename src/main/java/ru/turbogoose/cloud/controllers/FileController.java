@@ -6,8 +6,9 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
-import ru.turbogoose.cloud.dto.FileCreationDto;
-import ru.turbogoose.cloud.exceptions.FileUploadException;
+import ru.turbogoose.cloud.dto.FileUploadDto;
+import ru.turbogoose.cloud.exceptions.ObjectUploadException;
+import ru.turbogoose.cloud.exceptions.ObjectAlreadyExistsException;
 import ru.turbogoose.cloud.exceptions.ObjectNotExistsException;
 import ru.turbogoose.cloud.models.security.UserDetailsImpl;
 import ru.turbogoose.cloud.services.FileService;
@@ -38,7 +39,7 @@ public class FileController {
     @GetMapping("/upload")
     public String getFileUploadForm(
             @RequestParam String path,
-            @ModelAttribute("fileCreationDto") FileCreationDto fileCreationDto,
+            @ModelAttribute("fileUploadDto") FileUploadDto fileUploadDto,
             Model model) {
         model.addAttribute("breadcrumbs", PathHelper.assembleBreadcrumbsFromPath(path));
         return "files/upload";
@@ -47,15 +48,15 @@ public class FileController {
     @PostMapping
     public String uploadFile(
             @AuthenticationPrincipal UserDetailsImpl userDetails,
-            @ModelAttribute("fileCreationDto") FileCreationDto fileCreationDto, BindingResult bindingResult) {
+            @ModelAttribute("fileUploadDto") FileUploadDto fileUploadDto, BindingResult bindingResult) {
         try {
-            fileService.save(userDetails.getId(), fileCreationDto);
-            return "redirect:/?path=" + fileCreationDto.getFolderPath();
-        } catch (FileUploadException exc) {
-            bindingResult.rejectValue("file", "file.alreadyExists", "File with this name already exist");
-            return "files/upload";
+            fileService.saveFile(userDetails.getId(), fileUploadDto);
+            return "redirect:/?path=" + fileUploadDto.getFolderPath();
+        } catch (ObjectAlreadyExistsException exc) {
+            bindingResult.rejectValue("file", "file.alreadyExists", "File with this name already exists");
+        } catch (ObjectUploadException exc) {
+            bindingResult.rejectValue("file", "file.errorUploading", "An error occurred during uploading");
         }
+        return "files/upload";
     }
-
-
 }

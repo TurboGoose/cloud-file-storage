@@ -8,10 +8,12 @@ import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import ru.turbogoose.cloud.dto.FolderCreationDto;
+import ru.turbogoose.cloud.dto.FolderUploadDto;
 import ru.turbogoose.cloud.dto.ObjectMoveDto;
 import ru.turbogoose.cloud.dto.ObjectRenameDto;
 import ru.turbogoose.cloud.exceptions.ObjectAlreadyExistsException;
 import ru.turbogoose.cloud.exceptions.ObjectNotExistsException;
+import ru.turbogoose.cloud.exceptions.ObjectUploadException;
 import ru.turbogoose.cloud.models.security.UserDetailsImpl;
 import ru.turbogoose.cloud.services.FolderService;
 import ru.turbogoose.cloud.util.PathHelper;
@@ -46,12 +48,36 @@ public class FolderController {
             return listFolder(userDetails, folderCreationDto.getParentFolderPath(), folderCreationDto, model);
         }
         try {
-            String createdPath = folderService.createFolder(userDetails.getId(), folderCreationDto);
+            String createdPath = folderService.createSingleFolder(userDetails.getId(), folderCreationDto);
             return "redirect:/?path=" + createdPath;
         } catch (ObjectAlreadyExistsException exc) {
             bindingResult.rejectValue("postfix", "folder.alreadyExists", "This folder already exists");
             return listFolder(userDetails, folderCreationDto.getParentFolderPath(), folderCreationDto, model);
         }
+    }
+
+    @GetMapping("/upload")
+    public String getFolderUploadForm(
+            @RequestParam String path,
+            @ModelAttribute("folderUploadDto") FolderUploadDto folderUploadDto,
+            Model model) {
+        model.addAttribute("breadcrumbs", PathHelper.assembleBreadcrumbsFromPath(path));
+        return "folders/upload";
+    }
+
+    @PostMapping("/upload")
+    public String uploadFolder(
+            @AuthenticationPrincipal UserDetailsImpl userDetails,
+            @ModelAttribute("folderUploadDto") @Valid FolderUploadDto folderUploadDto, BindingResult bindingResult) {
+        try {
+            folderService.saveFolder(userDetails.getId(), folderUploadDto);
+            return "redirect:/?path=" + folderUploadDto.getPath();
+        } catch (ObjectAlreadyExistsException exc) {
+            bindingResult.rejectValue("files", "folder.alreadyExists", "Folder with this name already exists");
+        } catch (ObjectUploadException exc) {
+            bindingResult.rejectValue("files", "folder.errorUploading", "An error occurred during uploading");
+        }
+        return "folders/upload";
     }
 
     @GetMapping("/folder/rename")

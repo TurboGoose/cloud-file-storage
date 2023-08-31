@@ -4,7 +4,7 @@ import lombok.Data;
 import org.springframework.web.multipart.MultipartFile;
 
 @Data
-public class FileCreationDto {
+public class FileUploadDto {
     private final String folderPath;
     private final MultipartFile file;
 }

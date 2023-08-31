@@ -169,6 +169,7 @@ class MinioObjectPathTest {
             /path/,   '',        /path/
             /path/,   to/,       /path/to/
             /path/,   file.txt,  /path/file.txt
+            /path/,   to/folder/, /path/to/folder/
             """)
     public void resolveObjectToFolder(String folderPath, String resolvedObject, String expectedPath) {
         String actualPath = pathOf(folderPath).resolve(resolvedObject).getPath();
