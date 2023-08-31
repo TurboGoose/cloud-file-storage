@@ -43,6 +43,9 @@
       <a th:unless="${path.isEmpty()}" th:href="@{/(path=${path})}" th:text="${name}"></a>
     </li>
   </ul>
+
+  <br>
+  <a th:href="@{/file/upload(path=${param.path})}">Upload file</a>
 </div>
 </body>
 </html>

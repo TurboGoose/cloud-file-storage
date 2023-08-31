@@ -35,7 +35,8 @@ public class FolderService {
         MinioObjectPath newFolderPath = MinioObjectPath.parse(userId, parentFolder)
                 .resolve(folderCreationDto.getNewFolderName() + "/");
         if (minioService.isObjectExist(newFolderPath)) {
-            throw new ObjectAlreadyExistsException(newFolderPath.getFullPath());
+            throw new ObjectAlreadyExistsException(
+                    String.format("Folder with name %s already exists", newFolderPath.getFullPath()));
         }
         minioService.createFolder(newFolderPath);
         return ObjectPathMapper.toUrlParam(newFolderPath.getPath());
@@ -54,13 +55,14 @@ public class FolderService {
     }
 
     public String renameFolder(int userId, ObjectRenameDto objectRenameDto) {
-        MinioObjectPath oldObjectPath = MinioObjectPath.parse(userId, ObjectPathMapper.fromUrlParam(objectRenameDto.getObjectPath()));
-        MinioObjectPath newObjectPath = oldObjectPath.renameObject(objectRenameDto.getNewName());
-        if (minioService.isObjectExist(newObjectPath)) {
-            throw new ObjectAlreadyExistsException(newObjectPath.getFullPath());
+        MinioObjectPath oldFolderPath = MinioObjectPath.parse(userId, ObjectPathMapper.fromUrlParam(objectRenameDto.getObjectPath()));
+        MinioObjectPath newFolderPath = oldFolderPath.renameObject(objectRenameDto.getNewName());
+        if (minioService.isObjectExist(newFolderPath)) {
+            throw new ObjectAlreadyExistsException(
+                    String.format("Folder with name %s already exists", newFolderPath.getFullPath()));
         }
-        minioService.moveFolder(oldObjectPath, newObjectPath);
-        return ObjectPathMapper.toUrlParam(newObjectPath.getPath());
+        minioService.moveFolder(oldFolderPath, newFolderPath);
+        return ObjectPathMapper.toUrlParam(newFolderPath.getPath());
     }
 
     public List<String> getMoveCandidatesForFolder(int userId, String folderPath) {

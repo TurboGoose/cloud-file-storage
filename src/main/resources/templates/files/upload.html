@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Upload file</title>
+</head>
+<body>
+<div>
+  <br>
+  <div th:insert="~{fragments::breadcrumbs (${breadcrumbs})}"></div>
+
+  <form method="POST" th:action="@{/file}" th:object="${fileCreationDto}" enctype="multipart/form-data">
+    <input type="hidden" name="folderPath" th:value="${param.path}">
+    <label for="file">Upload file:</label>
+    <br>
+    <input id="file" type="file" th:field="*{file}">
+    <br>
+    <input type="submit" value="Upload">
+  </form>
+</div>
+
+</body>
+</html>
