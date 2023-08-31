@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>File info</title>
+</head>
+<body>
+<div th:insert="~{fragments::breadcrumbs (${breadcrumbs})}"></div>
+
+<p th:text="'File name: ' + ${fileInfo.name}"></p>
+<p th:text="'File size: ' + ${fileInfo.size}"></p>
+<p th:text="'Created at: ' + ${fileInfo.createdAt}"></p>
+</body>
+</html>

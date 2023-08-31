@@ -26,12 +26,21 @@ class PathHelperTest {
     }
 
     @Test
-    public void whenAssembleBreadcrumbsThenReturn() {
+    public void assembleBreadcrumbsInclusive() {
         String path = "path/to/folder";
-        assertThat(PathHelper.assembleBreadcrumbsMapFromPath(path), is(Map.of(
+        assertThat(PathHelper.assembleBreadcrumbsFromPath(path), is(Map.of(
                 "path", "path",
                 "to", "path/to",
                 "folder", "path/to/folder"
+        )));
+    }
+
+    @Test
+    public void assembleBreadcrumbsExclusive() {
+        String path = "path/to/file.txt";
+        assertThat(PathHelper.assembleBreadcrumbsFromPath(path, false), is(Map.of(
+                "path", "path",
+                "to", "path/to"
         )));
     }
 }

@@ -6,28 +6,28 @@ import ru.turbogoose.cloud.dto.FolderCreationDto;
 import ru.turbogoose.cloud.dto.ObjectMoveDto;
 import ru.turbogoose.cloud.dto.ObjectRenameDto;
 import ru.turbogoose.cloud.exceptions.ObjectAlreadyExistsException;
-import ru.turbogoose.cloud.mappers.ObjectPathMapper;
+import ru.turbogoose.cloud.exceptions.ObjectNotExistsException;
+import ru.turbogoose.cloud.dto.ObjectPathDto;
+import ru.turbogoose.cloud.util.ObjectPathMapper;
 import ru.turbogoose.cloud.models.MinioObjectPath;
 
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class FolderService {
     private final MinioService minioService;
 
-    public Map<String, String> getFolderObjects(int userId, String folderPath) {
-        folderPath = ObjectPathMapper.fromUrlParam(folderPath);
-        List<MinioObjectPath> objectPaths = minioService.listFolderObjects(MinioObjectPath.parse(userId, folderPath));
-        return objectPaths.stream()
-                .collect(Collectors.toMap(
-                        MinioObjectPath::getObjectName,
-                        p -> p.isFolder() ? ObjectPathMapper.toUrlParam(p.getPath()) : "",
-                        (p1, p2) -> p1,
-                        LinkedHashMap::new));
+    public List<ObjectPathDto> getFolderObjects(int userId, String folderPath) {
+        MinioObjectPath minioFolderPath = MinioObjectPath.parse(userId, ObjectPathMapper.fromUrlParam(folderPath));
+        if (!minioService.isObjectExist(minioFolderPath)) {
+            throw new ObjectNotExistsException(
+                    String.format("Folder with name %s does not exist", minioFolderPath.getFullPath()));
+        }
+        return minioService.listFolderObjects(minioFolderPath).stream()
+                .map(path -> new ObjectPathDto(
+                        path.getObjectName(), ObjectPathMapper.toUrlParam(path.getPath()), path.isFolder()))
+                .toList();
     }
 
     public String createFolder(int userId, FolderCreationDto folderCreationDto) {

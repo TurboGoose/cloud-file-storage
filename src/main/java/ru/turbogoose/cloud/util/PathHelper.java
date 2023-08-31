@@ -4,16 +4,24 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class PathHelper {
-    public static Map<String, String> assembleBreadcrumbsMapFromPath(String path) {
+
+    public static Map<String, String> assembleBreadcrumbsFromPath(String path, boolean inclusive) {
+        return assemble(path, inclusive);
+    }
+
+    public static Map<String, String> assembleBreadcrumbsFromPath(String path) {
+        return assemble(path, true);
+    }
+
+    private static Map<String, String> assemble(String path, boolean inclusive) {
         Map<String, String> folderPath = new LinkedHashMap<>();
         if (path != null && !path.isEmpty()) {
             StringBuilder sb = new StringBuilder();
             String[] split = path.split("/");
-            boolean first = true;
-            for (String folderName : split) {
-                if (first) {
-                    first = false;
-                } else {
+            int len = split.length - (inclusive ? 0 : 1);
+            for (int i = 0; i < len; i++) {
+                String folderName = split[i];
+                if (i > 0) {
                     sb.append("/");
                 }
                 sb.append(folderName);

@@ -6,8 +6,10 @@ import org.springframework.web.multipart.MultipartFile;
 import ru.turbogoose.cloud.dto.FileCreationDto;
 import ru.turbogoose.cloud.exceptions.FileUploadException;
 import ru.turbogoose.cloud.exceptions.ObjectAlreadyExistsException;
-import ru.turbogoose.cloud.mappers.ObjectPathMapper;
+import ru.turbogoose.cloud.exceptions.ObjectNotExistsException;
+import ru.turbogoose.cloud.util.ObjectPathMapper;
 import ru.turbogoose.cloud.models.MinioObjectPath;
+import ru.turbogoose.cloud.models.ObjectInfo;
 
 import java.io.IOException;
 
@@ -31,5 +33,14 @@ public class FileService {
         } catch (IOException exc) {
             throw new FileUploadException("Error during uploading file to " + newFilePath.getFullPath(), exc);
         }
+    }
+
+    public ObjectInfo getFileInfo(int userId, String path) {
+        MinioObjectPath filePath = MinioObjectPath.parse(userId, ObjectPathMapper.fromUrlParam(path, true));
+        if (!minioService.isObjectExist(filePath)) {
+            throw new ObjectNotExistsException(
+                    String.format("File with name %s does not exist", filePath.getFullPath()));
+        }
+        return minioService.getObjectInfo(filePath);
     }
 }

@@ -1,11 +1,20 @@
-package ru.turbogoose.cloud.mappers;
+package ru.turbogoose.cloud.util;
 
 public class ObjectPathMapper {
+
+    public static String fromUrlParam(String path, boolean isFile) {
+        return convert(path, isFile);
+    }
+
     public static String fromUrlParam(String path) {
+        return convert(path, false);
+    }
+
+    private static String convert(String path, boolean isFile) {
         if (path == null || path.isEmpty() || path.equals("/")) {
             return "/";
         }
-        return "/" + path + "/";
+        return "/" + path + (isFile ? "" : "/");
     }
 
     public static String toUrlParam(String path) {

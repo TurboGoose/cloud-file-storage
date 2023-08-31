@@ -11,6 +11,7 @@ import ru.turbogoose.cloud.dto.FolderCreationDto;
 import ru.turbogoose.cloud.dto.ObjectMoveDto;
 import ru.turbogoose.cloud.dto.ObjectRenameDto;
 import ru.turbogoose.cloud.exceptions.ObjectAlreadyExistsException;
+import ru.turbogoose.cloud.exceptions.ObjectNotExistsException;
 import ru.turbogoose.cloud.models.security.UserDetailsImpl;
 import ru.turbogoose.cloud.services.FolderService;
 import ru.turbogoose.cloud.util.PathHelper;
@@ -28,8 +29,8 @@ public class FolderController {
             Model model) {
         try {
             model.addAttribute("objects", folderService.getFolderObjects(userDetails.getId(), path));
-            model.addAttribute("breadcrumbs", PathHelper.assembleBreadcrumbsMapFromPath(path));
-        } catch (Exception exc) { // TODO: replace for FolderNotExistsException
+            model.addAttribute("breadcrumbs", PathHelper.assembleBreadcrumbsFromPath(path));
+        } catch (ObjectNotExistsException exc) {
             exc.printStackTrace();
             model.addAttribute("wrongPath", path);
         }
@@ -58,7 +59,7 @@ public class FolderController {
             @RequestParam String path,
             @ModelAttribute("objectRenameDto") ObjectRenameDto objectRenameDto,
             Model model) {
-        model.addAttribute("breadcrumbs", PathHelper.assembleBreadcrumbsMapFromPath(path));
+        model.addAttribute("breadcrumbs", PathHelper.assembleBreadcrumbsFromPath(path));
         return "folders/rename";
     }
 
@@ -86,7 +87,7 @@ public class FolderController {
             @ModelAttribute("objectMoveDto") ObjectMoveDto objectMoveDto,
             Model model) {
         model.addAttribute("moveCandidates", folderService.getMoveCandidatesForFolder(userDetails.getId(), path));
-        model.addAttribute("breadcrumbs", PathHelper.assembleBreadcrumbsMapFromPath(path));
+        model.addAttribute("breadcrumbs", PathHelper.assembleBreadcrumbsFromPath(path));
         return "folders/move";
     }
 
