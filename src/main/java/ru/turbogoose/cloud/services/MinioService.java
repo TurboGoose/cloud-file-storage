@@ -178,7 +178,7 @@ public class MinioService {
                 Item item = res.get();
                 MinioObjectPath oldSubFolderObjectPath = MinioObjectPath.parse(item.objectName());
                 MinioObjectPath newSubFolderObjectPath = oldSubFolderObjectPath.replacePrefix(
-                        oldFolderPath.getPathWithoutObjectName(), newFolderPath.getPath());
+                        oldFolderPath.getParent().getPath(), newFolderPath.getPath());
 
                 client.copyObject(
                         CopyObjectArgs.builder()

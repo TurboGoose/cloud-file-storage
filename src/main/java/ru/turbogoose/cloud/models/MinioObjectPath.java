@@ -79,7 +79,7 @@ public class MinioObjectPath {
         return homeFolder + objectPath;
     }
 
-    public String getPathWithoutObjectName() {
+    public MinioObjectPath getParent() {
         if (objectPath.equals("/")) {
             throw new UnsupportedOperationException("Root folder has no path without object name");
         }
@@ -87,7 +87,8 @@ public class MinioObjectPath {
         if (isFolder()) {
             path = path.substring(0, path.length() - 1);
         }
-        return path.substring(0, path.lastIndexOf("/") + 1);
+        path = path.substring(0, path.lastIndexOf("/") + 1);
+        return new MinioObjectPath(homeFolder, path);
     }
 
     public boolean isFolder() {
@@ -114,7 +115,7 @@ public class MinioObjectPath {
         return new MinioObjectPath(homeFolder, newObjectPath);
     }
 
-    public MinioObjectPath append(String objectName) {
+    public MinioObjectPath resolve(String objectName) {
         if (!isFolder()) {
             throw new UnsupportedOperationException("Cannot append for path that is not a folder: " + this);
         }

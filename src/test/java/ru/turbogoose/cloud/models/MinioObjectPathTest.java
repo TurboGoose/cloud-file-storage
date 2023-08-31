@@ -87,14 +87,14 @@ class MinioObjectPathTest {
             /path/to/          -> /path/
             /path/to/file.txt  -> /path/to/
             """)
-    public void getPathWithoutObjectName(String path, String expectedPathWithoutName) {
-        assertThat(pathOf(path).getPathWithoutObjectName(), is(expectedPathWithoutName));
+    public void getParent(String path, String expectedParentPath) {
+        assertThat(pathOf(path).getParent().getPath(), is(expectedParentPath));
     }
 
     @Test
-    public void getPathWithoutObjectNameForRootFolderFails() {
+    public void getParentForRootFolderFails() {
         MinioObjectPath root = pathOf("/");
-        assertThrows(UnsupportedOperationException.class, root::getPathWithoutObjectName);
+        assertThrows(UnsupportedOperationException.class, root::getParent);
     }
 
 
@@ -170,15 +170,15 @@ class MinioObjectPathTest {
             /path/,   to/,       /path/to/
             /path/,   file.txt,  /path/file.txt
             """)
-    public void appendObjectToFolder(String folderPath, String appendedObject, String expectedPath) {
-        String actualPath = pathOf(folderPath).append(appendedObject).getPath();
+    public void resolveObjectToFolder(String folderPath, String resolvedObject, String expectedPath) {
+        String actualPath = pathOf(folderPath).resolve(resolvedObject).getPath();
         assertThat(actualPath, is(expectedPath));
     }
 
     @Test
-    public void appendNullObjectToFolderFails() {
+    public void resolveNullObjectToFolderFails() {
         MinioObjectPath folderPath = pathOf("/path/");
-        assertThrows(IllegalArgumentException.class, () -> folderPath.append(null));
+        assertThrows(IllegalArgumentException.class, () -> folderPath.resolve(null));
     }
 
     @ParameterizedTest
@@ -189,8 +189,8 @@ class MinioObjectPathTest {
             /path/file.txt,   folder/
             /path/file.txt,   pic.png
             """)
-    public void appendObjectToFileFails(String filePath, String appendedObject) {
-        assertThrows(UnsupportedOperationException.class, () -> pathOf(filePath).append(appendedObject));
+    public void resolveObjectToFileFails(String filePath, String resolvedObject) {
+        assertThrows(UnsupportedOperationException.class, () -> pathOf(filePath).resolve(resolvedObject));
     }
 
     @ParameterizedTest

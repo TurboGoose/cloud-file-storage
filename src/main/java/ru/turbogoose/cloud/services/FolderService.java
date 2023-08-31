@@ -33,7 +33,7 @@ public class FolderService {
     public String createFolder(int userId, FolderCreationDto folderCreationDto) {
         String parentFolder = ObjectPathMapper.fromUrlParam(folderCreationDto.getParentFolderPath());
         MinioObjectPath newFolderPath = MinioObjectPath.parse(userId, parentFolder)
-                .append(folderCreationDto.getNewFolderName() + "/");
+                .resolve(folderCreationDto.getNewFolderName() + "/");
         if (minioService.isObjectExist(newFolderPath)) {
             throw new ObjectAlreadyExistsException(newFolderPath.getFullPath());
         }
@@ -50,7 +50,7 @@ public class FolderService {
             minioService.createFolder(newFolderPath);
         }
         minioService.moveFolder(oldFolderPath, newFolderPath);
-        return ObjectPathMapper.toUrlParam(newFolderPath.append(oldFolderPath.getObjectName() + "/").getPath());
+        return ObjectPathMapper.toUrlParam(newFolderPath.resolve(oldFolderPath.getObjectName() + "/").getPath());
     }
 
     public String renameFolder(int userId, ObjectRenameDto objectRenameDto) {
@@ -65,7 +65,7 @@ public class FolderService {
 
     public List<String> getMoveCandidatesForFolder(int userId, String folderPath) {
         MinioObjectPath folderPathToMove = MinioObjectPath.parse(userId, ObjectPathMapper.fromUrlParam(folderPath));
-        MinioObjectPath parentFolderPath = MinioObjectPath.parse(userId, folderPathToMove.getPathWithoutObjectName());
+        MinioObjectPath parentFolderPath = folderPathToMove.getParent();
         MinioObjectPath rootFolderPath = MinioObjectPath.getRootFolder(userId);
         return minioService.listFolderObjectsRecursive(rootFolderPath).stream()
                 .filter(path -> path.isFolder() && !path.isInFolder(folderPathToMove) && !path.equals(parentFolderPath))
@@ -79,7 +79,7 @@ public class FolderService {
             throw new IllegalArgumentException("Cannot delete root folder");
         }
         minioService.deleteFolder(folderPathToDelete);
-        String parentFolder = folderPathToDelete.getPathWithoutObjectName();
-        return ObjectPathMapper.toUrlParam(parentFolder);
+        String parentFolderPath = folderPathToDelete.getParent().getPath();
+        return ObjectPathMapper.toUrlParam(parentFolderPath);
     }
 }
