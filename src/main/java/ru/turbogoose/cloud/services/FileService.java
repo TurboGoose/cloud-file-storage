@@ -78,13 +78,13 @@ public class FileService {
         return ObjectPathMapper.toUrlParam(newFilePath.getPath());
     }
 
-    public List<String> getMoveCandidatesForFile(int userId, String filePath) {
-        MinioObjectPath filePathToMove = MinioObjectPath.compose(userId, ObjectPathMapper.fromUrlParam(filePath, true));
+    public List<String> getMoveCandidatesForFile(int userId, String path) {
+        MinioObjectPath filePathToMove = MinioObjectPath.compose(userId, ObjectPathMapper.fromUrlParam(path, true));
         MinioObjectPath parentFolderPath = filePathToMove.getParent();
         MinioObjectPath rootFolderPath = MinioObjectPath.getRootFolder(userId);
         return minioService.listFolderObjectsRecursive(rootFolderPath).stream()
-                .filter(path -> path.isFolder() && !path.equals(parentFolderPath))
-                .map(path -> ObjectPathMapper.toUrlParam(path.getPath()))
+                .filter(minioPath -> minioPath.isFolder() && !minioPath.equals(parentFolderPath))
+                .map(minioPath -> ObjectPathMapper.toUrlParam(minioPath.getPath()))
                 .toList();
     }
 
@@ -100,5 +100,12 @@ public class FileService {
         }
         minioService.moveFile(oldFilePath, newFilePath);
         return ObjectPathMapper.toUrlParam(newFilePath.getPath());
+    }
+
+    public String deleteFile(int userId, String path) {
+        MinioObjectPath filePathToDelete = MinioObjectPath.compose(userId, ObjectPathMapper.fromUrlParam(path, true));
+        minioService.deleteFile(filePathToDelete);
+        String parentFolderPath = filePathToDelete.getParent().getPath();
+        return ObjectPathMapper.toUrlParam(parentFolderPath);
     }
 }

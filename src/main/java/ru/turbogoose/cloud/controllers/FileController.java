@@ -135,4 +135,12 @@ public class FileController {
             return getFileMoveForm(userDetails, objectMoveDto.getOldObjectPath(), objectMoveDto, model);
         }
     }
+
+    @DeleteMapping
+    public String deleteFile(
+            @AuthenticationPrincipal UserDetailsImpl userDetails,
+            @RequestParam String path) {
+        String parentFolder = fileService.deleteFile(userDetails.getId(), path);
+        return "redirect:/"  + (parentFolder.equals("/") ? "" : "?path=" + parentFolder);
+    }
 }
