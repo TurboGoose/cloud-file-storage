@@ -94,9 +94,11 @@ public class FolderService {
                 ObjectPathMapper.fromUrlParam(objectMoveDto.getOldObjectPath()));
         MinioObjectPath newFolderPath = MinioObjectPath.compose(userId,
                 ObjectPathMapper.fromUrlParam(objectMoveDto.getNewObjectPath()));
-        if (!minioService.isObjectExist(newFolderPath)) {
+        // TODO: fix logic here
+        if (!minioService.isObjectExist(newFolderPath)) { // new folder path must exist anyway
             minioService.createFolder(newFolderPath);
         }
+        // but there could already be a folder with that name in directory
         minioService.moveFolder(oldFolderPath, newFolderPath);
         return ObjectPathMapper.toUrlParam(newFolderPath.resolve(oldFolderPath.getObjectName() + "/").getPath());
     }

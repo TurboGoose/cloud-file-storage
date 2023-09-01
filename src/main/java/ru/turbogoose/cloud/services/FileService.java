@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import ru.turbogoose.cloud.dto.FileUploadDto;
+import ru.turbogoose.cloud.dto.ObjectMoveDto;
 import ru.turbogoose.cloud.dto.ObjectRenameDto;
 import ru.turbogoose.cloud.exceptions.ObjectUploadException;
 import ru.turbogoose.cloud.exceptions.ObjectAlreadyExistsException;
@@ -14,6 +15,7 @@ import ru.turbogoose.cloud.models.ObjectInfo;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -71,6 +73,30 @@ public class FileService {
         if (minioService.isObjectExist(newFilePath)) {
             throw new ObjectAlreadyExistsException(
                     String.format("File with name %s already exists", newFilePath));
+        }
+        minioService.moveFile(oldFilePath, newFilePath);
+        return ObjectPathMapper.toUrlParam(newFilePath.getPath());
+    }
+
+    public List<String> getMoveCandidatesForFile(int userId, String filePath) {
+        MinioObjectPath filePathToMove = MinioObjectPath.compose(userId, ObjectPathMapper.fromUrlParam(filePath, true));
+        MinioObjectPath parentFolderPath = filePathToMove.getParent();
+        MinioObjectPath rootFolderPath = MinioObjectPath.getRootFolder(userId);
+        return minioService.listFolderObjectsRecursive(rootFolderPath).stream()
+                .filter(path -> path.isFolder() && !path.equals(parentFolderPath))
+                .map(path -> ObjectPathMapper.toUrlParam(path.getPath()))
+                .toList();
+    }
+
+    public String moveFile(int userId, ObjectMoveDto objectMoveDto) {
+        MinioObjectPath oldFilePath = MinioObjectPath.compose(userId,
+                ObjectPathMapper.fromUrlParam(objectMoveDto.getOldObjectPath(), true));
+        MinioObjectPath newFolderPath = MinioObjectPath.compose(userId,
+                ObjectPathMapper.fromUrlParam(objectMoveDto.getNewObjectPath()));
+        MinioObjectPath newFilePath = newFolderPath.resolve(oldFilePath.getObjectName());
+        if (minioService.isObjectExist(newFilePath)) {
+            throw new ObjectAlreadyExistsException(
+                    String.format("Cannot move file, because target file with name %s already exists", newFilePath));
         }
         minioService.moveFile(oldFilePath, newFilePath);
         return ObjectPathMapper.toUrlParam(newFilePath.getPath());

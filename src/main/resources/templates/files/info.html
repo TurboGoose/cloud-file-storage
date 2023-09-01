@@ -9,7 +9,7 @@
 
 <div>
   <br>
-  <p><a th:href="@{/file/rename(path=${param.path})}">Rename</a> this file</p>
+  <p><a th:href="@{/file/rename(path=${param.path})}">Rename</a> or <a th:href="@{/file/move(path=${param.path})}">move</a> this file</p>
 </div>
 
 <p th:text="'File name: ' + ${fileInfo.name}"></p>

@@ -10,6 +10,7 @@ import org.springframework.util.FileCopyUtils;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import ru.turbogoose.cloud.dto.FileUploadDto;
+import ru.turbogoose.cloud.dto.ObjectMoveDto;
 import ru.turbogoose.cloud.dto.ObjectRenameDto;
 import ru.turbogoose.cloud.exceptions.ObjectUploadException;
 import ru.turbogoose.cloud.exceptions.ObjectAlreadyExistsException;
@@ -104,6 +105,34 @@ public class FileController {
         } catch (ObjectAlreadyExistsException exc) {
             bindingResult.rejectValue("newName", "file.alreadyExists", "File with this name already exists");
             return getRenameFileForm(objectRenameDto.getObjectPath(), objectRenameDto, model);
+        }
+    }
+
+    @GetMapping("/move")
+    public String getFileMoveForm(
+            @AuthenticationPrincipal UserDetailsImpl userDetails,
+            @RequestParam String path,
+            @ModelAttribute("objectMoveDto") ObjectMoveDto objectMoveDto,
+            Model model) {
+        model.addAttribute("moveCandidates", fileService.getMoveCandidatesForFile(userDetails.getId(), path));
+        model.addAttribute("breadcrumbs", PathHelper.assembleBreadcrumbsFromPath(path, false));
+        return "files/move";
+    }
+
+    @PutMapping
+    public String moveFile(
+            @AuthenticationPrincipal UserDetailsImpl userDetails,
+            @ModelAttribute("objectMoveDto") @Valid ObjectMoveDto objectMoveDto, BindingResult bindingResult,
+            Model model) {
+        if (bindingResult.hasErrors()) {
+            return getFileMoveForm(userDetails, objectMoveDto.getOldObjectPath(), objectMoveDto, model);
+        }
+        try {
+            String newFilePath = fileService.moveFile(userDetails.getId(), objectMoveDto);
+            return "redirect:/file?path=" + newFilePath;
+        } catch (ObjectAlreadyExistsException exc) {
+            bindingResult.rejectValue("newObjectPath", "file.alreadyExists", "This file already exists");
+            return getFileMoveForm(userDetails, objectMoveDto.getOldObjectPath(), objectMoveDto, model);
         }
     }
 }
