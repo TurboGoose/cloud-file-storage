@@ -7,6 +7,11 @@
 <body>
 <div th:insert="~{fragments::breadcrumbs (${breadcrumbs})}"></div>
 
+<div>
+  <br>
+  <p><a th:href="@{/file/rename(path=${param.path})}">Rename</a> this file</p>
+</div>
+
 <p th:text="'File name: ' + ${fileInfo.name}"></p>
 <p th:text="'File size: ' + ${fileInfo.size}"></p>
 <p th:text="'Created at: ' + ${fileInfo.createdAt}"></p>

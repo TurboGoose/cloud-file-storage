@@ -14,7 +14,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 class MinioObjectPathTest {
 
     public static MinioObjectPath pathOf(String path) {
-        return MinioObjectPath.parse(1, path);
+        return MinioObjectPath.compose(1, path);
     }
 
     public static MinioObjectPath fullPathOf(String fullPath) {

@@ -1,6 +1,7 @@
 package ru.turbogoose.cloud.controllers;
 
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
@@ -9,6 +10,7 @@ import org.springframework.util.FileCopyUtils;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import ru.turbogoose.cloud.dto.FileUploadDto;
+import ru.turbogoose.cloud.dto.ObjectRenameDto;
 import ru.turbogoose.cloud.exceptions.ObjectUploadException;
 import ru.turbogoose.cloud.exceptions.ObjectAlreadyExistsException;
 import ru.turbogoose.cloud.exceptions.ObjectNotExistsException;
@@ -77,5 +79,31 @@ public class FileController {
             bindingResult.rejectValue("file", "file.errorUploading", "An error occurred during uploading");
         }
         return "files/upload";
+    }
+
+    @GetMapping("/rename")
+    public String getRenameFileForm(
+            @RequestParam String path,
+            @ModelAttribute("objectRenameDto") ObjectRenameDto objectRenameDto,
+            Model model) {
+        model.addAttribute("breadcrumbs", PathHelper.assembleBreadcrumbsFromPath(path, false));
+        return "files/rename";
+    }
+
+    @PatchMapping
+    public String renameFile(
+            @AuthenticationPrincipal UserDetailsImpl userDetails,
+            @ModelAttribute("objectRenameDto") @Valid ObjectRenameDto objectRenameDto, BindingResult bindingResult,
+            Model model) {
+        if (bindingResult.hasErrors()) {
+            return getRenameFileForm(objectRenameDto.getObjectPath(), objectRenameDto, model);
+        }
+        try {
+            String newFilePath = fileService.renameFile(userDetails.getId(), objectRenameDto);
+            return "redirect:/file?path=" + newFilePath;
+        } catch (ObjectAlreadyExistsException exc) {
+            bindingResult.rejectValue("newName", "file.alreadyExists", "File with this name already exists");
+            return getRenameFileForm(objectRenameDto.getObjectPath(), objectRenameDto, model);
+        }
     }
 }

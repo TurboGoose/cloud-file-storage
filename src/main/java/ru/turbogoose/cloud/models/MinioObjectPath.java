@@ -26,7 +26,7 @@ public class MinioObjectPath {
         return new MinioObjectPath(homeFolder, objectPath);
     }
 
-    public static MinioObjectPath parse(int userId, String objectPath) {
+    public static MinioObjectPath compose(int userId, String objectPath) {
         validatePathIsNotNullAndNotEmpty(objectPath);
         validatePathFormat(objectPath);
         String homeFolder = getUserHomeFolder(userId);
@@ -53,7 +53,7 @@ public class MinioObjectPath {
     }
 
     public static MinioObjectPath getRootFolder(int userId) {
-        return parse(userId, "/");
+        return compose(userId, "/");
     }
 
     public boolean isRootFolder() {

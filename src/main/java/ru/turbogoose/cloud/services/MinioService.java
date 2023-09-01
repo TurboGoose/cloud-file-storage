@@ -74,7 +74,7 @@ public class MinioService {
                         .bucket(ROOT_BUCKET)
                         .object(objectPath.getFullPath())
                         .build());
-        return new ObjectInfo(response.object(), response.size(), response.lastModified().toLocalDateTime());
+        return new ObjectInfo(objectPath.getObjectName(), response.size(), response.lastModified().toLocalDateTime());
     }
 
     public List<MinioObjectPath> listFolderObjects(MinioObjectPath folderPath) {
