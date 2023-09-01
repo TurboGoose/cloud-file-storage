@@ -9,6 +9,7 @@ import ru.turbogoose.cloud.exceptions.ObjectNotExistsException;
 import ru.turbogoose.cloud.exceptions.ObjectUploadException;
 import ru.turbogoose.cloud.models.MinioObjectPath;
 import ru.turbogoose.cloud.util.ObjectPathMapper;
+import ru.turbogoose.cloud.util.PathHelper;
 
 import java.io.IOException;
 import java.util.List;
@@ -34,13 +35,14 @@ public class FolderService {
 
     public void saveFolder(int userId, FolderUploadDto folderUploadDto) {
         List<MultipartFile> files = folderUploadDto.getFiles();
+
         if (files.size() == 0) {
             return;
         }
 
         MinioObjectPath parentFolderPath = MinioObjectPath.parse(
                 userId, ObjectPathMapper.fromUrlParam(folderUploadDto.getPath()));
-        String uploadedFolderName = extractNameOfUploadedFolder(
+        String uploadedFolderName = PathHelper.extractFirstFolderName(
                 Objects.requireNonNull(files.get(0).getOriginalFilename()));
 
         if (parentFolderPath.getObjectName().equals(uploadedFolderName)) {
@@ -60,11 +62,6 @@ public class FolderService {
                 throw new ObjectUploadException("An error occurred during uploading folder to " + parentFolderPath, exc);
             }
         }
-    }
-
-    // TODO: move this method somewhere...
-    private String extractNameOfUploadedFolder(String fileRelativePath) {
-        return fileRelativePath.split("/")[0];
     }
 
     public String createSingleFolder(int userId, FolderCreationDto folderCreationDto) {

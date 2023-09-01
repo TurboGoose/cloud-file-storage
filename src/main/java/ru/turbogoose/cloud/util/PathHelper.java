@@ -31,18 +31,7 @@ public class PathHelper {
         return folderPath;
     }
 
-    public static String extractObjectName(String objectPath) {
-        if (objectPath == null || objectPath.isBlank()) {
-            throw new IllegalArgumentException("Object path cannot be null");
-        }
-        if (objectPath.isBlank()) {
-            throw new IllegalArgumentException("Object path cannot be blank");
-        }
-
-        String[] split = objectPath.split("/");
-        if (split.length == 0) {
-            throw new IllegalArgumentException("Wrong object path: " + objectPath);
-        }
-        return split[split.length - 1];
+    public static String extractFirstFolderName(String relativePath) {
+        return relativePath.split("/")[0];
     }
 }

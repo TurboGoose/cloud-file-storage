@@ -20,19 +20,22 @@ public class FileService {
     private final MinioService minioService;
 
     public String saveFile(int userId, FileUploadDto creationDto) {
-        MultipartFile file = creationDto.getFile();
         MinioObjectPath parentFolderPath = MinioObjectPath.parse(
                 userId, ObjectPathMapper.fromUrlParam(creationDto.getFolderPath()));
+        MultipartFile file = creationDto.getFile();
+        if (file == null) {
+            throw new ObjectUploadException("An error occurred during uploading file to " + parentFolderPath);
+        }
         MinioObjectPath newFilePath = parentFolderPath.resolve(file.getOriginalFilename());
         try {
             saveFile(newFilePath, file.getInputStream());
             return ObjectPathMapper.toUrlParam(newFilePath.getPath());
         } catch (IOException exc) {
-            throw new ObjectUploadException("An error occurred during uploading file to " + newFilePath, exc);
+            throw new ObjectUploadException("An error occurred during uploading file to " + parentFolderPath, exc);
         }
     }
 
-    public String saveFile(MinioObjectPath filePath, InputStream fileInputStream) {
+    public void saveFile(MinioObjectPath filePath, InputStream fileInputStream) {
         if (filePath.isFolder()) {
             throw new IllegalArgumentException("Saved object is not a file: " + filePath);
         }
@@ -41,7 +44,6 @@ public class FileService {
                     String.format("File with name %s already exists", filePath.getFullPath()));
         }
         minioService.createFile(filePath, fileInputStream);
-        return ObjectPathMapper.toUrlParam(filePath.getPath());
     }
 
     public ObjectInfo getFileInfo(int userId, String path) {
