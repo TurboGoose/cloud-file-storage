@@ -54,4 +54,12 @@ public class FileService {
         }
         return minioService.getObjectInfo(filePath);
     }
+
+    public InputStream getFileContent(int userId, String path) {
+        MinioObjectPath filePath = MinioObjectPath.parse(userId, ObjectPathMapper.fromUrlParam(path, true));
+        if (!minioService.isObjectExist(filePath)) {
+            throw new ObjectNotExistsException(String.format("File %s not exists", filePath));
+        }
+        return minioService.getFileContent(filePath);
+    }
 }

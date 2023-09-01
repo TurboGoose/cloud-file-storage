@@ -254,4 +254,19 @@ public class MinioService {
             throw new RuntimeException(exc);
         }
     }
+
+    // return stream must be close in order to release network resources
+    public InputStream getFileContent(MinioObjectPath filePath) {
+        validateFilePath(filePath);
+        try {
+            return client.getObject(
+                    GetObjectArgs.builder()
+                            .bucket(ROOT_BUCKET)
+                            .object(filePath.getFullPath())
+                            .build()
+            );
+        } catch (Exception exc) {
+            throw new RuntimeException(exc);
+        }
+    }
 }

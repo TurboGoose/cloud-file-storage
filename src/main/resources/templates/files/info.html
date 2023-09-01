@@ -10,5 +10,8 @@
 <p th:text="'File name: ' + ${fileInfo.name}"></p>
 <p th:text="'File size: ' + ${fileInfo.size}"></p>
 <p th:text="'Created at: ' + ${fileInfo.createdAt}"></p>
+
+<br>
+<a th:href="@{/file/download(path=${param.path})}">Download</a>
 </body>
 </html>

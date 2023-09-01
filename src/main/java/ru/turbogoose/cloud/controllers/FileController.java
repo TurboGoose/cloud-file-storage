@@ -1,9 +1,11 @@
 package ru.turbogoose.cloud.controllers;
 
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.util.FileCopyUtils;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import ru.turbogoose.cloud.dto.FileUploadDto;
@@ -13,6 +15,9 @@ import ru.turbogoose.cloud.exceptions.ObjectNotExistsException;
 import ru.turbogoose.cloud.models.security.UserDetailsImpl;
 import ru.turbogoose.cloud.services.FileService;
 import ru.turbogoose.cloud.util.PathHelper;
+
+import java.io.IOException;
+import java.io.InputStream;
 
 @Controller
 @RequestMapping("/file")
@@ -33,6 +38,20 @@ public class FileController {
             exc.printStackTrace();
             model.addAttribute("wrongPath", path);
             return "folders/list";
+        }
+    }
+
+    @GetMapping("/download")
+    public void downloadFile(
+            @AuthenticationPrincipal UserDetailsImpl userDetails,
+            @RequestParam String path,
+            HttpServletResponse response) {
+        try (InputStream fileContentStream = fileService.getFileContent(userDetails.getId(), path)) {
+            response.setHeader("Content-Disposition",
+                    String.format("attachment; filename=\"%s\"", PathHelper.extractObjectName(path)));
+            FileCopyUtils.copy(fileContentStream, response.getOutputStream());
+        } catch (ObjectNotExistsException | IOException exc) {
+            exc.printStackTrace();
         }
     }
 
