@@ -86,6 +86,7 @@ public class FolderController {
             @ModelAttribute("objectRenameDto") ObjectRenameDto objectRenameDto,
             Model model) {
         model.addAttribute("breadcrumbs", PathHelper.assembleBreadcrumbsFromPath(path));
+        objectRenameDto.setNewName(PathHelper.extractObjectName(path));
         return "folders/rename";
     }
 

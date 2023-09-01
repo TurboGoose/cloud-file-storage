@@ -6,6 +6,7 @@ import io.minio.messages.DeleteError;
 import io.minio.messages.DeleteObject;
 import io.minio.messages.Item;
 import org.springframework.stereotype.Service;
+import ru.turbogoose.cloud.exceptions.MinioOperationException;
 import ru.turbogoose.cloud.models.MinioObjectPath;
 import ru.turbogoose.cloud.models.ObjectInfo;
 
@@ -16,7 +17,6 @@ import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.UnaryOperator;
 
 @Service
 public class MinioService {
@@ -32,7 +32,6 @@ public class MinioService {
         createRootBucket();
     }
 
-    // TODO: replace RuntimeExceptions for application-specific exception types
     private void createRootBucket() {
         try {
             boolean exists = client.bucketExists(BucketExistsArgs.builder()
@@ -44,7 +43,7 @@ public class MinioService {
                         .build());
             }
         } catch (Exception exc) {
-            throw new RuntimeException(exc);
+            throw new MinioOperationException(exc);
         }
     }
 
@@ -55,7 +54,7 @@ public class MinioService {
         } catch (ErrorResponseException exc) {
             return false;
         } catch (Exception exc) {
-            throw new RuntimeException(exc);
+            throw new MinioOperationException(exc);
         }
     }
 
@@ -63,7 +62,7 @@ public class MinioService {
         try {
             return getObjectInfoUnhandled(objectPath);
         } catch (Exception exc) {
-            throw new RuntimeException(exc);
+            throw new MinioOperationException(exc);
         }
     }
 
@@ -106,7 +105,7 @@ public class MinioService {
             }
             return objects;
         } catch (Exception exc) {
-            throw new RuntimeException(exc);
+            throw new MinioOperationException(exc);
         }
     }
 
@@ -120,7 +119,7 @@ public class MinioService {
                             .stream(fileInputStream, -1, 10485760)
                             .build());
         } catch (Exception exc) {
-            throw new RuntimeException(exc);
+            throw new MinioOperationException(exc);
         }
     }
 
@@ -146,14 +145,8 @@ public class MinioService {
                             .stream(new ByteArrayInputStream(new byte[]{}), 0, -1)
                             .build());
         } catch (Exception exc) {
-            throw new RuntimeException(exc);
+            throw new MinioOperationException(exc);
         }
-    }
-
-    public void moveFile(MinioObjectPath oldFilePath, MinioObjectPath newFilePath) {
-        validateFilePath(oldFilePath);
-        validateFilePath(newFilePath);
-        moveObject(oldFilePath, newFilePath);
     }
 
     private void moveObject(MinioObjectPath oldPath, MinioObjectPath newPath) {
@@ -178,22 +171,17 @@ public class MinioService {
                             .object(oldPath.getFullPath())
                             .build());
         } catch (Exception exc) {
-            throw new RuntimeException(exc);
+            throw new MinioOperationException(exc);
         }
     }
 
+    public void moveFile(MinioObjectPath oldFilePath, MinioObjectPath newFilePath) {
+        validateFilePath(oldFilePath);
+        validateFilePath(newFilePath);
+        moveObject(oldFilePath, newFilePath);
+    }
+
     public void moveFolder(MinioObjectPath oldFolderPath, MinioObjectPath newFolderPath) {
-        changeFolderLocation(oldFolderPath, newFolderPath, oldSubfolderPath -> oldSubfolderPath.replacePrefix(
-                oldFolderPath.getParent().getPath(), newFolderPath.getPath()));
-    }
-
-    public void renameFolder(MinioObjectPath oldFolderPath, MinioObjectPath newFolderPath) {
-        changeFolderLocation(oldFolderPath, newFolderPath, oldSubfolderPath -> oldSubfolderPath.replacePrefix(
-                oldFolderPath.getPath(), newFolderPath.getPath()));
-    }
-
-    private void changeFolderLocation(MinioObjectPath oldFolderPath, MinioObjectPath newFolderPath,
-                                     UnaryOperator<MinioObjectPath> subfolderPathConversion) {
         validateFolderPath(oldFolderPath);
         validateFolderPath(newFolderPath);
 
@@ -201,22 +189,11 @@ public class MinioService {
             return;
         }
 
-        Iterable<Result<Item>> folderObjects = client.listObjects(
-                ListObjectsArgs.builder()
-                        .bucket(ROOT_BUCKET)
-                        .prefix(oldFolderPath.getFullPath())
-                        .build());
-
-        try {
-            for (Result<Item> res : folderObjects) {
-                Item item = res.get();
-                MinioObjectPath oldSubFolderObjectPath = MinioObjectPath.parse(item.objectName());
-                MinioObjectPath newSubFolderObjectPath = subfolderPathConversion.apply(oldSubFolderObjectPath);
-                moveObject(oldSubFolderObjectPath, newSubFolderObjectPath);
-            }
-        } catch (Exception exc) {
-            throw new RuntimeException(exc);
-        }
+        listFolderObjectsWithParams(oldFolderPath, true, true).forEach(oldSubfolderObjectPath -> {
+            MinioObjectPath newSubfolderObjectPath = oldSubfolderObjectPath.replacePrefix(
+                    oldFolderPath.getPath(), newFolderPath.getPath());
+            moveObject(oldSubfolderObjectPath, newSubfolderObjectPath);
+        });
     }
 
     public void deleteFile(MinioObjectPath filePath) {
@@ -228,7 +205,7 @@ public class MinioService {
                             .object(filePath.getFullPath())
                             .build());
         } catch (Exception exc) {
-            throw new RuntimeException(exc);
+            throw new MinioOperationException(exc);
         }
     }
 
@@ -247,7 +224,7 @@ public class MinioService {
                 result.get(); // TODO: add logging of DeleteError here
             }
         } catch (Exception exc) {
-            throw new RuntimeException(exc);
+            throw new MinioOperationException(exc);
         }
     }
 
@@ -262,7 +239,7 @@ public class MinioService {
                             .build()
             );
         } catch (Exception exc) {
-            throw new RuntimeException(exc);
+            throw new MinioOperationException(exc);
         }
     }
 }

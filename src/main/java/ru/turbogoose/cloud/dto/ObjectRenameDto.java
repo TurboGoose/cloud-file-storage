@@ -5,7 +5,7 @@ import lombok.Data;
 
 @Data
 public class ObjectRenameDto {
-    private final String objectPath;
+    private String objectPath;
     @Pattern(regexp = "^[\\w !.*'()\\-]+$", message = "This name contains unsupported characters")
-    private final String newName;
+    private String newName;
 }

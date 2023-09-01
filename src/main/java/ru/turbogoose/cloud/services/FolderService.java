@@ -92,15 +92,15 @@ public class FolderService {
     public String moveFolder(int userId, ObjectMoveDto objectMoveDto) {
         MinioObjectPath oldFolderPath = MinioObjectPath.compose(userId,
                 ObjectPathMapper.fromUrlParam(objectMoveDto.getOldObjectPath()));
-        MinioObjectPath newFolderPath = MinioObjectPath.compose(userId,
+        MinioObjectPath newParentFolderPath = MinioObjectPath.compose(userId,
                 ObjectPathMapper.fromUrlParam(objectMoveDto.getNewObjectPath()));
-        // TODO: fix logic here
-        if (!minioService.isObjectExist(newFolderPath)) { // new folder path must exist anyway
-            minioService.createFolder(newFolderPath);
+        MinioObjectPath newFolderPath = newParentFolderPath.resolve(oldFolderPath.getObjectName() + "/");
+        if (minioService.isObjectExist(newFolderPath)) {
+            throw new ObjectAlreadyExistsException(
+                    String.format("Cannot move folder, because target folder with name %s already exists", newFolderPath));
         }
-        // but there could already be a folder with that name in directory
         minioService.moveFolder(oldFolderPath, newFolderPath);
-        return ObjectPathMapper.toUrlParam(newFolderPath.resolve(oldFolderPath.getObjectName() + "/").getPath());
+        return ObjectPathMapper.toUrlParam(newFolderPath.getPath());
     }
 
     public String renameFolder(int userId, ObjectRenameDto objectRenameDto) {
@@ -108,9 +108,9 @@ public class FolderService {
         MinioObjectPath newFolderPath = oldFolderPath.renameObject(objectRenameDto.getNewName());
         if (minioService.isObjectExist(newFolderPath)) {
             throw new ObjectAlreadyExistsException(
-                    String.format("Folder with name %s already exists", newFolderPath));
+                    String.format("Cannot rename folder, because target folder with name %s already exists", newFolderPath));
         }
-        minioService.renameFolder(oldFolderPath, newFolderPath);
+        minioService.moveFolder(oldFolderPath, newFolderPath);
         return ObjectPathMapper.toUrlParam(newFolderPath.getPath());
     }
 

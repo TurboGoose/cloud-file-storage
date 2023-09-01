@@ -88,6 +88,7 @@ public class FileController {
             @ModelAttribute("objectRenameDto") ObjectRenameDto objectRenameDto,
             Model model) {
         model.addAttribute("breadcrumbs", PathHelper.assembleBreadcrumbsFromPath(path, false));
+        objectRenameDto.setObjectPath(PathHelper.extractObjectName(path));
         return "files/rename";
     }
 
