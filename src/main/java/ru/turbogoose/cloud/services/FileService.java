@@ -74,7 +74,7 @@ public class FileService {
             throw new ObjectAlreadyExistsException(
                     String.format("File with name %s already exists", newFilePath));
         }
-        minioService.move(oldFilePath, newFilePath);
+        minioService.moveFile(oldFilePath, newFilePath);
         return ObjectPathMapper.toUrlParam(newFilePath.getPath());
     }
 
@@ -98,7 +98,7 @@ public class FileService {
             throw new ObjectAlreadyExistsException(
                     String.format("Cannot move file, because target file with name %s already exists", newFilePath));
         }
-        minioService.move(oldFilePath, newFilePath);
+        minioService.moveFile(oldFilePath, newFilePath);
         return ObjectPathMapper.toUrlParam(newFilePath.getPath());
     }
 

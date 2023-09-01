@@ -6,8 +6,8 @@ import io.minio.messages.DeleteError;
 import io.minio.messages.DeleteObject;
 import io.minio.messages.Item;
 import org.springframework.stereotype.Service;
-import ru.turbogoose.cloud.models.ObjectInfo;
 import ru.turbogoose.cloud.models.MinioObjectPath;
+import ru.turbogoose.cloud.models.ObjectInfo;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -16,6 +16,7 @@ import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.UnaryOperator;
 
 @Service
 public class MinioService {
@@ -149,8 +150,14 @@ public class MinioService {
         }
     }
 
-    public void move(MinioObjectPath oldFilePath, MinioObjectPath newFilePath) {
-        if (newFilePath.equals(oldFilePath)) {
+    public void moveFile(MinioObjectPath oldFilePath, MinioObjectPath newFilePath) {
+        validateFilePath(oldFilePath);
+        validateFilePath(newFilePath);
+        moveObject(oldFilePath, newFilePath);
+    }
+
+    private void moveObject(MinioObjectPath oldPath, MinioObjectPath newPath) {
+        if (newPath.equals(oldPath)) {
             return;
         }
 
@@ -158,17 +165,17 @@ public class MinioService {
             client.copyObject(
                     CopyObjectArgs.builder()
                             .bucket(ROOT_BUCKET)
-                            .object(newFilePath.getFullPath())
+                            .object(newPath.getFullPath())
                             .source(CopySource.builder()
                                     .bucket(ROOT_BUCKET)
-                                    .object(oldFilePath.getFullPath())
+                                    .object(oldPath.getFullPath())
                                     .build())
                             .build());
 
             client.removeObject(
                     RemoveObjectArgs.builder()
                             .bucket(ROOT_BUCKET)
-                            .object(oldFilePath.getFullPath())
+                            .object(oldPath.getFullPath())
                             .build());
         } catch (Exception exc) {
             throw new RuntimeException(exc);
@@ -176,34 +183,17 @@ public class MinioService {
     }
 
     public void moveFolder(MinioObjectPath oldFolderPath, MinioObjectPath newFolderPath) {
-        validateFolderPath(oldFolderPath);
-        validateFolderPath(newFolderPath);
-
-        if (newFolderPath.equals(oldFolderPath)) {
-            return;
-        }
-
-        Iterable<Result<Item>> folderObjects = client.listObjects(
-                ListObjectsArgs.builder()
-                        .bucket(ROOT_BUCKET)
-                        .prefix(oldFolderPath.getFullPath())
-                        .build());
-
-        try {
-            for (Result<Item> res : folderObjects) {
-                Item item = res.get();
-                MinioObjectPath oldSubFolderObjectPath = MinioObjectPath.parse(item.objectName());
-                MinioObjectPath newSubFolderObjectPath = oldSubFolderObjectPath.replacePrefix(
-                        oldFolderPath.getParent().getPath(), newFolderPath.getPath());
-
-                move(oldSubFolderObjectPath, newSubFolderObjectPath);
-            }
-        } catch (Exception exc) {
-            throw new RuntimeException(exc);
-        }
+        changeFolderLocation(oldFolderPath, newFolderPath, oldSubfolderPath -> oldSubfolderPath.replacePrefix(
+                oldFolderPath.getParent().getPath(), newFolderPath.getPath()));
     }
 
     public void renameFolder(MinioObjectPath oldFolderPath, MinioObjectPath newFolderPath) {
+        changeFolderLocation(oldFolderPath, newFolderPath, oldSubfolderPath -> oldSubfolderPath.replacePrefix(
+                oldFolderPath.getPath(), newFolderPath.getPath()));
+    }
+
+    private void changeFolderLocation(MinioObjectPath oldFolderPath, MinioObjectPath newFolderPath,
+                                     UnaryOperator<MinioObjectPath> subfolderPathConversion) {
         validateFolderPath(oldFolderPath);
         validateFolderPath(newFolderPath);
 
@@ -221,10 +211,8 @@ public class MinioService {
             for (Result<Item> res : folderObjects) {
                 Item item = res.get();
                 MinioObjectPath oldSubFolderObjectPath = MinioObjectPath.parse(item.objectName());
-                MinioObjectPath newSubFolderObjectPath = oldSubFolderObjectPath.replacePrefix(
-                        oldFolderPath.getPath(), newFolderPath.getPath());
-
-                move(oldSubFolderObjectPath, newSubFolderObjectPath);
+                MinioObjectPath newSubFolderObjectPath = subfolderPathConversion.apply(oldSubFolderObjectPath);
+                moveObject(oldSubFolderObjectPath, newSubFolderObjectPath);
             }
         } catch (Exception exc) {
             throw new RuntimeException(exc);
