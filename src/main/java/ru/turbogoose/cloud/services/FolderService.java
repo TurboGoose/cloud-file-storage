@@ -110,7 +110,7 @@ public class FolderService {
             throw new ObjectAlreadyExistsException(
                     String.format("Folder with name %s already exists", newFolderPath));
         }
-        minioService.moveFolder(oldFolderPath, newFolderPath);
+        minioService.renameFolder(oldFolderPath, newFolderPath);
         return ObjectPathMapper.toUrlParam(newFolderPath.getPath());
     }
 

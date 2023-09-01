@@ -149,10 +149,7 @@ public class MinioService {
         }
     }
 
-    public void moveFile(MinioObjectPath oldFilePath, MinioObjectPath newFilePath) {
-        validateFilePath(oldFilePath);
-        validateFilePath(newFilePath);
-
+    public void move(MinioObjectPath oldFilePath, MinioObjectPath newFilePath) {
         if (newFilePath.equals(oldFilePath)) {
             return;
         }
@@ -199,29 +196,40 @@ public class MinioService {
                 MinioObjectPath newSubFolderObjectPath = oldSubFolderObjectPath.replacePrefix(
                         oldFolderPath.getParent().getPath(), newFolderPath.getPath());
 
-                client.copyObject(
-                        CopyObjectArgs.builder()
-                                .bucket(ROOT_BUCKET)
-                                .object(newSubFolderObjectPath.getFullPath())
-                                .source(
-                                        CopySource.builder()
-                                                .bucket(ROOT_BUCKET)
-                                                .object(oldSubFolderObjectPath.getFullPath())
-                                                .build()
-                                )
-                                .build());
-
-                client.removeObject(
-                        RemoveObjectArgs.builder()
-                                .bucket(ROOT_BUCKET)
-                                .object(oldSubFolderObjectPath.getFullPath())
-                                .build());
+                move(oldSubFolderObjectPath, newSubFolderObjectPath);
             }
         } catch (Exception exc) {
             throw new RuntimeException(exc);
         }
     }
 
+    public void renameFolder(MinioObjectPath oldFolderPath, MinioObjectPath newFolderPath) {
+        validateFolderPath(oldFolderPath);
+        validateFolderPath(newFolderPath);
+
+        if (newFolderPath.equals(oldFolderPath)) {
+            return;
+        }
+
+        Iterable<Result<Item>> folderObjects = client.listObjects(
+                ListObjectsArgs.builder()
+                        .bucket(ROOT_BUCKET)
+                        .prefix(oldFolderPath.getFullPath())
+                        .build());
+
+        try {
+            for (Result<Item> res : folderObjects) {
+                Item item = res.get();
+                MinioObjectPath oldSubFolderObjectPath = MinioObjectPath.parse(item.objectName());
+                MinioObjectPath newSubFolderObjectPath = oldSubFolderObjectPath.replacePrefix(
+                        oldFolderPath.getPath(), newFolderPath.getPath());
+
+                move(oldSubFolderObjectPath, newSubFolderObjectPath);
+            }
+        } catch (Exception exc) {
+            throw new RuntimeException(exc);
+        }
+    }
 
     public void deleteFile(MinioObjectPath filePath) {
         validateFilePath(filePath);
@@ -255,7 +263,7 @@ public class MinioService {
         }
     }
 
-    // return stream must be close in order to release network resources
+    // return stream must be closed in order to release network resources
     public InputStream getFileContent(MinioObjectPath filePath) {
         validateFilePath(filePath);
         try {

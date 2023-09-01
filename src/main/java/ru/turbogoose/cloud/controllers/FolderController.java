@@ -80,7 +80,7 @@ public class FolderController {
         return "folders/upload";
     }
 
-    @GetMapping("/folder/rename")
+    @GetMapping("/rename")
     public String getFolderRenameForm(
             @RequestParam String path,
             @ModelAttribute("objectRenameDto") ObjectRenameDto objectRenameDto,
@@ -106,7 +106,7 @@ public class FolderController {
         }
     }
 
-    @GetMapping("/folder/move")
+    @GetMapping("/move")
     public String getFolderMoveForm(
             @AuthenticationPrincipal UserDetailsImpl userDetails,
             @RequestParam String path,

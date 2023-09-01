@@ -17,7 +17,7 @@
 
   <div th:if="${param.path}">
     <br>
-    <p><a th:href="@{/folder/rename(path=${param.path})}">Rename</a> or <a th:href="@{/folder/move(path=${param.path})}">move</a> current folder</p>
+    <p><a th:href="@{/rename(path=${param.path})}">Rename</a> or <a th:href="@{/move(path=${param.path})}">move</a> current folder</p>
   </div>
   <div th:if="${param.path}">
     <br>
