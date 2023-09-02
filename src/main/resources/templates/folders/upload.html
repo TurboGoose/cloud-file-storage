@@ -7,8 +7,8 @@
 <body>
 <div th:insert="~{fragments::breadcrumbs (${breadcrumbs})}"></div>
 
-<form method="POST" th:action="@{/upload}" th:object="${folderUploadDto}" enctype="multipart/form-data">
-  <input type="hidden" name="path" th:value="${param.path}">
+<form method="POST" th:action="@{/upload(path=${param.path})}" th:object="${folderUploadDto}" enctype="multipart/form-data">
+  <input type="hidden" name="parentFolderPath" th:value="${param.path}">
   <label for="file">Upload folder:</label>
   <br>
   <input id="file" type="file" th:field="*{files}" webkitdirectory required>

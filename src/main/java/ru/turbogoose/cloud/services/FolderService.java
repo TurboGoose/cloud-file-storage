@@ -41,11 +41,11 @@ public class FolderService {
         }
 
         MinioObjectPath parentFolderPath = MinioObjectPath.compose(
-                userId, ObjectPathMapper.fromUrlParam(folderUploadDto.getPath()));
+                userId, ObjectPathMapper.fromUrlParam(folderUploadDto.getParentFolderPath()));
         String uploadedFolderName = PathHelper.extractFirstFolderName(
                 Objects.requireNonNull(files.get(0).getOriginalFilename()));
 
-        if (parentFolderPath.getObjectName().equals(uploadedFolderName)) {
+        if (minioService.isObjectExist(parentFolderPath.resolve(uploadedFolderName + "/"))) {
             throw new ObjectAlreadyExistsException(
                     String.format("Cannot upload folder %s, because folder with this name already exists", uploadedFolderName));
         }

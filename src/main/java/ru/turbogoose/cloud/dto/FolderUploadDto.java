@@ -7,6 +7,6 @@ import java.util.List;
 
 @Data
 public class FolderUploadDto {
-    private final String path;
+    private final String parentFolderPath;
     private final List<MultipartFile> files;
 }

@@ -228,7 +228,7 @@ public class MinioService {
         }
     }
 
-    // return stream must be closed in order to release network resources
+    // returned stream must be closed in order to release network resources
     public InputStream getFileContent(MinioObjectPath filePath) {
         validateFilePath(filePath);
         try {
