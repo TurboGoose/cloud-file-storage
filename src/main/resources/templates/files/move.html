@@ -7,8 +7,8 @@
 <body>
 <div th:insert="~{fragments::breadcrumbs (${breadcrumbs})}"></div>
 
-<form th:method="PUT" th:action="@{/file}" th:object="${objectMoveDto}">
-  <label for="location">Choose new folder location: </label>
+<form th:method="PUT" th:action="@{/file/move(path=${param.path})}" th:object="${objectMoveDto}">
+  <label for="location">Choose new file location: </label>
   <br>
 
   <select id="location" th:field="*{newObjectPath}">

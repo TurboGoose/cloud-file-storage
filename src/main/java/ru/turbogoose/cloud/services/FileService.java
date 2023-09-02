@@ -24,7 +24,7 @@ public class FileService {
 
     public String saveFile(int userId, FileUploadDto creationDto) {
         MinioObjectPath parentFolderPath = MinioObjectPath.compose(
-                userId, ObjectPathMapper.fromUrlParam(creationDto.getFolderPath()));
+                userId, ObjectPathMapper.fromUrlParam(creationDto.getParentFolderPath()));
         MultipartFile file = creationDto.getFile();
         if (file == null || file.isEmpty()) {
             throw new ObjectUploadException("An error occurred during uploading file to " + parentFolderPath);

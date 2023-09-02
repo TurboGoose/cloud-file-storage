@@ -9,6 +9,7 @@ import org.springframework.ui.Model;
 import org.springframework.util.FileCopyUtils;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import ru.turbogoose.cloud.dto.FileUploadDto;
 import ru.turbogoose.cloud.dto.ObjectMoveDto;
 import ru.turbogoose.cloud.dto.ObjectRenameDto;
@@ -67,19 +68,23 @@ public class FileController {
         return "files/upload";
     }
 
-    @PostMapping
+    @PostMapping("/upload")
     public String uploadFile(
             @AuthenticationPrincipal UserDetailsImpl userDetails,
-            @ModelAttribute("fileUploadDto") FileUploadDto fileUploadDto, BindingResult bindingResult) {
+            @RequestParam String path,
+            @ModelAttribute("fileUploadDto") FileUploadDto fileUploadDto, BindingResult bindingResult,
+            RedirectAttributes redirectAttributes,
+            Model model) {
         try {
             fileService.saveFile(userDetails.getId(), fileUploadDto);
-            return "redirect:/?path=" + fileUploadDto.getFolderPath();
+            redirectAttributes.addAttribute("path", fileUploadDto.getParentFolderPath());
+            return "redirect:/";
         } catch (ObjectAlreadyExistsException exc) {
             bindingResult.rejectValue("file", "file.alreadyExists", "File with this name already exists");
         } catch (ObjectUploadException exc) {
             bindingResult.rejectValue("file", "file.errorUploading", "An error occurred during uploading");
         }
-        return "files/upload";
+        return getFileUploadForm(path, fileUploadDto, model);
     }
 
     @GetMapping("/rename")
@@ -88,25 +93,28 @@ public class FileController {
             @ModelAttribute("objectRenameDto") ObjectRenameDto objectRenameDto,
             Model model) {
         model.addAttribute("breadcrumbs", PathHelper.assembleBreadcrumbsFromPath(path, false));
-        objectRenameDto.setObjectPath(PathHelper.extractObjectName(path));
+        objectRenameDto.setNewName(PathHelper.extractObjectName(path));
         return "files/rename";
     }
 
-    @PatchMapping
+    @PatchMapping("/rename")
     public String renameFile(
             @AuthenticationPrincipal UserDetailsImpl userDetails,
+            @RequestParam String path,
             @ModelAttribute("objectRenameDto") @Valid ObjectRenameDto objectRenameDto, BindingResult bindingResult,
+            RedirectAttributes redirectAttributes,
             Model model) {
         if (bindingResult.hasErrors()) {
             return getRenameFileForm(objectRenameDto.getObjectPath(), objectRenameDto, model);
         }
         try {
             String newFilePath = fileService.renameFile(userDetails.getId(), objectRenameDto);
-            return "redirect:/file?path=" + newFilePath;
+            redirectAttributes.addAttribute("path", newFilePath);
+            return "redirect:/file";
         } catch (ObjectAlreadyExistsException exc) {
             bindingResult.rejectValue("newName", "file.alreadyExists", "File with this name already exists");
-            return getRenameFileForm(objectRenameDto.getObjectPath(), objectRenameDto, model);
         }
+        return getRenameFileForm(path, objectRenameDto, model);
     }
 
     @GetMapping("/move")
@@ -120,28 +128,35 @@ public class FileController {
         return "files/move";
     }
 
-    @PutMapping
+    @PutMapping("/move")
     public String moveFile(
             @AuthenticationPrincipal UserDetailsImpl userDetails,
+            @RequestParam String path,
             @ModelAttribute("objectMoveDto") @Valid ObjectMoveDto objectMoveDto, BindingResult bindingResult,
+            RedirectAttributes redirectAttributes,
             Model model) {
         if (bindingResult.hasErrors()) {
             return getFileMoveForm(userDetails, objectMoveDto.getOldObjectPath(), objectMoveDto, model);
         }
         try {
             String newFilePath = fileService.moveFile(userDetails.getId(), objectMoveDto);
-            return "redirect:/file?path=" + newFilePath;
+            redirectAttributes.addAttribute("path", newFilePath);
+            return "redirect:/file";
         } catch (ObjectAlreadyExistsException exc) {
             bindingResult.rejectValue("newObjectPath", "file.alreadyExists", "This file already exists");
-            return getFileMoveForm(userDetails, objectMoveDto.getOldObjectPath(), objectMoveDto, model);
         }
+        return getFileMoveForm(userDetails, path, objectMoveDto, model);
     }
 
     @DeleteMapping
     public String deleteFile(
             @AuthenticationPrincipal UserDetailsImpl userDetails,
-            @RequestParam String path) {
+            @RequestParam String path,
+            RedirectAttributes redirectAttributes) {
         String parentFolder = fileService.deleteFile(userDetails.getId(), path);
-        return "redirect:/"  + (parentFolder.equals("/") ? "" : "?path=" + parentFolder);
+        if (!parentFolder.equals("/")) {
+            redirectAttributes.addAttribute("path", parentFolder);
+        }
+        return "redirect:/";
     }
 }

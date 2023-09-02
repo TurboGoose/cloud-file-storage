@@ -8,8 +8,8 @@
 <div>
   <div th:insert="~{fragments::breadcrumbs (${breadcrumbs})}"></div>
 
-  <form method="POST" th:action="@{/file}" th:object="${fileUploadDto}" enctype="multipart/form-data">
-    <input type="hidden" name="folderPath" th:value="${param.path}">
+  <form method="POST" th:action="@{/file/upload(path=${param.path})}" th:object="${fileUploadDto}" enctype="multipart/form-data">
+    <input type="hidden" name="parentFolderPath" th:value="${param.path}">
     <label for="file">Upload file:</label>
     <br>
     <input id="file" type="file" th:field="*{file}">
