@@ -16,14 +16,18 @@ public class SearchService {
 
     private final MinioService minioService;
 
-    public List<ObjectPathDto> searchObjectsByString(int userId, String query, SearchType searchType) {
+    public List<ObjectPathDto> searchObjectsByString(
+            int userId, String query, SearchType searchType, boolean matchCase) {
         MinioObjectPath rootFolder = MinioObjectPath.getRootFolder(userId);
         return minioService.listFolderObjectsRecursive(rootFolder, false).stream()
                 .filter(path -> switch (searchType) {
-                        case folders -> path.isFolder();
-                        case files -> !path.isFolder();
-                        case all -> true;
-                    } && path.getObjectName().contains(query))
+                            case folders -> path.isFolder();
+                            case files -> !path.isFolder();
+                            case all -> true;
+                        } &&
+                        (matchCase
+                                ? path.getObjectName().contains(query)
+                                : path.getObjectName().toLowerCase().contains(query.toLowerCase())))
                 .map(path -> new ObjectPathDto(
                         path.getObjectName(), ObjectPathMapper.toUrlParam(path.getPath()), path.isFolder()))
                 .sorted(Comparator.comparing(ObjectPathDto::isFolder).thenComparing(ObjectPathDto::getName))

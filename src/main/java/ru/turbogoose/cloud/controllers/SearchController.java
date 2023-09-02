@@ -24,9 +24,10 @@ public class SearchController {
             @AuthenticationPrincipal UserDetailsImpl userDetails,
             @RequestParam String query,
             @RequestParam(required = false, defaultValue = "all") String type,
+            @RequestParam(name="case", required = false, defaultValue = "false") boolean matchCase,
             Model model) {
         List<ObjectPathDto> objects = searchService.searchObjectsByString(
-                userDetails.getId(), query, SearchService.SearchType.valueOf(type));
+                userDetails.getId(), query, SearchService.SearchType.valueOf(type), matchCase);
         model.addAttribute("objects", objects);
         return "search/result";
     }
