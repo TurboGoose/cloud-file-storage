@@ -12,6 +12,7 @@ import ru.turbogoose.cloud.util.ObjectPathMapper;
 import ru.turbogoose.cloud.util.PathHelper;
 
 import java.io.IOException;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 
@@ -30,6 +31,7 @@ public class FolderService {
         return minioService.listFolderObjects(minioFolderPath).stream()
                 .map(path -> new ObjectPathDto(
                         path.getObjectName(), ObjectPathMapper.toUrlParam(path.getPath()), path.isFolder()))
+                .sorted(Comparator.comparing(ObjectPathDto::isFolder).thenComparing(ObjectPathDto::getName))
                 .toList();
     }
 

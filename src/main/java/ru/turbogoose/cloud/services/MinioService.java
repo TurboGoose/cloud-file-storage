@@ -85,6 +85,10 @@ public class MinioService {
         return listFolderObjectsWithParams(folderPath, true, true);
     }
 
+    public List<MinioObjectPath> listFolderObjectsRecursive(MinioObjectPath folderPath, boolean includeSelf) {
+        return listFolderObjectsWithParams(folderPath, true, includeSelf);
+    }
+
     private List<MinioObjectPath> listFolderObjectsWithParams(
             MinioObjectPath folderPath, boolean recursive, boolean includeSelf) {
         validateFolderPath(folderPath);

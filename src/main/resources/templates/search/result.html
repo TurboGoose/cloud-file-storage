@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Search results</title>
+</head>
+<body>
+<div>
+  <br>
+  <form method="GET" th:action="@{/search}">
+    <label for="query">Enter search query:</label>
+    <input id="query" type="search" name="query">
+    <br>
+    <label for="type">Search </label>
+    <select id="type" name="type">
+      <option value="all">all</option>
+      <option value="files">files</option>
+      <option value="folders">folders</option>
+    </select>
+    <br>
+    <br>
+    <input type="submit" value="Search">
+  </form>
+</div>
+
+<br>
+<p th:if="${objects.isEmpty()}">Nothing was found</p>
+<ul th:unless="${objects.isEmpty()}">
+  <li th:each="obj : ${objects}" th:with="url= '/' + (${obj.folder} ? '' : 'file')">
+    <a th:href="@{${url}(path=${obj.path})}" th:text="${obj.path}"></a>
+  </li>
+</ul>
+
+<a th:href="@{/}">Go home</a>
+</body>
+</html>

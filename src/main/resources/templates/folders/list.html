@@ -15,6 +15,24 @@
 <div th:unless="${wrongPath}">
   <div th:insert="~{fragments::breadcrumbs (${breadcrumbs})}"></div>
 
+  <div>
+    <br>
+    <form method="GET" th:action="@{/search}">
+      <label for="query">Enter search query:</label>
+      <input id="query" type="search" name="query">
+      <br>
+      <label for="type">Search </label>
+      <select id="type" name="type">
+        <option value="all">all</option>
+        <option value="files">files</option>
+        <option value="folders">folders</option>
+      </select>
+      <br>
+      <br>
+      <input type="submit" value="Search">
+    </form>
+  </div>
+
   <div th:if="${param.path}">
     <br>
     <p><a th:href="@{/rename(path=${param.path})}">Rename</a> or <a th:href="@{/move(path=${param.path})}">move</a> current folder</p>
@@ -37,7 +55,8 @@
   </form>
 
   <br>
-  <ul>
+  <p th:if="${objects.isEmpty()}">This folder is empty</p>
+  <ul th:unless="${objects.isEmpty()}">
     <li th:each="obj : ${objects}" th:with="url= '/' + (${obj.folder} ? '' : 'file')">
       <a th:href="@{${url}(path=${obj.path})}" th:text="${obj.name}"></a>
     </li>
