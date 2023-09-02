@@ -30,7 +30,7 @@ public class SearchService {
                                 : path.getObjectName().toLowerCase().contains(query.toLowerCase())))
                 .map(path -> new ObjectPathDto(
                         path.getObjectName(), ObjectPathMapper.toUrlParam(path.getPath()), path.isFolder()))
-                .sorted(Comparator.comparing(ObjectPathDto::isFolder).thenComparing(ObjectPathDto::getName))
+                .sorted(Comparator.comparing(ObjectPathDto::isFolder).reversed().thenComparing(ObjectPathDto::getName))
                 .toList();
     }
 }
