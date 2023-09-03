@@ -49,4 +49,11 @@ public class PathHelper {
     public static String extractFirstFolderName(String relativePath) {
         return relativePath.split("/")[0];
     }
+
+    public static String getPathParam(String path) {
+        if (path == null || path.isEmpty() || path.equals("/")) {
+            return "";
+        }
+        return "?path=" + path;
+    }
 }

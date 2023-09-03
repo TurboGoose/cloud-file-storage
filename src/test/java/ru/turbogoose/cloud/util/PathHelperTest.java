@@ -52,4 +52,17 @@ class PathHelperTest {
     public void extractFirstFolderName(String relativePath, String expectedName) {
         assertThat(PathHelper.extractFirstFolderName(relativePath), is(expectedName));
     }
+
+    @ParameterizedTest
+    @CsvSource(delimiterString = "->", textBlock = """
+                             -> ''
+            ''               -> ''
+            /                -> ''
+            path             -> ?path=path
+            path/to          -> ?path=path/to
+            path/to/file.txt -> ?path=path/to/file.txt
+            """)
+    public void getPathParam(String pathValue, String expectedQueryParam) {
+        assertThat(PathHelper.getPathParam(pathValue), is(expectedQueryParam));
+    }
 }
