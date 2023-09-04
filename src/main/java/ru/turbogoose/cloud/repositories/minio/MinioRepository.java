@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import ru.turbogoose.cloud.exceptions.MinioOperationException;
 import ru.turbogoose.cloud.dto.ObjectInfoDto;
 import ru.turbogoose.cloud.repositories.FileRepository;
+import ru.turbogoose.cloud.repositories.ObjectPath;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -23,6 +24,7 @@ public class MinioRepository implements FileRepository {
     private static final String ROOT_BUCKET = "user-files";
     private final MinioClient client;
 
+    // TODO: move to config
     public MinioRepository() {
         client = MinioClient.builder()
                 .endpoint("localhost", 9000, false)
@@ -48,7 +50,7 @@ public class MinioRepository implements FileRepository {
     }
 
     @Override
-    public boolean isObjectExist(MinioObjectPath objectPath) {
+    public boolean isObjectExist(ObjectPath objectPath) {
         try {
             getObjectInfoUnhandled(objectPath);
             return true;
@@ -60,7 +62,7 @@ public class MinioRepository implements FileRepository {
     }
 
     @Override
-    public ObjectInfoDto getObjectInfo(MinioObjectPath objectPath) {
+    public ObjectInfoDto getObjectInfo(ObjectPath objectPath) {
         try {
             return getObjectInfoUnhandled(objectPath);
         } catch (Exception exc) {
@@ -68,7 +70,7 @@ public class MinioRepository implements FileRepository {
         }
     }
 
-    private ObjectInfoDto getObjectInfoUnhandled(MinioObjectPath objectPath) throws ServerException, InsufficientDataException,
+    private ObjectInfoDto getObjectInfoUnhandled(ObjectPath objectPath) throws ServerException, InsufficientDataException,
             ErrorResponseException, IOException, NoSuchAlgorithmException, InvalidKeyException,
             InvalidResponseException, XmlParserException, InternalException {
         StatObjectResponse response = client.statObject(
@@ -80,17 +82,17 @@ public class MinioRepository implements FileRepository {
     }
 
     @Override
-    public List<MinioObjectPath> listFolderObjects(MinioObjectPath folderPath) {
+    public List<ObjectPath> listFolderObjects(ObjectPath folderPath) {
         return listFolderObjectsWithParams(folderPath, false, false);
     }
 
     @Override
-    public List<MinioObjectPath> listFolderObjectsRecursive(MinioObjectPath folderPath, boolean includeSelf) {
+    public List<ObjectPath> listFolderObjectsRecursive(ObjectPath folderPath, boolean includeSelf) {
         return listFolderObjectsWithParams(folderPath, true, includeSelf);
     }
 
-    private List<MinioObjectPath> listFolderObjectsWithParams(
-            MinioObjectPath folderPath, boolean recursive, boolean includeSelf) {
+    private List<ObjectPath> listFolderObjectsWithParams(
+            ObjectPath folderPath, boolean recursive, boolean includeSelf) {
         validateFolderPath(folderPath);
         try {
             Iterable<Result<Item>> results = client.listObjects(
@@ -99,7 +101,7 @@ public class MinioRepository implements FileRepository {
                             .prefix(folderPath.getFullPath())
                             .recursive(recursive)
                             .build());
-            List<MinioObjectPath> objects = new ArrayList<>();
+            List<ObjectPath> objects = new ArrayList<>();
             for (Result<Item> result : results) {
                 String objectPath = result.get().objectName();
                 if (objectPath.equals(folderPath.getFullPath()) && !includeSelf) {
@@ -114,7 +116,7 @@ public class MinioRepository implements FileRepository {
     }
 
     @Override
-    public void createFile(MinioObjectPath filePath, InputStream fileInputStream) {
+    public void createFile(ObjectPath filePath, InputStream fileInputStream) {
         validateFilePath(filePath);
         try {
             client.putObject(
@@ -128,20 +130,20 @@ public class MinioRepository implements FileRepository {
         }
     }
 
-    private void validateFolderPath(MinioObjectPath folderPath) {
+    private void validateFolderPath(ObjectPath folderPath) {
         if (!folderPath.isFolder()) {
             throw new IllegalArgumentException("Passed path is not a folder: " + folderPath.getFullPath());
         }
     }
 
-    private void validateFilePath(MinioObjectPath filePath) {
+    private void validateFilePath(ObjectPath filePath) {
         if (filePath.isFolder()) {
             throw new IllegalArgumentException("Passed path is not a file: " + filePath.getFullPath());
         }
     }
 
     @Override
-    public void createFolder(MinioObjectPath folderPath) {
+    public void createFolder(ObjectPath folderPath) {
         validateFolderPath(folderPath);
         try {
             client.putObject(
@@ -155,7 +157,7 @@ public class MinioRepository implements FileRepository {
         }
     }
 
-    private void moveObject(MinioObjectPath oldPath, MinioObjectPath newPath) {
+    private void moveObject(ObjectPath oldPath, ObjectPath newPath) {
         if (newPath.equals(oldPath)) {
             return;
         }
@@ -182,14 +184,14 @@ public class MinioRepository implements FileRepository {
     }
 
     @Override
-    public void moveFile(MinioObjectPath oldFilePath, MinioObjectPath newFilePath) {
+    public void moveFile(ObjectPath oldFilePath, ObjectPath newFilePath) {
         validateFilePath(oldFilePath);
         validateFilePath(newFilePath);
         moveObject(oldFilePath, newFilePath);
     }
 
     @Override
-    public void moveFolder(MinioObjectPath oldFolderPath, MinioObjectPath newFolderPath) {
+    public void moveFolder(ObjectPath oldFolderPath, ObjectPath newFolderPath) {
         validateFolderPath(oldFolderPath);
         validateFolderPath(newFolderPath);
 
@@ -197,15 +199,16 @@ public class MinioRepository implements FileRepository {
             return;
         }
 
-        listFolderObjectsWithParams(oldFolderPath, true, true).forEach(oldSubfolderObjectPath -> {
-            MinioObjectPath newSubfolderObjectPath = oldSubfolderObjectPath.replacePrefix(
-                    oldFolderPath.getPath(), newFolderPath.getPath());
-            moveObject(oldSubfolderObjectPath, newSubfolderObjectPath);
-        });
+        listFolderObjectsWithParams(oldFolderPath, true, true).forEach(
+                oldSubfolderObjectPath -> {
+                    ObjectPath newSubfolderObjectPath = oldSubfolderObjectPath.replacePrefix(
+                            oldFolderPath.getPath(), newFolderPath.getPath());
+                    moveObject(oldSubfolderObjectPath, newSubfolderObjectPath);
+                });
     }
 
     @Override
-    public void deleteFile(MinioObjectPath filePath) {
+    public void deleteFile(ObjectPath filePath) {
         validateFilePath(filePath);
         try {
             client.removeObject(
@@ -219,7 +222,7 @@ public class MinioRepository implements FileRepository {
     }
 
     @Override
-    public void deleteFolder(MinioObjectPath folderPath) {
+    public void deleteFolder(ObjectPath folderPath) {
         validateFolderPath(folderPath);
         List<DeleteObject> objectsToDelete = listFolderObjectsRecursive(folderPath, true).stream()
                 .map(path -> new DeleteObject(path.getFullPath()))
@@ -240,7 +243,7 @@ public class MinioRepository implements FileRepository {
 
     // returned stream must be closed in order to release network resources
     @Override
-    public InputStream getFileContent(MinioObjectPath filePath) {
+    public InputStream getFileContent(ObjectPath filePath) {
         validateFilePath(filePath);
         try {
             return client.getObject(

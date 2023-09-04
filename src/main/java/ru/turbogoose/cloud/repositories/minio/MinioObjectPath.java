@@ -3,13 +3,14 @@ package ru.turbogoose.cloud.repositories.minio;
 import lombok.AccessLevel;
 import lombok.EqualsAndHashCode;
 import lombok.RequiredArgsConstructor;
+import ru.turbogoose.cloud.repositories.ObjectPath;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 @EqualsAndHashCode
 @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
-public class MinioObjectPath {
+public class MinioObjectPath implements ru.turbogoose.cloud.repositories.ObjectPath {
     private final String homeFolder;
     private final String objectPath;
 
@@ -56,10 +57,12 @@ public class MinioObjectPath {
         return compose(userId, "/");
     }
 
+    @Override
     public boolean isRootFolder() {
         return objectPath.equals("/");
     }
 
+    @Override
     public String getObjectName() {
         if (objectPath.equals("/")) {
             return "";
@@ -71,14 +74,17 @@ public class MinioObjectPath {
         return path.substring(path.lastIndexOf("/") + 1);
     }
 
+    @Override
     public String getPath() {
         return objectPath;
     }
 
+    @Override
     public String getFullPath() {
         return homeFolder + objectPath;
     }
 
+    @Override
     public MinioObjectPath getParent() {
         if (objectPath.equals("/")) {
             throw new UnsupportedOperationException("Root folder has no path without object name");
@@ -91,20 +97,22 @@ public class MinioObjectPath {
         return new MinioObjectPath(homeFolder, path);
     }
 
+    @Override
     public boolean isFolder() {
         return objectPath.endsWith("/");
     }
 
-    public boolean isInFolder(MinioObjectPath folderPath) {
+    @Override
+    public boolean isInFolder(ObjectPath folderPath) {
         if (!folderPath.isFolder()) {
             throw new IllegalArgumentException(String.format(
                     "isInFolder() for objectPath %s failed, because passed object is not a folder: %s",
                     this, folderPath));
         }
-        return this.homeFolder.equals(folderPath.homeFolder) &&
-                this.objectPath.startsWith(folderPath.objectPath);
+        return this.getFullPath().startsWith(folderPath.getFullPath());
     }
 
+    @Override
     public MinioObjectPath replacePrefix(String prefixToReplace, String replacement) {
         validateFolderPathFormat(prefixToReplace);
         validateFolderPathFormat(replacement);
@@ -115,6 +123,7 @@ public class MinioObjectPath {
         return new MinioObjectPath(homeFolder, newObjectPath);
     }
 
+    @Override
     public MinioObjectPath resolve(String objectName) {
         if (!isFolder()) {
             throw new UnsupportedOperationException("Cannot append for path that is not a folder: " + this);
@@ -132,6 +141,7 @@ public class MinioObjectPath {
         }
     }
 
+    @Override
     public MinioObjectPath renameObject(String newName) {
         if (objectPath.equals("/")) {
             throw new UnsupportedOperationException("Cannot rename root folder");
