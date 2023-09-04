@@ -14,9 +14,18 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class PathHelperTest {
     @ParameterizedTest
-    @ValueSource(strings = {"a", "/a", "a/", "/a/", "b/a", "/b/a", "b/a/", "/b/a/"})
-    public void whenExtractObjectNameThenReturn(String path) {
-        assertThat(PathHelper.extractObjectName(path), is("a"));
+    @CsvSource(delimiterString = "->", textBlock = """
+            path              -> path
+            /path             -> path
+            path/             -> path
+            /path/to          -> to
+            path/to/          -> to
+            /path/to/         -> to
+            path/to/file.txt  -> file.txt
+            /path/to/file.txt -> file.txt
+            """)
+    public void whenExtractObjectNameThenReturn(String path, String expectedObjectName) {
+        assertThat(PathHelper.extractObjectName(path), is(expectedObjectName));
     }
 
     @ParameterizedTest
