@@ -42,7 +42,7 @@ public class FolderController {
     @PostMapping
     public String createFolder(
             @AuthenticationPrincipal UserDetailsImpl userDetails,
-            @RequestParam String path,
+            @RequestParam(required = false) String path,
             @ModelAttribute("folderCreationDto") @Valid FolderCreationDto folderCreationDto, BindingResult bindingResult,
             @ModelAttribute("searchDto") SearchDto searchDto,
             Model model) {

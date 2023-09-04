@@ -29,13 +29,15 @@
   </div>
 
   <br>
-  <form method="POST" th:action="@{/(path=${param.path})}" th:object="${folderCreationDto}">
-    <input type="hidden" name="parentFolderPath" th:value="${param.path}">
-    <label for="name">Enter new folder name: </label>
-    <input id="name" type="text" th:field="*{newFolderName}">
-    <input type="submit" value="create">
-    <span style="color: red" th:if="${#fields.hasErrors('newFolderName')}" th:errors="*{newFolderName}"></span>
-  </form>
+  <div th:with="pathParam=${#strings.isEmpty(param.path)} ? '' : '(path=param.path)'">
+    <form method="POST" th:action="@{'/' + ${pathParam}}" th:object="${folderCreationDto}">
+      <input type="hidden" name="parentFolderPath" th:value="${param.path}">
+      <label for="name">Enter new folder name: </label>
+      <input id="name" type="text" th:field="*{newFolderName}">
+      <input type="submit" value="create">
+      <span style="color: red" th:if="${#fields.hasErrors('newFolderName')}" th:errors="*{newFolderName}"></span>
+    </form>
+  </div>
 
   <br>
   <p th:if="${objects.isEmpty()}">This folder is empty</p>
