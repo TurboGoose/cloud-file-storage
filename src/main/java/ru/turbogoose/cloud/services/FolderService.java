@@ -11,10 +11,15 @@ import ru.turbogoose.cloud.models.MinioObjectPath;
 import ru.turbogoose.cloud.util.ObjectPathMapper;
 import ru.turbogoose.cloud.util.PathHelper;
 
-import java.io.IOException;
+import java.io.*;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
+
+import static ru.turbogoose.cloud.util.ObjectPathMapper.fromUrlParam;
+import static ru.turbogoose.cloud.util.ObjectPathMapper.toUrlParam;
 
 @Service
 @RequiredArgsConstructor
@@ -23,14 +28,14 @@ public class FolderService {
     private final FileService fileService;
 
     public List<ObjectPathDto> getFolderObjects(int userId, String folderPath) {
-        MinioObjectPath minioFolderPath = MinioObjectPath.compose(userId, ObjectPathMapper.fromUrlParam(folderPath));
+        MinioObjectPath minioFolderPath = MinioObjectPath.compose(userId, fromUrlParam(folderPath));
         if (!minioService.isObjectExist(minioFolderPath)) {
             throw new ObjectNotExistsException(
                     String.format("Folder with name %s does not exist", minioFolderPath));
         }
         return minioService.listFolderObjects(minioFolderPath).stream()
                 .map(path -> new ObjectPathDto(
-                        path.getObjectName(), ObjectPathMapper.toUrlParam(path.getPath()), path.isFolder()))
+                        path.getObjectName(), toUrlParam(path.getPath()), path.isFolder()))
                 .sorted(Comparator.comparing(ObjectPathDto::isFolder).reversed().thenComparing(ObjectPathDto::getName))
                 .toList();
     }
@@ -43,7 +48,7 @@ public class FolderService {
         }
 
         MinioObjectPath parentFolderPath = MinioObjectPath.compose(
-                userId, ObjectPathMapper.fromUrlParam(folderUploadDto.getParentFolderPath()));
+                userId, fromUrlParam(folderUploadDto.getParentFolderPath()));
         String uploadedFolderName = PathHelper.extractFirstFolderName(
                 Objects.requireNonNull(files.get(0).getOriginalFilename()));
 
@@ -67,7 +72,7 @@ public class FolderService {
     }
 
     public String createSingleFolder(int userId, FolderCreationDto folderCreationDto) {
-        String parentFolder = ObjectPathMapper.fromUrlParam(folderCreationDto.getParentFolderPath());
+        String parentFolder = fromUrlParam(folderCreationDto.getParentFolderPath());
         MinioObjectPath newFolderPath = MinioObjectPath.compose(userId, parentFolder)
                 .resolve(folderCreationDto.getNewFolderName() + "/");
         if (minioService.isObjectExist(newFolderPath)) {
@@ -75,9 +80,9 @@ public class FolderService {
                     String.format("Folder with name %s already exists", newFolderPath));
         }
         minioService.createFolder(newFolderPath);
-        return ObjectPathMapper.toUrlParam(newFolderPath.getPath());
+        return toUrlParam(newFolderPath.getPath());
     }
-    
+
     public void createFolderWithIntermediate(MinioObjectPath folderPath) {
         if (!folderPath.isFolder()) {
             throw new IllegalArgumentException("Saved object is not a folder: " + folderPath);
@@ -90,49 +95,73 @@ public class FolderService {
             folderPath = folderPath.getParent();
         }
     }
-    
+
     public String moveFolder(int userId, ObjectMoveDto objectMoveDto) {
         MinioObjectPath oldFolderPath = MinioObjectPath.compose(userId,
-                ObjectPathMapper.fromUrlParam(objectMoveDto.getOldObjectPath()));
+                fromUrlParam(objectMoveDto.getOldObjectPath()));
         MinioObjectPath newParentFolderPath = MinioObjectPath.compose(userId,
-                ObjectPathMapper.fromUrlParam(objectMoveDto.getNewObjectPath()));
+                fromUrlParam(objectMoveDto.getNewObjectPath()));
         MinioObjectPath newFolderPath = newParentFolderPath.resolve(oldFolderPath.getObjectName() + "/");
         if (minioService.isObjectExist(newFolderPath)) {
             throw new ObjectAlreadyExistsException(
                     String.format("Cannot move folder, because target folder with name %s already exists", newFolderPath));
         }
         minioService.moveFolder(oldFolderPath, newFolderPath);
-        return ObjectPathMapper.toUrlParam(newFolderPath.getPath());
+        return toUrlParam(newFolderPath.getPath());
     }
 
     public String renameFolder(int userId, ObjectRenameDto objectRenameDto) {
-        MinioObjectPath oldFolderPath = MinioObjectPath.compose(userId, ObjectPathMapper.fromUrlParam(objectRenameDto.getObjectPath()));
+        MinioObjectPath oldFolderPath = MinioObjectPath.compose(userId, fromUrlParam(objectRenameDto.getObjectPath()));
         MinioObjectPath newFolderPath = oldFolderPath.renameObject(objectRenameDto.getNewName());
         if (minioService.isObjectExist(newFolderPath)) {
             throw new ObjectAlreadyExistsException(
                     String.format("Cannot rename folder, because target folder with name %s already exists", newFolderPath));
         }
         minioService.moveFolder(oldFolderPath, newFolderPath);
-        return ObjectPathMapper.toUrlParam(newFolderPath.getPath());
+        return toUrlParam(newFolderPath.getPath());
     }
 
     public List<String> getMoveCandidatesForFolder(int userId, String folderPath) {
-        MinioObjectPath folderPathToMove = MinioObjectPath.compose(userId, ObjectPathMapper.fromUrlParam(folderPath));
+        MinioObjectPath folderPathToMove = MinioObjectPath.compose(userId, fromUrlParam(folderPath));
         MinioObjectPath parentFolderPath = folderPathToMove.getParent();
         MinioObjectPath rootFolderPath = MinioObjectPath.getRootFolder(userId);
         return minioService.listFolderObjectsRecursive(rootFolderPath).stream()
                 .filter(path -> path.isFolder() && !path.isInFolder(folderPathToMove) && !path.equals(parentFolderPath))
-                .map(path -> ObjectPathMapper.toUrlParam(path.getPath()))
+                .map(path -> toUrlParam(path.getPath()))
                 .toList();
     }
 
     public String deleteFolder(int userId, String folderPath) {
-        MinioObjectPath folderPathToDelete = MinioObjectPath.compose(userId, ObjectPathMapper.fromUrlParam(folderPath));
+        MinioObjectPath folderPathToDelete = MinioObjectPath.compose(userId, fromUrlParam(folderPath));
         if (folderPathToDelete.isRootFolder()) {
             throw new IllegalArgumentException("Cannot delete root folder");
         }
         minioService.deleteFolder(folderPathToDelete);
         String parentFolderPath = folderPathToDelete.getParent().getPath();
-        return ObjectPathMapper.toUrlParam(parentFolderPath);
+        return toUrlParam(parentFolderPath);
+    }
+
+    public void getFolderContent(int userId, String folderPath, OutputStream target) {
+        MinioObjectPath folderPathToDownload = MinioObjectPath.compose(userId, fromUrlParam(folderPath));
+        List<MinioObjectPath> objects = minioService.listFolderObjectsRecursive(folderPathToDownload);
+        try (ZipOutputStream zipOut = new ZipOutputStream(target)) {
+            for (MinioObjectPath object : objects) {
+                if (object.isFolder()) {
+                    continue;
+                }
+                zipOut.putNextEntry(new ZipEntry(object.getPath()));
+                try (InputStream fis = minioService.getFileContent(object)) {
+                    byte[] buffer = new byte[1024];
+                    int len;
+                    while ((len = fis.read(buffer)) > 0) {
+                        zipOut.write(buffer, 0, len);
+                    }
+                }
+                zipOut.closeEntry();
+                System.out.println("Zipped: " + object);
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

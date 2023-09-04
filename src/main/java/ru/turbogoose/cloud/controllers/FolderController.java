@@ -1,5 +1,6 @@
 package ru.turbogoose.cloud.controllers;
 
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -14,8 +15,9 @@ import ru.turbogoose.cloud.exceptions.ObjectUploadException;
 import ru.turbogoose.cloud.models.security.UserDetailsImpl;
 import ru.turbogoose.cloud.services.FolderService;
 
+import java.io.IOException;
+
 import static ru.turbogoose.cloud.util.PathHelper.*;
-import static ru.turbogoose.cloud.util.PathHelper.getPathParam;
 
 @Controller
 @RequiredArgsConstructor
@@ -82,6 +84,30 @@ public class FolderController {
             bindingResult.rejectValue("files", "folder.errorUploading", "An error occurred during uploading");
         }
         return getFolderUploadForm(path, folderUploadDto, model);
+    }
+
+    @GetMapping("/download")
+    public void downloadZippedFolder(
+            @AuthenticationPrincipal UserDetailsImpl userDetails,
+            @RequestParam String path,
+            HttpServletResponse response) {
+        response.setHeader("Content-Disposition",
+                String.format("attachment; filename=\"%s\"", composeZipArchiveName(path)));
+        try {
+            folderService.getFolderContent(userDetails.getId(), path, response.getOutputStream());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private String composeZipArchiveName(String path) {
+        String zipArchiveName;
+        try {
+            zipArchiveName = extractObjectName(path);
+        } catch (IllegalArgumentException exc) {
+            zipArchiveName = "all-files";
+        }
+        return zipArchiveName + ".zip";
     }
 
     @GetMapping("/rename")

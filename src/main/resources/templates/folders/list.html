@@ -29,6 +29,9 @@
   </div>
 
   <br>
+  <a th:href="@{/download(path=${param.path})}">Download this folder</a>
+
+  <br>
   <div th:with="pathParam=${#strings.isEmpty(param.path)} ? '' : '(path=param.path)'">
     <form method="POST" th:action="@{'/' + ${pathParam}}" th:object="${folderCreationDto}">
       <input type="hidden" name="parentFolderPath" th:value="${param.path}">
