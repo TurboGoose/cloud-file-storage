@@ -31,15 +31,15 @@ public class FolderService {
     private final FileService fileService;
     private final ObjectPathFactory objectPathFactory;
 
-    public List<ObjectPathDto> getFolderObjects(int userId, String folderPath) {
-        ObjectPath folderToListPath = objectPathFactory.compose(userId, fromUrlParam(folderPath));
-        if (!fileRepository.isObjectExist(folderToListPath)) {
+    public List<ObjectPathDto> getFolderObjects(int userId, String path) {
+        ObjectPath folderPath = objectPathFactory.compose(userId, fromUrlParam(path));
+        if (!fileRepository.isObjectExist(folderPath)) {
             throw new ObjectNotExistsException(
-                    String.format("Folder with name %s does not exist", folderToListPath));
+                    String.format("Folder with name %s does not exist", folderPath));
         }
-        return fileRepository.listFolderObjects(folderToListPath).stream()
-                .map(path -> new ObjectPathDto(
-                        path.getObjectName(), toUrlParam(path.getPath()), path.isFolder()))
+        return fileRepository.listFolderObjects(folderPath).stream()
+                .map(folder -> new ObjectPathDto(
+                        folder.getObjectName(), toUrlParam(folder.getPath()), folder.isFolder()))
                 .sorted(Comparator.comparing(ObjectPathDto::isFolder).reversed().thenComparing(ObjectPathDto::getName))
                 .toList();
     }
@@ -87,16 +87,16 @@ public class FolderService {
         return toUrlParam(newFolderPath.getPath());
     }
 
-    public void createFolderWithIntermediate(ObjectPath folderPath) {
-        if (!folderPath.isFolder()) {
-            throw new IllegalArgumentException("Saved object is not a folder: " + folderPath);
+    public void createFolderWithIntermediate(ObjectPath path) {
+        if (!path.isFolder()) {
+            throw new IllegalArgumentException("Saved object is not a folder: " + path);
         }
-        while (!folderPath.isRootFolder()) {
-            if (fileRepository.isObjectExist(folderPath)) {
+        while (!path.isRootFolder()) {
+            if (fileRepository.isObjectExist(path)) {
                 break;
             }
-            fileRepository.createFolder(folderPath);
-            folderPath = folderPath.getParent();
+            fileRepository.createFolder(path);
+            path = path.getParent();
         }
     }
 
@@ -125,29 +125,31 @@ public class FolderService {
         return toUrlParam(newFolderPath.getPath());
     }
 
-    public List<String> getMoveCandidatesForFolder(int userId, String folderPath) {
-        ObjectPath folderPathToMove = objectPathFactory.compose(userId, fromUrlParam(folderPath));
+    public List<String> getMoveCandidatesForFolder(int userId, String path) {
+        ObjectPath folderPathToMove = objectPathFactory.compose(userId, fromUrlParam(path));
         ObjectPath parentFolderPath = folderPathToMove.getParent();
         ObjectPath rootFolderPath = objectPathFactory.getRootFolder(userId);
         return fileRepository.listFolderObjectsRecursive(rootFolderPath, true).stream()
-                .filter(path -> path.isFolder() && !path.isInFolder(folderPathToMove) && !path.equals(parentFolderPath))
-                .map(path -> toUrlParam(path.getPath()))
+                .filter(objectPath -> objectPath.isFolder()
+                        && !objectPath.isInFolder(folderPathToMove)
+                        && !objectPath.equals(parentFolderPath))
+                .map(folderPath -> toUrlParam(folderPath.getPath()))
                 .toList();
     }
 
-    public String deleteFolder(int userId, String folderPath) {
-        ObjectPath folderPathToDelete = objectPathFactory.compose(userId, fromUrlParam(folderPath));
-        if (folderPathToDelete.isRootFolder()) {
+    public String deleteFolder(int userId, String path) {
+        ObjectPath folderPath = objectPathFactory.compose(userId, fromUrlParam(path));
+        if (folderPath.isRootFolder()) {
             throw new IllegalArgumentException("Cannot delete root folder");
         }
-        fileRepository.deleteFolder(folderPathToDelete);
-        String parentFolderPath = folderPathToDelete.getParent().getPath();
+        fileRepository.deleteFolder(folderPath);
+        String parentFolderPath = folderPath.getParent().getPath();
         return toUrlParam(parentFolderPath);
     }
 
-    public void writeFolderContent(int userId, String folderPath, OutputStream target) {
-        ObjectPath folderPathToDownload = objectPathFactory.compose(userId, fromUrlParam(folderPath));
-        List<ObjectPath> objects = fileRepository.listFolderObjectsRecursive(folderPathToDownload, false);
+    public void writeFolderContent(int userId, String path, OutputStream target) {
+        ObjectPath folderPath = objectPathFactory.compose(userId, fromUrlParam(path));
+        List<ObjectPath> objects = fileRepository.listFolderObjectsRecursive(folderPath, false);
         try (ZipOutputStream zipOut = new ZipOutputStream(target)) {
             for (ObjectPath object : objects) {
                 if (!object.isFolder()) {

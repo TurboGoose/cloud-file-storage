@@ -21,16 +21,15 @@ public class SearchService {
     private final FileRepository fileRepository;
     private final ObjectPathFactory objectPathFactory;
 
-    public List<ObjectPathDto> searchObjectsByString(
-            int userId, SearchDto searchDto) {
+    public List<ObjectPathDto> searchObjectsByString(int userId, SearchDto searchDto) {
         ObjectPath rootFolder = objectPathFactory.getRootFolder(userId);
         return fileRepository.listFolderObjectsRecursive(rootFolder, false).stream()
                 .filter(path -> switch (searchDto.getType()) {
                             case folders -> path.isFolder();
                             case files -> !path.isFolder();
                             case all -> true;
-                        } &&
-                        (searchDto.isMatchCase()
+                        }
+                        && (searchDto.isMatchCase()
                                 ? path.getObjectName().contains(searchDto.getQuery())
                                 : path.getObjectName().toLowerCase().contains(searchDto.getQuery().toLowerCase())))
                 .map(path -> new ObjectPathDto(
