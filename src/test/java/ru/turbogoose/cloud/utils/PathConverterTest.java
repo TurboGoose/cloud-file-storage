@@ -1,4 +1,4 @@
-package ru.turbogoose.cloud.mappers;
+package ru.turbogoose.cloud.utils;
 
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;

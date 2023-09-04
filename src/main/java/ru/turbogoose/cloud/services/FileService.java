@@ -12,7 +12,7 @@ import ru.turbogoose.cloud.exceptions.ObjectNotExistsException;
 import ru.turbogoose.cloud.exceptions.ObjectUploadException;
 import ru.turbogoose.cloud.repositories.FileRepository;
 import ru.turbogoose.cloud.repositories.ObjectPath;
-import ru.turbogoose.cloud.repositories.minio.MinioObjectPath;
+import ru.turbogoose.cloud.repositories.ObjectPathFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -25,9 +25,10 @@ import static ru.turbogoose.cloud.utils.PathConverter.toUrlParam;
 @RequiredArgsConstructor
 public class FileService {
     private final FileRepository fileRepository;
+    private final ObjectPathFactory objectPathFactory;
 
     public String saveFile(int userId, FileUploadDto creationDto) {
-        ObjectPath parentFolderPath = MinioObjectPath.compose(
+        ObjectPath parentFolderPath = objectPathFactory.compose(
                 userId, fromUrlParam(creationDto.getParentFolderPath()));
         MultipartFile file = creationDto.getFile();
         if (file == null || file.isEmpty()) {
@@ -55,7 +56,7 @@ public class FileService {
     }
 
     public ObjectInfoDto getFileInfo(int userId, String path) {
-        ObjectPath filePath = MinioObjectPath.compose(userId, fromUrlParam(path, true));
+        ObjectPath filePath = objectPathFactory.compose(userId, fromUrlParam(path, true));
         if (!fileRepository.isObjectExist(filePath)) {
             throw new ObjectNotExistsException(
                     String.format("File with name %s does not exist", filePath.getFullPath()));
@@ -64,7 +65,7 @@ public class FileService {
     }
 
     public InputStream getFileContent(int userId, String path) {
-        ObjectPath filePath = MinioObjectPath.compose(userId, fromUrlParam(path, true));
+        ObjectPath filePath = objectPathFactory.compose(userId, fromUrlParam(path, true));
         if (!fileRepository.isObjectExist(filePath)) {
             throw new ObjectNotExistsException(String.format("File %s not exists", filePath));
         }
@@ -72,7 +73,7 @@ public class FileService {
     }
 
     public String renameFile(int userId, ObjectRenameDto objectRenameDto) {
-        ObjectPath oldFilePath = MinioObjectPath.compose(userId,
+        ObjectPath oldFilePath = objectPathFactory.compose(userId,
                 fromUrlParam(objectRenameDto.getObjectPath(), true));
         ObjectPath newFilePath = oldFilePath.renameObject(objectRenameDto.getNewName());
         if (fileRepository.isObjectExist(newFilePath)) {
@@ -84,19 +85,19 @@ public class FileService {
     }
 
     public List<String> getMoveCandidatesForFile(int userId, String path) {
-        ObjectPath filePathToMove = MinioObjectPath.compose(userId, fromUrlParam(path, true));
+        ObjectPath filePathToMove = objectPathFactory.compose(userId, fromUrlParam(path, true));
         ObjectPath parentFolderPath = filePathToMove.getParent();
-        ObjectPath rootFolderPath = MinioObjectPath.getRootFolder(userId);
+        ObjectPath rootFolderPath = objectPathFactory.getRootFolder(userId);
         return fileRepository.listFolderObjectsRecursive(rootFolderPath, true).stream()
-                .filter(minioPath -> minioPath.isFolder() && !minioPath.equals(parentFolderPath))
-                .map(minioPath -> toUrlParam(minioPath.getPath()))
+                .filter(objectPath -> objectPath.isFolder() && !objectPath.equals(parentFolderPath))
+                .map(folderPath -> toUrlParam(folderPath.getPath()))
                 .toList();
     }
 
     public String moveFile(int userId, ObjectMoveDto objectMoveDto) {
-        ObjectPath oldFilePath = MinioObjectPath.compose(userId,
+        ObjectPath oldFilePath = objectPathFactory.compose(userId,
                 fromUrlParam(objectMoveDto.getOldObjectPath(), true));
-        ObjectPath newFolderPath = MinioObjectPath.compose(userId,
+        ObjectPath newFolderPath = objectPathFactory.compose(userId,
                 fromUrlParam(objectMoveDto.getNewObjectPath()));
         ObjectPath newFilePath = newFolderPath.resolve(oldFilePath.getObjectName());
         if (fileRepository.isObjectExist(newFilePath)) {
@@ -108,7 +109,7 @@ public class FileService {
     }
 
     public String deleteFile(int userId, String path) {
-        ObjectPath filePathToDelete = MinioObjectPath.compose(userId, fromUrlParam(path, true));
+        ObjectPath filePathToDelete = objectPathFactory.compose(userId, fromUrlParam(path, true));
         fileRepository.deleteFile(filePathToDelete);
         String parentFolderPath = filePathToDelete.getParent().getPath();
         return toUrlParam(parentFolderPath);

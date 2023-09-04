@@ -12,8 +12,8 @@ import ru.turbogoose.cloud.exceptions.UsernameAlreadyExistsException;
 import ru.turbogoose.cloud.models.User;
 import ru.turbogoose.cloud.models.security.UserDetailsImpl;
 import ru.turbogoose.cloud.repositories.FileRepository;
+import ru.turbogoose.cloud.repositories.ObjectPathFactory;
 import ru.turbogoose.cloud.repositories.UserRepository;
-import ru.turbogoose.cloud.repositories.minio.MinioObjectPath;
 
 @Service
 @RequiredArgsConstructor
@@ -21,6 +21,7 @@ public class UserService implements UserDetailsService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final FileRepository fileRepository;
+    private final ObjectPathFactory objectPathFactory;
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
@@ -46,6 +47,6 @@ public class UserService implements UserDetailsService {
     }
 
     private void createUserHomeFolder(int userId) {
-        fileRepository.createFolder(MinioObjectPath.getRootFolder(userId));
+        fileRepository.createFolder(objectPathFactory.getRootFolder(userId));
     }
 }

@@ -5,7 +5,8 @@ import org.springframework.stereotype.Service;
 import ru.turbogoose.cloud.dto.ObjectPathDto;
 import ru.turbogoose.cloud.dto.SearchDto;
 import ru.turbogoose.cloud.repositories.FileRepository;
-import ru.turbogoose.cloud.repositories.minio.MinioObjectPath;
+import ru.turbogoose.cloud.repositories.ObjectPath;
+import ru.turbogoose.cloud.repositories.ObjectPathFactory;
 
 import java.util.Comparator;
 import java.util.List;
@@ -18,10 +19,11 @@ public class SearchService {
     public enum SearchType {files, folders, all}
 
     private final FileRepository fileRepository;
+    private final ObjectPathFactory objectPathFactory;
 
     public List<ObjectPathDto> searchObjectsByString(
             int userId, SearchDto searchDto) {
-        MinioObjectPath rootFolder = MinioObjectPath.getRootFolder(userId);
+        ObjectPath rootFolder = objectPathFactory.getRootFolder(userId);
         return fileRepository.listFolderObjectsRecursive(rootFolder, false).stream()
                 .filter(path -> switch (searchDto.getType()) {
                             case folders -> path.isFolder();

@@ -10,11 +10,15 @@ import java.util.regex.Pattern;
 
 @EqualsAndHashCode
 @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
-public class MinioObjectPath implements ru.turbogoose.cloud.repositories.ObjectPath {
+public class MinioObjectPath implements ObjectPath {
     private final String homeFolder;
     private final String objectPath;
 
-    public static MinioObjectPath parse(String fullPath) {
+    static MinioObjectPath getRootFolder(int userId) {
+        return compose(userId, "/");
+    }
+
+    static MinioObjectPath parse(String fullPath) {
         validatePathIsNotNullAndNotEmpty(fullPath);
         Pattern pattern = Pattern.compile("^(?<home>user-\\d+-files)(?<path>/.*)$");
         Matcher matcher = pattern.matcher(fullPath);
@@ -27,7 +31,7 @@ public class MinioObjectPath implements ru.turbogoose.cloud.repositories.ObjectP
         return new MinioObjectPath(homeFolder, objectPath);
     }
 
-    public static MinioObjectPath compose(int userId, String objectPath) {
+    static MinioObjectPath compose(int userId, String objectPath) {
         validatePathIsNotNullAndNotEmpty(objectPath);
         validatePathFormat(objectPath);
         String homeFolder = getUserHomeFolder(userId);
@@ -51,10 +55,6 @@ public class MinioObjectPath implements ru.turbogoose.cloud.repositories.ObjectP
 
     private static String getUserHomeFolder(int userId) {
         return String.format("user-%d-files", userId);
-    }
-
-    public static MinioObjectPath getRootFolder(int userId) {
-        return compose(userId, "/");
     }
 
     @Override
