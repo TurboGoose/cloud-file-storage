@@ -17,7 +17,7 @@ import ru.turbogoose.cloud.services.FolderService;
 
 import java.io.IOException;
 
-import static ru.turbogoose.cloud.util.PathHelper.*;
+import static ru.turbogoose.cloud.utils.PathUtils.*;
 
 @Controller
 @RequiredArgsConstructor
@@ -94,7 +94,7 @@ public class FolderController {
         response.setHeader("Content-Disposition",
                 String.format("attachment; filename=\"%s\"", composeZipArchiveName(path)));
         try {
-            folderService.getFolderContent(userDetails.getId(), path, response.getOutputStream());
+            folderService.writeFolderContent(userDetails.getId(), path, response.getOutputStream());
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

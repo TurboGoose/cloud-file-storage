@@ -1,6 +1,6 @@
-package ru.turbogoose.cloud.util;
+package ru.turbogoose.cloud.utils;
 
-public class ObjectPathMapper {
+public class PathConverter {
 
     public static String fromUrlParam(String path, boolean isFile) {
         return convert(path, isFile);

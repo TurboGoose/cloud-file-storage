@@ -1,4 +1,4 @@
-package ru.turbogoose.cloud.services;
+package ru.turbogoose.cloud.repositories.minio;
 
 import io.minio.*;
 import io.minio.errors.*;
@@ -7,8 +7,7 @@ import io.minio.messages.DeleteObject;
 import io.minio.messages.Item;
 import org.springframework.stereotype.Service;
 import ru.turbogoose.cloud.exceptions.MinioOperationException;
-import ru.turbogoose.cloud.models.MinioObjectPath;
-import ru.turbogoose.cloud.models.ObjectInfo;
+import ru.turbogoose.cloud.dto.ObjectInfoDto;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -19,11 +18,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Service
-public class MinioService {
+public class MinioRepository {
     private static final String ROOT_BUCKET = "user-files";
     private final MinioClient client;
 
-    public MinioService() {
+    public MinioRepository() {
         client = MinioClient.builder()
                 .endpoint("localhost", 9000, false)
                 .credentials("ilya", "bebrabebra")
@@ -58,7 +57,7 @@ public class MinioService {
         }
     }
 
-    public ObjectInfo getObjectInfo(MinioObjectPath objectPath) {
+    public ObjectInfoDto getObjectInfo(MinioObjectPath objectPath) {
         try {
             return getObjectInfoUnhandled(objectPath);
         } catch (Exception exc) {
@@ -66,7 +65,7 @@ public class MinioService {
         }
     }
 
-    private ObjectInfo getObjectInfoUnhandled(MinioObjectPath objectPath) throws ServerException, InsufficientDataException,
+    private ObjectInfoDto getObjectInfoUnhandled(MinioObjectPath objectPath) throws ServerException, InsufficientDataException,
             ErrorResponseException, IOException, NoSuchAlgorithmException, InvalidKeyException,
             InvalidResponseException, XmlParserException, InternalException {
         StatObjectResponse response = client.statObject(
@@ -74,7 +73,7 @@ public class MinioService {
                         .bucket(ROOT_BUCKET)
                         .object(objectPath.getFullPath())
                         .build());
-        return new ObjectInfo(objectPath.getObjectName(), response.size(), response.lastModified().toLocalDateTime());
+        return new ObjectInfoDto(objectPath.getObjectName(), response.size(), response.lastModified().toLocalDateTime());
     }
 
     public List<MinioObjectPath> listFolderObjects(MinioObjectPath folderPath) {

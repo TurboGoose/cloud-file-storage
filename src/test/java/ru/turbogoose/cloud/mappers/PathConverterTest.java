@@ -2,12 +2,12 @@ package ru.turbogoose.cloud.mappers;
 
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
-import ru.turbogoose.cloud.util.ObjectPathMapper;
+import ru.turbogoose.cloud.utils.PathConverter;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 
-class ObjectPathMapperTest {
+class PathConverterTest {
     @ParameterizedTest
     @CsvSource(delimiterString = "->", textBlock = """
                     -> /
@@ -17,7 +17,7 @@ class ObjectPathMapperTest {
             path/to -> /path/to/
             """)
     public void convertFolderPathFromUrlParam(String inputFolderPath, String expectedPath) {
-        assertThat(ObjectPathMapper.fromUrlParam(inputFolderPath), is(expectedPath));
+        assertThat(PathConverter.fromUrlParam(inputFolderPath), is(expectedPath));
     }
 
     @ParameterizedTest
@@ -26,7 +26,7 @@ class ObjectPathMapperTest {
             path/file.txt   -> /path/file.txt
             """)
     public void convertFilePathFromUrlParam(String inputFilePath, String expectedPath) {
-        assertThat(ObjectPathMapper.fromUrlParam(inputFilePath, true), is(expectedPath));
+        assertThat(PathConverter.fromUrlParam(inputFilePath, true), is(expectedPath));
     }
 
     @ParameterizedTest
@@ -40,6 +40,6 @@ class ObjectPathMapperTest {
             /path/file.txt -> path/file.txt
             """)
     public void convertToUrlParam(String inputPath, String expectedPath) {
-        assertThat(ObjectPathMapper.toUrlParam(inputPath), is(expectedPath));
+        assertThat(PathConverter.toUrlParam(inputPath), is(expectedPath));
     }
 }

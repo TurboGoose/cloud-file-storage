@@ -1,4 +1,4 @@
-package ru.turbogoose.cloud.models;
+package ru.turbogoose.cloud.repositories.minio;
 
 import lombok.AccessLevel;
 import lombok.EqualsAndHashCode;

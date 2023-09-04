@@ -1,9 +1,9 @@
-package ru.turbogoose.cloud.util;
+package ru.turbogoose.cloud.utils;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-public class PathHelper {
+public class PathUtils {
 
     public static Map<String, String> assembleBreadcrumbsFromPath(String path, boolean inclusive) {
         return assemble(path, inclusive);

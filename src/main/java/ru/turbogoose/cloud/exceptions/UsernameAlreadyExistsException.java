@@ -1,7 +1,7 @@
 package ru.turbogoose.cloud.exceptions;
 
 public class UsernameAlreadyExistsException extends RuntimeException {
-    public UsernameAlreadyExistsException(String username) {
-        super(String.format("User with username %s already exists", username));
+    public UsernameAlreadyExistsException(String message, Throwable cause) {
+        super(message, cause);
     }
 }

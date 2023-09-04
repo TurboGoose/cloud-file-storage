@@ -9,22 +9,25 @@ import ru.turbogoose.cloud.dto.ObjectRenameDto;
 import ru.turbogoose.cloud.exceptions.ObjectUploadException;
 import ru.turbogoose.cloud.exceptions.ObjectAlreadyExistsException;
 import ru.turbogoose.cloud.exceptions.ObjectNotExistsException;
-import ru.turbogoose.cloud.util.ObjectPathMapper;
-import ru.turbogoose.cloud.models.MinioObjectPath;
-import ru.turbogoose.cloud.models.ObjectInfo;
+import ru.turbogoose.cloud.repositories.minio.MinioRepository;
+import ru.turbogoose.cloud.repositories.minio.MinioObjectPath;
+import ru.turbogoose.cloud.dto.ObjectInfoDto;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 
+import static ru.turbogoose.cloud.utils.PathConverter.fromUrlParam;
+import static ru.turbogoose.cloud.utils.PathConverter.toUrlParam;
+
 @Service
 @RequiredArgsConstructor
 public class FileService {
-    private final MinioService minioService;
+    private final MinioRepository minioRepository;
 
     public String saveFile(int userId, FileUploadDto creationDto) {
         MinioObjectPath parentFolderPath = MinioObjectPath.compose(
-                userId, ObjectPathMapper.fromUrlParam(creationDto.getParentFolderPath()));
+                userId, fromUrlParam(creationDto.getParentFolderPath()));
         MultipartFile file = creationDto.getFile();
         if (file == null || file.isEmpty()) {
             throw new ObjectUploadException("An error occurred during uploading file to " + parentFolderPath);
@@ -33,7 +36,7 @@ public class FileService {
         MinioObjectPath newFilePath = parentFolderPath.resolve(file.getOriginalFilename());
         try {
             saveFile(newFilePath, file.getInputStream());
-            return ObjectPathMapper.toUrlParam(newFilePath.getPath());
+            return toUrlParam(newFilePath.getPath());
         } catch (IOException exc) {
             throw new ObjectUploadException("An error occurred during uploading file to " + parentFolderPath, exc);
         }
@@ -43,70 +46,70 @@ public class FileService {
         if (filePath.isFolder()) {
             throw new IllegalArgumentException("Saved object is not a file: " + filePath);
         }
-        if (minioService.isObjectExist(filePath)) {
+        if (minioRepository.isObjectExist(filePath)) {
             throw new ObjectAlreadyExistsException(
                     String.format("File with name %s already exists", filePath.getFullPath()));
         }
-        minioService.createFile(filePath, fileInputStream);
+        minioRepository.createFile(filePath, fileInputStream);
     }
 
-    public ObjectInfo getFileInfo(int userId, String path) {
-        MinioObjectPath filePath = MinioObjectPath.compose(userId, ObjectPathMapper.fromUrlParam(path, true));
-        if (!minioService.isObjectExist(filePath)) {
+    public ObjectInfoDto getFileInfo(int userId, String path) {
+        MinioObjectPath filePath = MinioObjectPath.compose(userId, fromUrlParam(path, true));
+        if (!minioRepository.isObjectExist(filePath)) {
             throw new ObjectNotExistsException(
                     String.format("File with name %s does not exist", filePath.getFullPath()));
         }
-        return minioService.getObjectInfo(filePath);
+        return minioRepository.getObjectInfo(filePath);
     }
 
     public InputStream getFileContent(int userId, String path) {
-        MinioObjectPath filePath = MinioObjectPath.compose(userId, ObjectPathMapper.fromUrlParam(path, true));
-        if (!minioService.isObjectExist(filePath)) {
+        MinioObjectPath filePath = MinioObjectPath.compose(userId, fromUrlParam(path, true));
+        if (!minioRepository.isObjectExist(filePath)) {
             throw new ObjectNotExistsException(String.format("File %s not exists", filePath));
         }
-        return minioService.getFileContent(filePath);
+        return minioRepository.getFileContent(filePath);
     }
 
     public String renameFile(int userId, ObjectRenameDto objectRenameDto) {
         MinioObjectPath oldFilePath = MinioObjectPath.compose(userId,
-                ObjectPathMapper.fromUrlParam(objectRenameDto.getObjectPath(), true));
+                fromUrlParam(objectRenameDto.getObjectPath(), true));
         MinioObjectPath newFilePath = oldFilePath.renameObject(objectRenameDto.getNewName());
-        if (minioService.isObjectExist(newFilePath)) {
+        if (minioRepository.isObjectExist(newFilePath)) {
             throw new ObjectAlreadyExistsException(
                     String.format("File with name %s already exists", newFilePath));
         }
-        minioService.moveFile(oldFilePath, newFilePath);
-        return ObjectPathMapper.toUrlParam(newFilePath.getPath());
+        minioRepository.moveFile(oldFilePath, newFilePath);
+        return toUrlParam(newFilePath.getPath());
     }
 
     public List<String> getMoveCandidatesForFile(int userId, String path) {
-        MinioObjectPath filePathToMove = MinioObjectPath.compose(userId, ObjectPathMapper.fromUrlParam(path, true));
+        MinioObjectPath filePathToMove = MinioObjectPath.compose(userId, fromUrlParam(path, true));
         MinioObjectPath parentFolderPath = filePathToMove.getParent();
         MinioObjectPath rootFolderPath = MinioObjectPath.getRootFolder(userId);
-        return minioService.listFolderObjectsRecursive(rootFolderPath).stream()
+        return minioRepository.listFolderObjectsRecursive(rootFolderPath).stream()
                 .filter(minioPath -> minioPath.isFolder() && !minioPath.equals(parentFolderPath))
-                .map(minioPath -> ObjectPathMapper.toUrlParam(minioPath.getPath()))
+                .map(minioPath -> toUrlParam(minioPath.getPath()))
                 .toList();
     }
 
     public String moveFile(int userId, ObjectMoveDto objectMoveDto) {
         MinioObjectPath oldFilePath = MinioObjectPath.compose(userId,
-                ObjectPathMapper.fromUrlParam(objectMoveDto.getOldObjectPath(), true));
+                fromUrlParam(objectMoveDto.getOldObjectPath(), true));
         MinioObjectPath newFolderPath = MinioObjectPath.compose(userId,
-                ObjectPathMapper.fromUrlParam(objectMoveDto.getNewObjectPath()));
+                fromUrlParam(objectMoveDto.getNewObjectPath()));
         MinioObjectPath newFilePath = newFolderPath.resolve(oldFilePath.getObjectName());
-        if (minioService.isObjectExist(newFilePath)) {
+        if (minioRepository.isObjectExist(newFilePath)) {
             throw new ObjectAlreadyExistsException(
                     String.format("Cannot move file, because target file with name %s already exists", newFilePath));
         }
-        minioService.moveFile(oldFilePath, newFilePath);
-        return ObjectPathMapper.toUrlParam(newFilePath.getPath());
+        minioRepository.moveFile(oldFilePath, newFilePath);
+        return toUrlParam(newFilePath.getPath());
     }
 
     public String deleteFile(int userId, String path) {
-        MinioObjectPath filePathToDelete = MinioObjectPath.compose(userId, ObjectPathMapper.fromUrlParam(path, true));
-        minioService.deleteFile(filePathToDelete);
+        MinioObjectPath filePathToDelete = MinioObjectPath.compose(userId, fromUrlParam(path, true));
+        minioRepository.deleteFile(filePathToDelete);
         String parentFolderPath = filePathToDelete.getParent().getPath();
-        return ObjectPathMapper.toUrlParam(parentFolderPath);
+        return toUrlParam(parentFolderPath);
     }
 }

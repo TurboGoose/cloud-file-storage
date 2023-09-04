@@ -12,17 +12,16 @@ import org.springframework.web.bind.annotation.*;
 import ru.turbogoose.cloud.dto.FileUploadDto;
 import ru.turbogoose.cloud.dto.ObjectMoveDto;
 import ru.turbogoose.cloud.dto.ObjectRenameDto;
-import ru.turbogoose.cloud.exceptions.ObjectUploadException;
 import ru.turbogoose.cloud.exceptions.ObjectAlreadyExistsException;
 import ru.turbogoose.cloud.exceptions.ObjectNotExistsException;
+import ru.turbogoose.cloud.exceptions.ObjectUploadException;
 import ru.turbogoose.cloud.models.security.UserDetailsImpl;
 import ru.turbogoose.cloud.services.FileService;
-import ru.turbogoose.cloud.util.PathHelper;
 
 import java.io.IOException;
 import java.io.InputStream;
 
-import static ru.turbogoose.cloud.util.PathHelper.getPathParam;
+import static ru.turbogoose.cloud.utils.PathUtils.*;
 
 @Controller
 @RequestMapping("/file")
@@ -37,7 +36,7 @@ public class FileController {
             Model model) {
         try {
             model.addAttribute("fileInfo", fileService.getFileInfo(userDetails.getId(), path));
-            model.addAttribute("breadcrumbs", PathHelper.assembleBreadcrumbsFromPath(path, false));
+            model.addAttribute("breadcrumbs", assembleBreadcrumbsFromPath(path, false));
             return "files/info";
         } catch (ObjectNotExistsException exc) {
             exc.printStackTrace();
@@ -53,7 +52,7 @@ public class FileController {
             HttpServletResponse response) {
         try (InputStream fileContentStream = fileService.getFileContent(userDetails.getId(), path)) {
             response.setHeader("Content-Disposition",
-                    String.format("attachment; filename=\"%s\"", PathHelper.extractObjectName(path)));
+                    String.format("attachment; filename=\"%s\"", extractObjectName(path)));
             FileCopyUtils.copy(fileContentStream, response.getOutputStream());
         } catch (ObjectNotExistsException | IOException exc) {
             exc.printStackTrace();
@@ -65,7 +64,7 @@ public class FileController {
             @RequestParam String path,
             @ModelAttribute("fileUploadDto") FileUploadDto fileUploadDto,
             Model model) {
-        model.addAttribute("breadcrumbs", PathHelper.assembleBreadcrumbsFromPath(path));
+        model.addAttribute("breadcrumbs", assembleBreadcrumbsFromPath(path));
         return "files/upload";
     }
 
@@ -91,8 +90,8 @@ public class FileController {
             @RequestParam String path,
             @ModelAttribute("objectRenameDto") ObjectRenameDto objectRenameDto,
             Model model) {
-        model.addAttribute("breadcrumbs", PathHelper.assembleBreadcrumbsFromPath(path, false));
-        objectRenameDto.setNewName(PathHelper.extractObjectName(path));
+        model.addAttribute("breadcrumbs", assembleBreadcrumbsFromPath(path, false));
+        objectRenameDto.setNewName(extractObjectName(path));
         return "files/rename";
     }
 
@@ -121,7 +120,7 @@ public class FileController {
             @ModelAttribute("objectMoveDto") ObjectMoveDto objectMoveDto,
             Model model) {
         model.addAttribute("moveCandidates", fileService.getMoveCandidatesForFile(userDetails.getId(), path));
-        model.addAttribute("breadcrumbs", PathHelper.assembleBreadcrumbsFromPath(path, false));
+        model.addAttribute("breadcrumbs", assembleBreadcrumbsFromPath(path, false));
         return "files/move";
     }
 

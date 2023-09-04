@@ -1,6 +1,7 @@
 package ru.turbogoose.cloud.services;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -8,9 +9,10 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.turbogoose.cloud.exceptions.UsernameAlreadyExistsException;
-import ru.turbogoose.cloud.models.MinioObjectPath;
+import ru.turbogoose.cloud.repositories.minio.MinioObjectPath;
 import ru.turbogoose.cloud.models.User;
 import ru.turbogoose.cloud.models.security.UserDetailsImpl;
+import ru.turbogoose.cloud.repositories.minio.MinioRepository;
 import ru.turbogoose.cloud.repositories.UserRepository;
 
 @Service
@@ -18,7 +20,7 @@ import ru.turbogoose.cloud.repositories.UserRepository;
 public class UserService implements UserDetailsService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
-    private final MinioService minioService;
+    private final MinioRepository minioRepository;
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
@@ -33,19 +35,17 @@ public class UserService implements UserDetailsService {
         if (user == null) {
             return;
         }
-        validateUniqueUsername(user.getUsername());
-        user.setPassword(passwordEncoder.encode(user.getPassword()));
-        userRepository.save(user);
-        createUserHomeFolder(user.getId());
+        try {
+            user.setPassword(passwordEncoder.encode(user.getPassword()));
+            userRepository.save(user);
+            createUserHomeFolder(user.getId());
+        } catch (DataIntegrityViolationException exc) {
+            throw new UsernameAlreadyExistsException(
+                    String.format("User with username %s already exists", user.getUsername()), exc);
+        }
     }
 
     private void createUserHomeFolder(int userId) {
-        minioService.createFolder(MinioObjectPath.getRootFolder(userId));
-    }
-
-    public void validateUniqueUsername(String username) {
-        if (userRepository.existsByUsername(username)) {
-            throw new UsernameAlreadyExistsException(username);
-        }
+        minioRepository.createFolder(MinioObjectPath.getRootFolder(userId));
     }
 }

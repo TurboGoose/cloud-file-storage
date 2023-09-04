@@ -1,4 +1,4 @@
-package ru.turbogoose.cloud.util;
+package ru.turbogoose.cloud.utils;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -12,7 +12,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-class PathHelperTest {
+class PathUtilsTest {
     @ParameterizedTest
     @CsvSource(delimiterString = "->", textBlock = """
             path              -> path
@@ -25,20 +25,20 @@ class PathHelperTest {
             /path/to/file.txt -> file.txt
             """)
     public void whenExtractObjectNameThenReturn(String path, String expectedObjectName) {
-        assertThat(PathHelper.extractObjectName(path), is(expectedObjectName));
+        assertThat(PathUtils.extractObjectName(path), is(expectedObjectName));
     }
 
     @ParameterizedTest
     @NullAndEmptySource
     @ValueSource(strings = {"/"})
     public void whenExtractObjectNameThenThrow(String path) {
-        assertThrows(IllegalArgumentException.class, () -> PathHelper.extractObjectName(path));
+        assertThrows(IllegalArgumentException.class, () -> PathUtils.extractObjectName(path));
     }
 
     @Test
     public void assembleBreadcrumbsInclusive() {
         String path = "path/to/folder";
-        assertThat(PathHelper.assembleBreadcrumbsFromPath(path), is(Map.of(
+        assertThat(PathUtils.assembleBreadcrumbsFromPath(path), is(Map.of(
                 "path", "path",
                 "to", "path/to",
                 "folder", "path/to/folder"
@@ -48,7 +48,7 @@ class PathHelperTest {
     @Test
     public void assembleBreadcrumbsExclusive() {
         String path = "path/to/file.txt";
-        assertThat(PathHelper.assembleBreadcrumbsFromPath(path, false), is(Map.of(
+        assertThat(PathUtils.assembleBreadcrumbsFromPath(path, false), is(Map.of(
                 "path", "path",
                 "to", "path/to"
         )));
@@ -59,7 +59,7 @@ class PathHelperTest {
             path/to/file.txt -> path
             """)
     public void extractFirstFolderName(String relativePath, String expectedName) {
-        assertThat(PathHelper.extractFirstFolderName(relativePath), is(expectedName));
+        assertThat(PathUtils.extractFirstFolderName(relativePath), is(expectedName));
     }
 
     @ParameterizedTest
@@ -72,6 +72,6 @@ class PathHelperTest {
             path/to/file.txt -> ?path=path/to/file.txt
             """)
     public void getPathParam(String pathValue, String expectedQueryParam) {
-        assertThat(PathHelper.getPathParam(pathValue), is(expectedQueryParam));
+        assertThat(PathUtils.getPathParam(pathValue), is(expectedQueryParam));
     }
 }
