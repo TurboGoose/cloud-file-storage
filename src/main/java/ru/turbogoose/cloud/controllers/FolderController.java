@@ -7,10 +7,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
-import ru.turbogoose.cloud.dto.FolderCreationDto;
-import ru.turbogoose.cloud.dto.FolderUploadDto;
-import ru.turbogoose.cloud.dto.ObjectMoveDto;
-import ru.turbogoose.cloud.dto.ObjectRenameDto;
+import ru.turbogoose.cloud.dto.*;
 import ru.turbogoose.cloud.exceptions.ObjectAlreadyExistsException;
 import ru.turbogoose.cloud.exceptions.ObjectNotExistsException;
 import ru.turbogoose.cloud.exceptions.ObjectUploadException;
@@ -30,6 +27,7 @@ public class FolderController {
             @AuthenticationPrincipal UserDetailsImpl userDetails,
             @RequestParam(required = false) String path,
             @ModelAttribute("folderCreationDto") FolderCreationDto folderCreationDto,
+            @ModelAttribute("searchDto") SearchDto searchDto,
             Model model) {
         try {
             model.addAttribute("objects", folderService.getFolderObjects(userDetails.getId(), path));
@@ -44,17 +42,19 @@ public class FolderController {
     @PostMapping
     public String createFolder(
             @AuthenticationPrincipal UserDetailsImpl userDetails,
+            @RequestParam String path,
             @ModelAttribute("folderCreationDto") @Valid FolderCreationDto folderCreationDto, BindingResult bindingResult,
+            @ModelAttribute("searchDto") SearchDto searchDto,
             Model model) {
         if (bindingResult.hasErrors()) {
-            return listFolder(userDetails, folderCreationDto.getParentFolderPath(), folderCreationDto, model);
+            return listFolder(userDetails, path, folderCreationDto, searchDto, model);
         }
         try {
             String createdPath = folderService.createSingleFolder(userDetails.getId(), folderCreationDto);
             return "redirect:/" + getPathParam(createdPath);
         } catch (ObjectAlreadyExistsException exc) {
-            bindingResult.rejectValue("postfix", "folder.alreadyExists", "This folder already exists");
-            return listFolder(userDetails, folderCreationDto.getParentFolderPath(), folderCreationDto, model);
+            bindingResult.rejectValue("newFolderName", "folder.alreadyExists", "This folder already exists");
+            return listFolder(userDetails, path, folderCreationDto, searchDto, model);
         }
     }
 

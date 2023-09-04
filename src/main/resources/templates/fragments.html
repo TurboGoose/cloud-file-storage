@@ -11,5 +11,26 @@
     / <a th:href="@{/(path=${path})}" th:text="${folderName}"></a>
   </span>
 </div>
+
+<div th:fragment="search (searchDto)">
+  <div>
+    <form method="GET" th:action="@{/search}" th:object="${searchDto}">
+      <label for="query">Enter search query:</label>
+      <input id="query" type="search" th:field="*{query}">
+      <br>
+      <label for="type">Search </label>
+      <select id="type" th:field="*{type}">
+        <option value="all">all</option>
+        <option value="files">files</option>
+        <option value="folders">folders</option>
+      </select>
+      <br>
+      <input id="case" type="checkbox" th:field="*{matchCase}" checked>
+      <label for="case">Match case</label>
+      <br>
+      <input type="submit" value="Search">
+    </form>
+  </div>
+</div>
 </body>
 </html>
