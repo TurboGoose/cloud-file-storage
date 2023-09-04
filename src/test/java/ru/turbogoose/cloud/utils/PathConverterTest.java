@@ -2,7 +2,6 @@ package ru.turbogoose.cloud.utils;
 
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
-import ru.turbogoose.cloud.utils.PathConverter;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;

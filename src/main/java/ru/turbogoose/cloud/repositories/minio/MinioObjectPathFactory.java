@@ -3,7 +3,6 @@ package ru.turbogoose.cloud.repositories.minio;
 import org.springframework.stereotype.Component;
 import ru.turbogoose.cloud.repositories.ObjectPath;
 import ru.turbogoose.cloud.repositories.ObjectPathFactory;
-import ru.turbogoose.cloud.repositories.minio.MinioObjectPath;
 
 @Component
 public class MinioObjectPathFactory implements ObjectPathFactory {
