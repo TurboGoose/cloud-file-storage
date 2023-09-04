@@ -9,18 +9,18 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.turbogoose.cloud.exceptions.UsernameAlreadyExistsException;
-import ru.turbogoose.cloud.repositories.minio.MinioObjectPath;
 import ru.turbogoose.cloud.models.User;
 import ru.turbogoose.cloud.models.security.UserDetailsImpl;
-import ru.turbogoose.cloud.repositories.minio.MinioRepository;
+import ru.turbogoose.cloud.repositories.FileRepository;
 import ru.turbogoose.cloud.repositories.UserRepository;
+import ru.turbogoose.cloud.repositories.minio.MinioObjectPath;
 
 @Service
 @RequiredArgsConstructor
 public class UserService implements UserDetailsService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
-    private final MinioRepository minioRepository;
+    private final FileRepository fileRepository;
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
@@ -46,6 +46,6 @@ public class UserService implements UserDetailsService {
     }
 
     private void createUserHomeFolder(int userId) {
-        minioRepository.createFolder(MinioObjectPath.getRootFolder(userId));
+        fileRepository.createFolder(MinioObjectPath.getRootFolder(userId));
     }
 }
