@@ -5,10 +5,10 @@ spring:
     password: bebra
     url: jdbc:postgresql://localhost:5432/cloud_storage
 
-
   jpa:
     hibernate:
       ddl-auto: validate
+
   mvc:
     hiddenmethod:
       filter:
@@ -19,3 +19,6 @@ spring:
       enabled: true
       max-file-size: -1 # No file size limit
       max-request-size: -1  # No limit on request size
+
+  session:
+    timeout: 1D
