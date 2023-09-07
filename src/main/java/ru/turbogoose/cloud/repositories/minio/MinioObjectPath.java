@@ -14,10 +14,6 @@ public class MinioObjectPath implements ObjectPath {
     private final String homeFolder;
     private final String objectPath;
 
-    static MinioObjectPath getRootFolder(int userId) {
-        return compose(userId, "/");
-    }
-
     static MinioObjectPath parse(String fullPath) {
         validatePathIsNotNullAndNotEmpty(fullPath);
         Pattern pattern = Pattern.compile("^(?<home>user-\\d+-files)(?<path>/.*)$");

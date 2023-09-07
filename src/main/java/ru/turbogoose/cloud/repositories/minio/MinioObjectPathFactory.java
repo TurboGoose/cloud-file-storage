@@ -10,9 +10,4 @@ public class MinioObjectPathFactory implements ObjectPathFactory {
     public ObjectPath compose(int userId, String objectPath) {
         return MinioObjectPath.compose(userId, objectPath);
     }
-
-    @Override
-    public ObjectPath getRootFolder(int userId) {
-        return MinioObjectPath.getRootFolder(userId);
-    }
 }

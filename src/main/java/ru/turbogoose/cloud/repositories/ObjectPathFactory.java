@@ -2,5 +2,7 @@ package ru.turbogoose.cloud.repositories;
 
 public interface ObjectPathFactory {
     ObjectPath compose(int userId, String objectPath);
-    ObjectPath getRootFolder(int userId);
+    default ObjectPath getRootFolder(int userId) {
+        return compose(userId, "/");
+    }
 }

@@ -98,11 +98,6 @@ class MinioObjectPathTest {
     }
 
 
-    @Test
-    public void getRootFolder() {
-        assertThat(MinioObjectPath.getRootFolder(1).getFullPath(), is("user-1-files/"));
-    }
-
     @ParameterizedTest
     @CsvSource(delimiterString = "->", textBlock = """
             /                 -> true
