@@ -38,7 +38,7 @@ public class FolderController {
             exc.printStackTrace();
             model.addAttribute("wrongPath", path);
         }
-        return "folders/list";
+        return "main";
     }
 
     @PostMapping
