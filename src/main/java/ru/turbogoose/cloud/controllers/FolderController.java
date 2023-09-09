@@ -28,12 +28,25 @@ public class FolderController {
     public String listFolder(
             @AuthenticationPrincipal UserDetailsImpl userDetails,
             @RequestParam(required = false) String path,
-            @ModelAttribute("folderCreationDto") FolderCreationDto folderCreationDto,
-            @ModelAttribute("searchDto") SearchDto searchDto,
             Model model) {
+        int userId = userDetails.getUserId();
         try {
-            model.addAttribute("objects", folderService.getFolderObjects(userDetails.getUserId(), path));
+            model.addAttribute("objects", folderService.getFolderObjects(userId, path));
             model.addAttribute("breadcrumbs", assembleBreadcrumbsFromPath(path));
+
+            model.addAttribute("folderCreationDto", new FolderCreationDto());
+            model.addAttribute("folderUploadDto", new FolderUploadDto());
+            model.addAttribute("folderRenameDto", new ObjectRenameDto().newName(extractObjectName(path))); // TODO: rewrite for smth more elegant?
+//            model.addAttribute("folderMoveDto", new ObjectMoveDto());
+//            model.addAttribute("folderMoveCandidates", folderService.getMoveCandidatesForFolder(userId, path));
+
+            model.addAttribute("fileUploadDto", new FileUploadDto());
+            model.addAttribute("fileRenameDto", new ObjectRenameDto());
+//            model.addAttribute("fileMoveDto", new ObjectMoveDto());
+//            model.addAttribute("folderMoveCandidates", folderService.getMoveCandidatesForFolder(userId, path));
+
+            model.addAttribute("searchDto", new SearchDto());
+
         } catch (ObjectNotExistsException exc) {
             exc.printStackTrace();
             model.addAttribute("wrongPath", path);
@@ -44,37 +57,26 @@ public class FolderController {
     @PostMapping
     public String createFolder(
             @AuthenticationPrincipal UserDetailsImpl userDetails,
-            @RequestParam(required = false) String path,
-            @ModelAttribute("folderCreationDto") @Valid FolderCreationDto folderCreationDto, BindingResult bindingResult,
-            @ModelAttribute("searchDto") SearchDto searchDto,
-            Model model) {
+            @ModelAttribute("folderCreationDto") @Valid FolderCreationDto folderCreationDto,
+            BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
-            return listFolder(userDetails, path, folderCreationDto, searchDto, model);
+            return "main";
         }
         try {
             String createdPath = folderService.createSingleFolder(userDetails.getUserId(), folderCreationDto);
             return "redirect:/" + getPathParam(createdPath);
         } catch (ObjectAlreadyExistsException exc) {
             bindingResult.rejectValue("newFolderName", "folder.alreadyExists", "This folder already exists");
-            return listFolder(userDetails, path, folderCreationDto, searchDto, model);
+            return "main";
         }
-    }
-
-    @GetMapping("/upload")
-    public String getFolderUploadForm(
-            @RequestParam String path,
-            @ModelAttribute("folderUploadDto") FolderUploadDto folderUploadDto,
-            Model model) {
-        model.addAttribute("breadcrumbs", assembleBreadcrumbsFromPath(path));
-        return "folders/upload";
     }
 
     @PostMapping("/upload")
     public String uploadFolder(
             @AuthenticationPrincipal UserDetailsImpl userDetails,
             @RequestParam String path,
-            @ModelAttribute("folderUploadDto") @Valid FolderUploadDto folderUploadDto, BindingResult bindingResult,
-            Model model) {
+            @ModelAttribute("folderUploadDto") @Valid FolderUploadDto folderUploadDto,
+            BindingResult bindingResult) {
         try {
             folderService.saveFolder(userDetails.getUserId(), folderUploadDto);
             return "redirect:/" + getPathParam(path);
@@ -83,7 +85,7 @@ public class FolderController {
         } catch (ObjectUploadException exc) {
             bindingResult.rejectValue("files", "folder.errorUploading", "An error occurred during uploading");
         }
-        return getFolderUploadForm(path, folderUploadDto, model);
+        return "main";
     }
 
     @GetMapping("/download")
@@ -110,58 +112,37 @@ public class FolderController {
         return zipArchiveName + ".zip";
     }
 
-    @GetMapping("/rename")
-    public String getFolderRenameForm(
-            @RequestParam String path,
-            @ModelAttribute("objectRenameDto") ObjectRenameDto objectRenameDto,
-            Model model) {
-        model.addAttribute("breadcrumbs", assembleBreadcrumbsFromPath(path));
-        objectRenameDto.setNewName(extractObjectName(path));
-        return "folders/rename";
-    }
-
     @PatchMapping("/rename")
     public String renameFolder(
             @AuthenticationPrincipal UserDetailsImpl userDetails,
-            @ModelAttribute("objectRenameDto") @Valid ObjectRenameDto objectRenameDto, BindingResult bindingResult,
-            Model model) {
+            @ModelAttribute("objectRenameDto") @Valid ObjectRenameDto objectRenameDto,
+            BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
-            return getFolderRenameForm(objectRenameDto.getObjectPath(), objectRenameDto, model);
+            return "main";
         }
         try {
             String newFolderPath = folderService.renameFolder(userDetails.getUserId(), objectRenameDto);
             return "redirect:/" + getPathParam(newFolderPath);
         } catch (ObjectAlreadyExistsException exc) {
             bindingResult.rejectValue("newName", "folder.alreadyExists", "Folder with this name already exists");
-            return getFolderRenameForm(objectRenameDto.getObjectPath(), objectRenameDto, model);
+            return "main";
         }
-    }
-
-    @GetMapping("/move")
-    public String getFolderMoveForm(
-            @AuthenticationPrincipal UserDetailsImpl userDetails,
-            @RequestParam String path,
-            @ModelAttribute("objectMoveDto") ObjectMoveDto objectMoveDto,
-            Model model) {
-        model.addAttribute("moveCandidates", folderService.getMoveCandidatesForFolder(userDetails.getUserId(), path));
-        model.addAttribute("breadcrumbs", assembleBreadcrumbsFromPath(path));
-        return "folders/move";
     }
 
     @PutMapping("/move")
     public String moveFolder(
             @AuthenticationPrincipal UserDetailsImpl userDetails,
-            @ModelAttribute("objectMoveDto") @Valid ObjectMoveDto objectMoveDto, BindingResult bindingResult,
-            Model model) {
+            @ModelAttribute("objectMoveDto") @Valid ObjectMoveDto objectMoveDto,
+            BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
-            return getFolderMoveForm(userDetails, objectMoveDto.getOldObjectPath(), objectMoveDto, model);
+            return "main";
         }
         try {
             String newFolderPath = folderService.moveFolder(userDetails.getUserId(), objectMoveDto);
             return "redirect:/" + getPathParam(newFolderPath);
         } catch (ObjectAlreadyExistsException exc) {
             bindingResult.rejectValue("newObjectPath", "folder.alreadyExists", "This folder already exists");
-            return getFolderMoveForm(userDetails, objectMoveDto.getOldObjectPath(), objectMoveDto, model);
+            return "main";
         }
     }
 
