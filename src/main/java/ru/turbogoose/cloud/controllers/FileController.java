@@ -35,7 +35,7 @@ public class FileController {
             @RequestParam String path,
             Model model) {
         try {
-            model.addAttribute("fileInfo", fileService.getFileInfo(userDetails.getId(), path));
+            model.addAttribute("fileInfo", fileService.getFileInfo(userDetails.getUserId(), path));
             model.addAttribute("breadcrumbs", assembleBreadcrumbsFromPath(path, false));
             return "files/info";
         } catch (ObjectNotExistsException exc) {
@@ -50,7 +50,7 @@ public class FileController {
             @AuthenticationPrincipal UserDetailsImpl userDetails,
             @RequestParam String path,
             HttpServletResponse response) {
-        try (InputStream fileContentStream = fileService.getFileContent(userDetails.getId(), path)) {
+        try (InputStream fileContentStream = fileService.getFileContent(userDetails.getUserId(), path)) {
             response.setHeader("Content-Disposition",
                     String.format("attachment; filename=\"%s\"", extractObjectName(path)));
             FileCopyUtils.copy(fileContentStream, response.getOutputStream());
@@ -75,7 +75,7 @@ public class FileController {
             @ModelAttribute("fileUploadDto") FileUploadDto fileUploadDto, BindingResult bindingResult,
             Model model) {
         try {
-            fileService.saveFile(userDetails.getId(), fileUploadDto);
+            fileService.saveFile(userDetails.getUserId(), fileUploadDto);
             return "redirect:/" + getPathParam(path);
         } catch (ObjectAlreadyExistsException exc) {
             bindingResult.rejectValue("file", "file.alreadyExists", "File with this name already exists");
@@ -105,7 +105,7 @@ public class FileController {
             return getRenameFileForm(objectRenameDto.getObjectPath(), objectRenameDto, model);
         }
         try {
-            String newFilePath = fileService.renameFile(userDetails.getId(), objectRenameDto);
+            String newFilePath = fileService.renameFile(userDetails.getUserId(), objectRenameDto);
             return "redirect:/file" + getPathParam(newFilePath);
         } catch (ObjectAlreadyExistsException exc) {
             bindingResult.rejectValue("newName", "file.alreadyExists", "File with this name already exists");
@@ -119,7 +119,7 @@ public class FileController {
             @RequestParam String path,
             @ModelAttribute("objectMoveDto") ObjectMoveDto objectMoveDto,
             Model model) {
-        model.addAttribute("moveCandidates", fileService.getMoveCandidatesForFile(userDetails.getId(), path));
+        model.addAttribute("moveCandidates", fileService.getMoveCandidatesForFile(userDetails.getUserId(), path));
         model.addAttribute("breadcrumbs", assembleBreadcrumbsFromPath(path, false));
         return "files/move";
     }
@@ -134,7 +134,7 @@ public class FileController {
             return getFileMoveForm(userDetails, objectMoveDto.getOldObjectPath(), objectMoveDto, model);
         }
         try {
-            String newFilePath = fileService.moveFile(userDetails.getId(), objectMoveDto);
+            String newFilePath = fileService.moveFile(userDetails.getUserId(), objectMoveDto);
             return "redirect:/file" + getPathParam(newFilePath);
         } catch (ObjectAlreadyExistsException exc) {
             bindingResult.rejectValue("newObjectPath", "file.alreadyExists", "This file already exists");
@@ -146,7 +146,7 @@ public class FileController {
     public String deleteFile(
             @AuthenticationPrincipal UserDetailsImpl userDetails,
             @RequestParam String path) {
-        String parentFolder = fileService.deleteFile(userDetails.getId(), path);
+        String parentFolder = fileService.deleteFile(userDetails.getUserId(), path);
         return "redirect:/" + getPathParam(parentFolder);
     }
 }

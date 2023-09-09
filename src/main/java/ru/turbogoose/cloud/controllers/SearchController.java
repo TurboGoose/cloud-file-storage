@@ -22,7 +22,7 @@ public class SearchController {
             @AuthenticationPrincipal UserDetailsImpl userDetails,
             @ModelAttribute("searchDto") SearchDto searchDto,
             Model model) {
-        model.addAttribute("objects", searchService.searchObjectsByString(userDetails.getId(), searchDto));
+        model.addAttribute("objects", searchService.searchObjectsByString(userDetails.getUserId(), searchDto));
         return "search/result";
     }
 }

@@ -32,7 +32,7 @@ public class FolderController {
             @ModelAttribute("searchDto") SearchDto searchDto,
             Model model) {
         try {
-            model.addAttribute("objects", folderService.getFolderObjects(userDetails.getId(), path));
+            model.addAttribute("objects", folderService.getFolderObjects(userDetails.getUserId(), path));
             model.addAttribute("breadcrumbs", assembleBreadcrumbsFromPath(path));
         } catch (ObjectNotExistsException exc) {
             exc.printStackTrace();
@@ -52,7 +52,7 @@ public class FolderController {
             return listFolder(userDetails, path, folderCreationDto, searchDto, model);
         }
         try {
-            String createdPath = folderService.createSingleFolder(userDetails.getId(), folderCreationDto);
+            String createdPath = folderService.createSingleFolder(userDetails.getUserId(), folderCreationDto);
             return "redirect:/" + getPathParam(createdPath);
         } catch (ObjectAlreadyExistsException exc) {
             bindingResult.rejectValue("newFolderName", "folder.alreadyExists", "This folder already exists");
@@ -76,7 +76,7 @@ public class FolderController {
             @ModelAttribute("folderUploadDto") @Valid FolderUploadDto folderUploadDto, BindingResult bindingResult,
             Model model) {
         try {
-            folderService.saveFolder(userDetails.getId(), folderUploadDto);
+            folderService.saveFolder(userDetails.getUserId(), folderUploadDto);
             return "redirect:/" + getPathParam(path);
         } catch (ObjectAlreadyExistsException exc) {
             bindingResult.rejectValue("files", "folder.alreadyExists", "Folder with this name already exists");
@@ -94,7 +94,7 @@ public class FolderController {
         response.setHeader("Content-Disposition",
                 String.format("attachment; filename=\"%s\"", composeZipArchiveName(path)));
         try {
-            folderService.writeFolderContent(userDetails.getId(), path, response.getOutputStream());
+            folderService.writeFolderContent(userDetails.getUserId(), path, response.getOutputStream());
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -129,7 +129,7 @@ public class FolderController {
             return getFolderRenameForm(objectRenameDto.getObjectPath(), objectRenameDto, model);
         }
         try {
-            String newFolderPath = folderService.renameFolder(userDetails.getId(), objectRenameDto);
+            String newFolderPath = folderService.renameFolder(userDetails.getUserId(), objectRenameDto);
             return "redirect:/" + getPathParam(newFolderPath);
         } catch (ObjectAlreadyExistsException exc) {
             bindingResult.rejectValue("newName", "folder.alreadyExists", "Folder with this name already exists");
@@ -143,7 +143,7 @@ public class FolderController {
             @RequestParam String path,
             @ModelAttribute("objectMoveDto") ObjectMoveDto objectMoveDto,
             Model model) {
-        model.addAttribute("moveCandidates", folderService.getMoveCandidatesForFolder(userDetails.getId(), path));
+        model.addAttribute("moveCandidates", folderService.getMoveCandidatesForFolder(userDetails.getUserId(), path));
         model.addAttribute("breadcrumbs", assembleBreadcrumbsFromPath(path));
         return "folders/move";
     }
@@ -157,7 +157,7 @@ public class FolderController {
             return getFolderMoveForm(userDetails, objectMoveDto.getOldObjectPath(), objectMoveDto, model);
         }
         try {
-            String newFolderPath = folderService.moveFolder(userDetails.getId(), objectMoveDto);
+            String newFolderPath = folderService.moveFolder(userDetails.getUserId(), objectMoveDto);
             return "redirect:/" + getPathParam(newFolderPath);
         } catch (ObjectAlreadyExistsException exc) {
             bindingResult.rejectValue("newObjectPath", "folder.alreadyExists", "This folder already exists");
@@ -169,7 +169,7 @@ public class FolderController {
     public String deleteFolder(
             @AuthenticationPrincipal UserDetailsImpl userDetails,
             @RequestParam String path) {
-        String parentFolder = folderService.deleteFolder(userDetails.getId(), path);
+        String parentFolder = folderService.deleteFolder(userDetails.getUserId(), path);
         return "redirect:/" + getPathParam(parentFolder);
     }
 }

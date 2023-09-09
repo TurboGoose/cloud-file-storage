@@ -1,6 +1,5 @@
 package ru.turbogoose.cloud.models.security;
 
-import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import ru.turbogoose.cloud.models.User;
@@ -8,9 +7,16 @@ import ru.turbogoose.cloud.models.User;
 import java.util.ArrayList;
 import java.util.Collection;
 
-@RequiredArgsConstructor
 public class UserDetailsImpl implements UserDetails {
-    private final User user;
+    private final String password;
+    private final String username;
+    private final int userId;
+
+    public UserDetailsImpl(User user) {
+        this.username = user.getUsername();
+        this.password = user.getPassword();
+        this.userId = user.getId();
+    }
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
@@ -19,12 +25,16 @@ public class UserDetailsImpl implements UserDetails {
 
     @Override
     public String getPassword() {
-        return user.getPassword();
+        return password;
     }
 
     @Override
     public String getUsername() {
-        return user.getUsername();
+        return username;
+    }
+
+    public int getUserId() {
+        return userId;
     }
 
     @Override
@@ -45,9 +55,5 @@ public class UserDetailsImpl implements UserDetails {
     @Override
     public boolean isEnabled() {
         return true;
-    }
-
-    public int getId() {
-        return user.getId();
     }
 }
