@@ -36,7 +36,7 @@ public class FolderController {
 
             model.addAttribute("folderCreationDto", new FolderCreationDto());
             model.addAttribute("folderUploadDto", new FolderUploadDto());
-            model.addAttribute("folderRenameDto", new ObjectRenameDto().newName(extractObjectName(path))); // TODO: rewrite for smth more elegant?
+            model.addAttribute("folderRenameDto", new ObjectRenameDto());
 //            model.addAttribute("folderMoveDto", new ObjectMoveDto());
 //            model.addAttribute("folderMoveCandidates", folderService.getMoveCandidatesForFolder(userId, path));
 
