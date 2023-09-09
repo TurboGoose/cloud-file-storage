@@ -45,7 +45,7 @@
         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
       </div>
       <div class="modal-body">
-        <form th:action="@{/file/upload(path=${param.path})}" method="POST" id="fileChoosingForm" th:object="${fileUploadDto}" enctype="multipart/form-data">
+        <form th:action="@{/file/upload(path=${param.path})}" method="POST" id="fileUploadForm" th:object="${fileUploadDto}" enctype="multipart/form-data">
           <input type="hidden" name="parentFolderPath" th:value="${param.path}">
           <input type="file" th:field="*{file}" required class="form-control " th:attrappend="class=${#fields.hasErrors('file') ? 'is-invalid' : 'is-valid'}">
           <div class="invalid-feedback" th:errors="*{file}"></div>
@@ -53,7 +53,7 @@
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-        <button type="button" class="btn btn-primary" form="fileChoosingForm">Upload</button>
+        <button type="button" class="btn btn-primary" form="fileUploadForm">Upload</button>
       </div>
     </div>
   </div>
@@ -68,16 +68,15 @@
         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
       </div>
       <div class="modal-body">
-        <form action="#" method="POST" id="folderChoosingForm">
-          <input type="file" class="form-control" webkitdirectory required>
+        <form th:action="@{/upload(path=${param.path})}" method="POST" id="folderUploadForm" th:object="${folderUploadDto}" enctype="multipart/form-data">
+          <input type="hidden" name="parentFolderPath" th:value="${param.path}">
+          <input type="file" th:field="*{files}" required webkitdirectory class="form-control " th:attrappend="class=${#fields.hasErrors('files') ? 'is-invalid' : 'is-valid'}">
+          <div class="invalid-feedback" th:errors="*{files}"></div>
         </form>
-      </div>
-      <div class="alert alert-danger ms-3 me-3" role="alert">
-        Folder with this name already exists (th:if)
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-        <button type="button" class="btn btn-primary" form="folderChoosingForm">Upload</button>
+        <button type="button" class="btn btn-primary" form="folderUploadForm">Upload</button>
       </div>
     </div>
   </div>
@@ -93,7 +92,7 @@
         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
       </div>
       <div class="modal-body">
-        <form action="#" method="POST" class="form-floating" id="folderChoosingForm">
+        <form action="#" method="POST" class="form-floating" id="folderNameForm">
           <div class="form-floating">
             <input type="text" class="form-control" id="floatingName" placeholder="Folder name" required>
             <label for="floatingName">Folder name</label>
@@ -105,7 +104,7 @@
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-        <button type="button" class="btn btn-primary" form="folderChoosingForm">Create</button>
+        <button type="button" class="btn btn-primary" form="folderNameForm">Create</button>
       </div>
     </div>
   </div>
