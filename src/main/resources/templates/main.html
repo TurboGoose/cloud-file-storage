@@ -31,8 +31,13 @@
 
 <hr class="mt-1">
 
-<div th:if="${folderCreatedSusseccfully}" class="container col-4 alert alert-dismissible alert-success fade show">
-  Folder created successfully
+<!--Alerts-->
+<!--<div th:if="${folderCreatedSuccessfully}" class="container col-4 alert alert-dismissible alert-success fade show">-->
+<!--  Folder created successfully-->
+<!--  <button type="button" class="btn-close" data-bs-dismiss="alert"></button>-->
+<!--</div>-->
+<div th:if="${failureAlert}" class="container col-4 alert alert-dismissible alert-danger fade show">
+  <span th:text="${failureAlert}"></span>
   <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
 </div>
 
@@ -99,10 +104,8 @@
           <form method="POST" th:action="@{'/' + ${pathParam}}" th:object="${folderCreationDto}" class="form-floating" id="folderCreationForm">
             <input type="hidden" name="parentFolderPath" th:value="${param.path}">
             <div class="form-floating">
-              <input type="text" id="floatingName" placeholder="Folder name" required th:field="*{newFolderName}"
-                     class="form-control " th:attrappend="class=${#fields.hasErrors('newFolderName') ? 'is-invalid' : ''}">
+              <input type="text" id="floatingName" placeholder="Folder name" required th:field="*{newFolderName}" class="form-control">
               <label for="floatingName">Folder name</label>
-              <div class="invalid-feedback" th:errors="*{newFolderName}"></div>
             </div>
           </form>
         </div>

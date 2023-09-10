@@ -8,6 +8,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import ru.turbogoose.cloud.dto.*;
 import ru.turbogoose.cloud.exceptions.ObjectAlreadyExistsException;
 import ru.turbogoose.cloud.exceptions.ObjectNotExistsException;
@@ -34,18 +35,18 @@ public class FolderController {
             model.addAttribute("objects", folderService.getFolderObjects(userId, path));
             model.addAttribute("breadcrumbs", assembleBreadcrumbsFromPath(path));
 
-            addAttributeIfAbsent(model, "folderCreationDto", new FolderCreationDto());
-            addAttributeIfAbsent(model, "folderUploadDto", new FolderUploadDto());
-            addAttributeIfAbsent(model, "folderRenameDto", new ObjectRenameDto());
-//            addAttributeIfAbsent(model, "folderMoveDto", new ObjectMoveDto());
-//            addAttributeIfAbsent(model, "folderMoveCandidates", folderService.getMoveCandidatesForFolder(userId, path));
+            model.addAttribute("folderCreationDto", new FolderCreationDto());
+            model.addAttribute("folderUploadDto", new FolderUploadDto());
+            model.addAttribute("folderRenameDto", new ObjectRenameDto());
+//            model.addAttribute("folderMoveDto", new ObjectMoveDto());
+//            model.addAttribute("folderMoveCandidates", folderService.getMoveCandidatesForFolder(userId, path));
 
-            addAttributeIfAbsent(model, "fileUploadDto", new FileUploadDto());
-            addAttributeIfAbsent(model, "fileRenameDto", new ObjectRenameDto());
-//            addAttributeIfAbsent(model, "fileMoveDto", new ObjectMoveDto());
-//            addAttributeIfAbsent(model, "folderMoveCandidates", folderService.getMoveCandidatesForFolder(userId, path));
+            model.addAttribute("fileUploadDto", new FileUploadDto());
+            model.addAttribute("fileRenameDto", new ObjectRenameDto());
+//            model.addAttribute("fileMoveDto", new ObjectMoveDto());
+//            model.addAttribute("folderMoveCandidates", folderService.getMoveCandidatesForFolder(userId, path));
 
-            addAttributeIfAbsent(model, "searchDto", new SearchDto());
+            model.addAttribute("searchDto", new SearchDto());
 
         } catch (ObjectNotExistsException exc) {
             exc.printStackTrace();
@@ -54,29 +55,24 @@ public class FolderController {
         return "main";
     }
 
-    private void addAttributeIfAbsent(Model model, String attributeName, Object attributeValue) {
-        if (!model.containsAttribute(attributeName)) {
-            model.addAttribute(attributeName, attributeValue);
-        }
-    }
-
     @PostMapping
     public String createFolder(
             @AuthenticationPrincipal UserDetailsImpl userDetails,
             @RequestParam(required = false) String path,
             @ModelAttribute("folderCreationDto") @Valid FolderCreationDto folderCreationDto,
             BindingResult bindingResult,
-            Model model) {
+            RedirectAttributes redirectAttributes) {
         if (bindingResult.hasErrors()) {
-            return listFolder(userDetails, path, model);
+            redirectAttributes.addFlashAttribute("failureAlert", bindingResult.getFieldError().getDefaultMessage());
+            return "redirect:/" + getPathParam(path);
         }
         try {
             folderService.createSingleFolder(userDetails.getUserId(), folderCreationDto);
-            return "redirect:/" + getPathParam(path);
         } catch (ObjectAlreadyExistsException exc) {
-            bindingResult.rejectValue("newFolderName", "folder.alreadyExists", "This folder already exists");
-            return listFolder(userDetails, path, model);
+            exc.printStackTrace();
+            redirectAttributes.addFlashAttribute("failureAlert", "This folder already exists");
         }
+        return "redirect:/" + getPathParam(path);
     }
 
     @PostMapping("/upload")
