@@ -121,10 +121,11 @@ public class FileController {
             redirectAttributes.addFlashAttribute("successAlert", "File was moved successfully");
             return "redirect:/" + getPathParam(oldParentPath);
         } catch (ObjectAlreadyExistsException exc) {
+            exc.printStackTrace();
             redirectAttributes.addFlashAttribute("failureAlert",
                     "File with this name already exists in target location");
-            return "redirect:/file/move" + getPathParam(path);
         }
+        return "redirect:/file/move" + getPathParam(path);
     }
 
     @DeleteMapping

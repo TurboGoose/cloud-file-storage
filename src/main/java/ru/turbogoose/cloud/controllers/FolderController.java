@@ -162,10 +162,11 @@ public class FolderController {
             redirectAttributes.addFlashAttribute("successAlert", "Folder was moved successfully");
             return "redirect:/" + getPathParam(oldParentPath);
         } catch (ObjectAlreadyExistsException exc) {
+            exc.printStackTrace();
             redirectAttributes.addFlashAttribute("failureAlert",
                     "Folder with this name already exists in target location");
-            return "redirect:/move" + getPathParam(path);
         }
+        return "redirect:/move" + getPathParam(path);
     }
 
     @DeleteMapping
