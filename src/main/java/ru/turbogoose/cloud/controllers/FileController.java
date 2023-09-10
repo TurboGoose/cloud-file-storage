@@ -1,10 +1,12 @@
 package ru.turbogoose.cloud.controllers;
 
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.util.FileCopyUtils;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
@@ -21,8 +23,7 @@ import ru.turbogoose.cloud.services.FileService;
 import java.io.IOException;
 import java.io.InputStream;
 
-import static ru.turbogoose.cloud.utils.PathUtils.extractObjectName;
-import static ru.turbogoose.cloud.utils.PathUtils.getPathParam;
+import static ru.turbogoose.cloud.utils.PathUtils.*;
 
 @Controller
 @RequestMapping("/file")
@@ -97,20 +98,34 @@ public class FileController {
         return "main";
     }
 
+    @GetMapping("/move")
+    public String getFileMoveForm(
+            @AuthenticationPrincipal UserDetailsImpl userDetails,
+            @RequestParam String path,
+            @ModelAttribute("objectMoveDto") ObjectMoveDto objectMoveDto,
+            Model model,
+            HttpServletRequest request) {
+        model.addAttribute("requestURI", request.getRequestURI());
+        model.addAttribute("moveCandidates", fileService.getMoveCandidatesForFile(userDetails.getUserId(), path));
+        model.addAttribute("breadcrumbs", assembleBreadcrumbsFromPath(path));
+        return "move";
+    }
+
     @PutMapping("/move")
     public String moveFile(
             @AuthenticationPrincipal UserDetailsImpl userDetails,
-            @ModelAttribute("objectMoveDto") @Valid ObjectMoveDto objectMoveDto, BindingResult bindingResult) {
-        if (bindingResult.hasErrors()) {
-            return "main";
-        }
+            @RequestParam(required = false) String path,
+            @ModelAttribute("objectMoveDto") ObjectMoveDto objectMoveDto,
+            RedirectAttributes redirectAttributes) {
         try {
-            String newFilePath = fileService.moveFile(userDetails.getUserId(), objectMoveDto);
-            return "redirect:/file" + getPathParam(newFilePath);
+            String oldParentPath = fileService.moveFile(userDetails.getUserId(), objectMoveDto);
+            redirectAttributes.addFlashAttribute("successAlert", "File was moved successfully");
+            return "redirect:/" + getPathParam(oldParentPath);
         } catch (ObjectAlreadyExistsException exc) {
-            bindingResult.rejectValue("newObjectPath", "file.alreadyExists", "This file already exists");
+            redirectAttributes.addFlashAttribute("failureAlert",
+                    "File with this name already exists in target location");
+            return "redirect:/file/move" + getPathParam(path);
         }
-        return "main";
     }
 
     @DeleteMapping

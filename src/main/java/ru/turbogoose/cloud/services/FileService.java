@@ -105,7 +105,7 @@ public class FileService {
                     String.format("Cannot move file, because target file with name %s already exists", newFilePath));
         }
         fileRepository.moveFile(oldFilePath, newFilePath);
-        return toUrlParam(newFilePath.getPath());
+        return toUrlParam(oldFilePath.getParent().getPath());
     }
 
     public String deleteFile(int userId, String path) {

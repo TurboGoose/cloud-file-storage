@@ -1,5 +1,6 @@
 package ru.turbogoose.cloud.controllers;
 
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -138,20 +139,33 @@ public class FolderController {
         }
     }
 
+    @GetMapping("/move")
+    public String getFolderMoveForm(
+            @AuthenticationPrincipal UserDetailsImpl userDetails,
+            @RequestParam String path,
+            @ModelAttribute("objectMoveDto") ObjectMoveDto objectMoveDto,
+            Model model,
+            HttpServletRequest request) {
+        model.addAttribute("requestURI", request.getRequestURI());
+        model.addAttribute("moveCandidates", folderService.getMoveCandidatesForFolder(userDetails.getUserId(), path));
+        model.addAttribute("breadcrumbs", assembleBreadcrumbsFromPath(path));
+        return "move";
+    }
+
     @PutMapping("/move")
     public String moveFolder(
             @AuthenticationPrincipal UserDetailsImpl userDetails,
-            @ModelAttribute("objectMoveDto") @Valid ObjectMoveDto objectMoveDto,
-            BindingResult bindingResult) {
-        if (bindingResult.hasErrors()) {
-            return "main";
-        }
+            @RequestParam(required = false) String path,
+            @ModelAttribute("objectMoveDto") ObjectMoveDto objectMoveDto,
+            RedirectAttributes redirectAttributes) {
         try {
-            String newFolderPath = folderService.moveFolder(userDetails.getUserId(), objectMoveDto);
-            return "redirect:/" + getPathParam(newFolderPath);
+            String oldParentPath = folderService.moveFolder(userDetails.getUserId(), objectMoveDto);
+            redirectAttributes.addFlashAttribute("successAlert", "Folder was moved successfully");
+            return "redirect:/" + getPathParam(oldParentPath);
         } catch (ObjectAlreadyExistsException exc) {
-            bindingResult.rejectValue("newObjectPath", "folder.alreadyExists", "This folder already exists");
-            return "main";
+            redirectAttributes.addFlashAttribute("failureAlert",
+                    "Folder with this name already exists in target location");
+            return "redirect:/move" + getPathParam(path);
         }
     }
 
