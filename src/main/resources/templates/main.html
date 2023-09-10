@@ -11,7 +11,13 @@
 
 <div th:replace="~{fragments/navbar::navbar}"></div>
 
-<div class="container pt-4 d-flex justify-content-between align-items-baseline">
+<div th:if="${wrongPath}" class="container">
+  <h2>Wrong path!</h2>
+  <p th:text="'Folder \'' + ${wrongPath} + '\' not exists :('"></p>
+  <a th:href="@{/}" class="primary-link">Go home</a>
+</div>
+
+<div th:unless="${wrongPath}" class="container pt-4 d-flex justify-content-between align-items-baseline">
 
   <div th:replace="~{fragments/breadcrumbs::breadcrumbs (${breadcrumbs})}"></div>
 
@@ -106,6 +112,7 @@
   </div>
 </div>
 
+<!--Object list-->
 <div class="container">
   <h2 th:unless="${objects}" class="text-center mt-5">This folder is empty</h2>
   <div th:each="obj : ${objects}" th:with="baseUrl=${obj.folder} ? '' : '/file'" class="row">
@@ -155,35 +162,6 @@
     </div>
 
     <hr class="mt-1">
-
-
-    <!-- Rename object modal -->
-    <div class="modal fade" id="renameObjectModal" tabindex="-1">
-      <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h1 class="modal-title fs-5">Rename</h1>
-            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-          </div>
-          <div class="modal-body">
-            <form action="#" method="PATCH" id="objectRenamingForm">
-              <div class="form-floating">
-                <input type="text" class="form-control" placeholder="New name" required id="floatingRename">
-                <label for="floatingRename">New name</label>
-              </div>
-            </form>
-          </div>
-          <div class="alert alert-danger ms-3 me-3" role="alert">
-            Object with this name already exists in this folder (th:if)
-          </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-            <button type="button" class="btn btn-primary" form="objectRenamingForm">Rename</button>
-          </div>
-        </div>
-      </div>
-    </div>
-
   </div>
 </div>
 
