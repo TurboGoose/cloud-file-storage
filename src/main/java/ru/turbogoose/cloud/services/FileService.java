@@ -26,19 +26,16 @@ public class FileService {
     private final FileRepository fileRepository;
     private final ObjectPathFactory objectPathFactory;
 
-    // TODO: remove return parameter
-    public String saveFile(int userId, FileUploadDto creationDto) {
+    public void saveFile(int userId, FileUploadDto creationDto) {
         ObjectPath parentFolderPath = objectPathFactory.compose(
                 userId, fromUrlParam(creationDto.getParentFolderPath()));
         MultipartFile file = creationDto.getFile();
         if (file == null || file.isEmpty()) {
             throw new ObjectUploadException("An error occurred during uploading file to " + parentFolderPath);
         }
-
         ObjectPath newFilePath = parentFolderPath.resolve(file.getOriginalFilename());
         try {
             saveFile(newFilePath, file.getInputStream());
-            return toUrlParam(newFilePath.getPath());
         } catch (IOException exc) {
             throw new ObjectUploadException("An error occurred during uploading file to " + parentFolderPath, exc);
         }
