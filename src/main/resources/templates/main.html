@@ -59,7 +59,7 @@
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-        <button type="submit" class="btn btn-primary" form="fileUploadForm">Upload</button>
+        <button class="btn btn-primary" form="fileUploadForm">Upload</button>
       </div>
     </div>
   </div>
@@ -84,7 +84,7 @@
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-        <button type="submit" class="btn btn-primary" form="folderUploadForm">Upload</button>
+        <button class="btn btn-primary" form="folderUploadForm">Upload</button>
       </div>
     </div>
   </div>
@@ -157,7 +157,7 @@
         <li><button type="button" class="dropdown-item btn" data-bs-toggle="modal" data-bs-target="#renameObjectModal">Rename</button></li>
         <li>
           <form th:method="DELETE" th:action="@{${url}(path=${obj.path})}">
-            <button type="button" class="dropdown-item btn text-danger">Delete</button>
+            <button class="dropdown-item btn text-danger">Delete</button>
           </form>
         </li>
       </ul>
