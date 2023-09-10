@@ -37,13 +37,16 @@ public class FolderController {
 
             model.addAttribute("folderCreationDto", new FolderCreationDto());
             model.addAttribute("folderUploadDto", new FolderUploadDto());
+            // each folder has its own dto
 //            model.addAttribute("folderRenameDto", new ObjectRenameDto());
 //            model.addAttribute("folderMoveDto", new ObjectMoveDto());
+            // load it lazily somehow
 //            model.addAttribute("folderMoveCandidates", folderService.getMoveCandidatesForFolder(userId, path));
 
             model.addAttribute("fileUploadDto", new FileUploadDto());
 //            model.addAttribute("fileRenameDto", new ObjectRenameDto());
 //            model.addAttribute("fileMoveDto", new ObjectMoveDto());
+            // load it lazily somehow
 //            model.addAttribute("folderMoveCandidates", folderService.getMoveCandidatesForFolder(userId, path));
 
             model.addAttribute("searchDto", new SearchDto());
@@ -67,7 +70,6 @@ public class FolderController {
         } else {
             try {
                 folderService.createSingleFolder(userDetails.getUserId(), folderCreationDto);
-                redirectAttributes.addFlashAttribute("successAlert", "Folder created successfully");
             } catch (ObjectAlreadyExistsException exc) {
                 exc.printStackTrace();
                 redirectAttributes.addFlashAttribute("failureAlert", "This folder already exists");
