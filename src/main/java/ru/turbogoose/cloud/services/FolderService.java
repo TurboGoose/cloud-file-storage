@@ -75,7 +75,7 @@ public class FolderService {
         }
     }
 
-    public String createSingleFolder(int userId, FolderCreationDto folderCreationDto) {
+    public void createSingleFolder(int userId, FolderCreationDto folderCreationDto) {
         String parentFolder = fromUrlParam(folderCreationDto.getParentFolderPath());
         ObjectPath newFolderPath = objectPathFactory.compose(userId, parentFolder)
                 .resolve(folderCreationDto.getNewFolderName() + "/");
@@ -84,7 +84,6 @@ public class FolderService {
                     String.format("Folder with name %s already exists", newFolderPath));
         }
         fileRepository.createFolder(newFolderPath);
-        return toUrlParam(newFolderPath.getPath());
     }
 
     public void createFolderWithIntermediate(ObjectPath path) {
