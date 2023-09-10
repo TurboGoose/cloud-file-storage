@@ -31,22 +31,6 @@ import static ru.turbogoose.cloud.utils.PathUtils.*;
 public class FileController {
     private final FileService fileService;
 
-//    @GetMapping
-//    public String getFileInfo(
-//            @AuthenticationPrincipal UserDetailsImpl userDetails,
-//            @RequestParam String path,
-//            Model model) {
-//        try {
-//            model.addAttribute("fileInfo", fileService.getFileInfo(userDetails.getUserId(), path));
-//            model.addAttribute("breadcrumbs", assembleBreadcrumbsFromPath(path, false));
-//            return "files/info";
-//        } catch (ObjectNotExistsException exc) {
-//            exc.printStackTrace();
-//            model.addAttribute("wrongPath", path);
-//            return "folders/list";
-//        }
-//    }
-
     @GetMapping("/download")
     public void downloadFile(
             @AuthenticationPrincipal UserDetailsImpl userDetails,
@@ -79,22 +63,37 @@ public class FileController {
         return "redirect:/" + getPathParam(path);
     }
 
+    @GetMapping("/rename")
+    public String getFileRenameForm(
+            @RequestParam String path,
+            @ModelAttribute("objectRenameDto") ObjectRenameDto objectRenameDto,
+            Model model,
+            HttpServletRequest request) {
+        model.addAttribute("requestURI", request.getRequestURI());
+        model.addAttribute("breadcrumbs", assembleBreadcrumbsFromPath(path));
+        objectRenameDto.setNewName(extractObjectName(path));
+        return "rename";
+    }
+
     @PatchMapping("/rename")
     public String renameFile(
             @AuthenticationPrincipal UserDetailsImpl userDetails,
+            @RequestParam(required = false) String path,
             @ModelAttribute("objectRenameDto") @Valid ObjectRenameDto objectRenameDto,
-            BindingResult bindingResult
-    ) {
+            BindingResult bindingResult,
+            RedirectAttributes redirectAttributes) {
         if (bindingResult.hasErrors()) {
-            return "main";
+            redirectAttributes.addFlashAttribute("failureAlert", bindingResult.getFieldError().getDefaultMessage());
+        } else {
+            try {
+                String parentFolderPath = fileService.renameFile(userDetails.getUserId(), objectRenameDto);
+                return "redirect:/" + getPathParam(parentFolderPath);
+            } catch (ObjectAlreadyExistsException exc) {
+                exc.printStackTrace();
+                redirectAttributes.addFlashAttribute("failureAlert", "File with this name already exists");
+            }
         }
-        try {
-            String newFilePath = fileService.renameFile(userDetails.getUserId(), objectRenameDto);
-            return "redirect:/file" + getPathParam(newFilePath);
-        } catch (ObjectAlreadyExistsException exc) {
-            bindingResult.rejectValue("newName", "file.alreadyExists", "File with this name already exists");
-        }
-        return "main";
+        return "redirect:/file/rename" + getPathParam(path);
     }
 
     @GetMapping("/move")

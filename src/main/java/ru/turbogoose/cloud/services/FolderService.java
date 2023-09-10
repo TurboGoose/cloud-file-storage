@@ -121,7 +121,7 @@ public class FolderService {
                     String.format("Cannot rename folder, because target folder with name %s already exists", newFolderPath));
         }
         fileRepository.moveFolder(oldFolderPath, newFolderPath);
-        return toUrlParam(newFolderPath.getPath());
+        return toUrlParam(oldFolderPath.getParent().getPath());
     }
 
     public List<String> getMoveCandidatesForFolder(int userId, String path) {

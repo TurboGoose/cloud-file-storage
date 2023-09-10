@@ -38,20 +38,10 @@ public class FolderController {
 
             model.addAttribute("folderCreationDto", new FolderCreationDto());
             model.addAttribute("folderUploadDto", new FolderUploadDto());
-            // each folder has its own dto
-//            model.addAttribute("folderRenameDto", new ObjectRenameDto());
-//            model.addAttribute("folderMoveDto", new ObjectMoveDto());
-            // load it lazily somehow
-//            model.addAttribute("folderMoveCandidates", folderService.getMoveCandidatesForFolder(userId, path));
 
             model.addAttribute("fileUploadDto", new FileUploadDto());
-//            model.addAttribute("fileRenameDto", new ObjectRenameDto());
-//            model.addAttribute("fileMoveDto", new ObjectMoveDto());
-            // load it lazily somehow
-//            model.addAttribute("folderMoveCandidates", folderService.getMoveCandidatesForFolder(userId, path));
 
             model.addAttribute("searchDto", new SearchDto());
-
         } catch (ObjectNotExistsException exc) {
             exc.printStackTrace();
             model.addAttribute("wrongPath", path);
@@ -121,21 +111,37 @@ public class FolderController {
         return zipArchiveName + ".zip";
     }
 
+    @GetMapping("/rename")
+    public String getFolderRenameForm(
+            @RequestParam String path,
+            @ModelAttribute("objectRenameDto") ObjectRenameDto objectRenameDto,
+            Model model,
+            HttpServletRequest request) {
+        model.addAttribute("requestURI", request.getRequestURI());
+        model.addAttribute("breadcrumbs", assembleBreadcrumbsFromPath(path));
+        objectRenameDto.setNewName(extractObjectName(path));
+        return "rename";
+    }
+
     @PatchMapping("/rename")
     public String renameFolder(
             @AuthenticationPrincipal UserDetailsImpl userDetails,
+            @RequestParam(required = false) String path,
             @ModelAttribute("objectRenameDto") @Valid ObjectRenameDto objectRenameDto,
-            BindingResult bindingResult) {
+            BindingResult bindingResult,
+            RedirectAttributes redirectAttributes) {
         if (bindingResult.hasErrors()) {
-            return "main";
+            redirectAttributes.addFlashAttribute("failureAlert", bindingResult.getFieldError().getDefaultMessage());
+        } else {
+            try {
+                String parentFolderPath = folderService.renameFolder(userDetails.getUserId(), objectRenameDto);
+                return "redirect:/" + getPathParam(parentFolderPath);
+            } catch (ObjectAlreadyExistsException exc) {
+                exc.printStackTrace();
+                redirectAttributes.addFlashAttribute("failureAlert", "Folder with this name already exists");
+            }
         }
-        try {
-            String newFolderPath = folderService.renameFolder(userDetails.getUserId(), objectRenameDto);
-            return "redirect:/" + getPathParam(newFolderPath);
-        } catch (ObjectAlreadyExistsException exc) {
-            bindingResult.rejectValue("newName", "folder.alreadyExists", "Folder with this name already exists");
-            return "main";
-        }
+        return "redirect:/rename" + getPathParam(path);
     }
 
     @GetMapping("/move")

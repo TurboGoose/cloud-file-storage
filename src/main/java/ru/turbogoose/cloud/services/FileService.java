@@ -69,7 +69,7 @@ public class FileService {
                     String.format("File with name %s already exists", newFilePath));
         }
         fileRepository.moveFile(oldFilePath, newFilePath);
-        return toUrlParam(newFilePath.getPath());
+        return toUrlParam(oldFilePath.getParent().getPath());
     }
 
     public List<String> getMoveCandidatesForFile(int userId, String path) {
