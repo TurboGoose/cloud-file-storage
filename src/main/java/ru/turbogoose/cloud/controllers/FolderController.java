@@ -34,18 +34,18 @@ public class FolderController {
             model.addAttribute("objects", folderService.getFolderObjects(userId, path));
             model.addAttribute("breadcrumbs", assembleBreadcrumbsFromPath(path));
 
-            model.addAttribute("folderCreationDto", new FolderCreationDto());
-            model.addAttribute("folderUploadDto", new FolderUploadDto());
-            model.addAttribute("folderRenameDto", new ObjectRenameDto());
-//            model.addAttribute("folderMoveDto", new ObjectMoveDto());
-//            model.addAttribute("folderMoveCandidates", folderService.getMoveCandidatesForFolder(userId, path));
+            addAttributeIfAbsent(model, "folderCreationDto", new FolderCreationDto());
+            addAttributeIfAbsent(model, "folderUploadDto", new FolderUploadDto());
+            addAttributeIfAbsent(model, "folderRenameDto", new ObjectRenameDto());
+//            addAttributeIfAbsent(model, "folderMoveDto", new ObjectMoveDto());
+//            addAttributeIfAbsent(model, "folderMoveCandidates", folderService.getMoveCandidatesForFolder(userId, path));
 
-            model.addAttribute("fileUploadDto", new FileUploadDto());
-            model.addAttribute("fileRenameDto", new ObjectRenameDto());
-//            model.addAttribute("fileMoveDto", new ObjectMoveDto());
-//            model.addAttribute("folderMoveCandidates", folderService.getMoveCandidatesForFolder(userId, path));
+            addAttributeIfAbsent(model, "fileUploadDto", new FileUploadDto());
+            addAttributeIfAbsent(model, "fileRenameDto", new ObjectRenameDto());
+//            addAttributeIfAbsent(model, "fileMoveDto", new ObjectMoveDto());
+//            addAttributeIfAbsent(model, "folderMoveCandidates", folderService.getMoveCandidatesForFolder(userId, path));
 
-            model.addAttribute("searchDto", new SearchDto());
+            addAttributeIfAbsent(model, "searchDto", new SearchDto());
 
         } catch (ObjectNotExistsException exc) {
             exc.printStackTrace();
@@ -54,20 +54,28 @@ public class FolderController {
         return "main";
     }
 
+    private void addAttributeIfAbsent(Model model, String attributeName, Object attributeValue) {
+        if (!model.containsAttribute(attributeName)) {
+            model.addAttribute(attributeName, attributeValue);
+        }
+    }
+
     @PostMapping
     public String createFolder(
             @AuthenticationPrincipal UserDetailsImpl userDetails,
+            @RequestParam(required = false) String path,
             @ModelAttribute("folderCreationDto") @Valid FolderCreationDto folderCreationDto,
-            BindingResult bindingResult) {
+            BindingResult bindingResult,
+            Model model) {
         if (bindingResult.hasErrors()) {
-            return "main";
+            return listFolder(userDetails, path, model);
         }
         try {
-            String createdPath = folderService.createSingleFolder(userDetails.getUserId(), folderCreationDto);
-            return "redirect:/" + getPathParam(createdPath);
+            folderService.createSingleFolder(userDetails.getUserId(), folderCreationDto);
+            return "redirect:/" + getPathParam(path);
         } catch (ObjectAlreadyExistsException exc) {
             bindingResult.rejectValue("newFolderName", "folder.alreadyExists", "This folder already exists");
-            return "main";
+            return listFolder(userDetails, path, model);
         }
     }
 

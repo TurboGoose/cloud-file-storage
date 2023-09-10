@@ -80,9 +80,8 @@ public class FolderService {
         ObjectPath newFolderPath = objectPathFactory.compose(userId, parentFolder)
                 .resolve(folderCreationDto.getNewFolderName() + "/");
         if (fileRepository.isObjectExist(newFolderPath)) {
-            throw new RuntimeException("My exc");
-//            throw new ObjectAlreadyExistsException(
-//                    String.format("Folder with name %s already exists", newFolderPath));
+            throw new ObjectAlreadyExistsException(
+                    String.format("Folder with name %s already exists", newFolderPath));
         }
         fileRepository.createFolder(newFolderPath);
         return toUrlParam(newFolderPath.getPath());
