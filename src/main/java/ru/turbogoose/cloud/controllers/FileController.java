@@ -69,7 +69,6 @@ public class FileController {
             RedirectAttributes redirectAttributes) {
         try {
             fileService.saveFile(userDetails.getUserId(), fileUploadDto);
-            redirectAttributes.addFlashAttribute("successAlert", "File uploaded successfully");
         } catch (ObjectAlreadyExistsException exc) {
             exc.printStackTrace();
             redirectAttributes.addFlashAttribute("failureAlert", "File with this name already exists");

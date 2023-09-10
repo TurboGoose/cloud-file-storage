@@ -87,7 +87,6 @@ public class FolderController {
             RedirectAttributes redirectAttributes) {
         try {
             folderService.saveFolder(userDetails.getUserId(), folderUploadDto);
-            redirectAttributes.addFlashAttribute("successAlert", "Folder uploaded successfully");
         } catch (ObjectAlreadyExistsException exc) {
             exc.printStackTrace();
             redirectAttributes.addFlashAttribute("failureAlert", "Folder with this name already exists");
