@@ -36,7 +36,7 @@ public class FolderController {
             model.addAttribute("breadcrumbs", assembleBreadcrumbsFromPath(path));
 
             model.addAttribute("folderCreationDto", new FolderCreationDto());
-//            model.addAttribute("folderUploadDto", new FolderUploadDto());
+            model.addAttribute("folderUploadDto", new FolderUploadDto());
 //            model.addAttribute("folderRenameDto", new ObjectRenameDto());
 //            model.addAttribute("folderMoveDto", new ObjectMoveDto());
 //            model.addAttribute("folderMoveCandidates", folderService.getMoveCandidatesForFolder(userId, path));
@@ -81,16 +81,18 @@ public class FolderController {
             @AuthenticationPrincipal UserDetailsImpl userDetails,
             @RequestParam String path,
             @ModelAttribute("folderUploadDto") @Valid FolderUploadDto folderUploadDto,
-            BindingResult bindingResult) {
+            RedirectAttributes redirectAttributes) {
         try {
             folderService.saveFolder(userDetails.getUserId(), folderUploadDto);
-            return "redirect:/" + getPathParam(path);
+            redirectAttributes.addFlashAttribute("successAlert", "Folder uploaded successfully");
         } catch (ObjectAlreadyExistsException exc) {
-            bindingResult.rejectValue("files", "folder.alreadyExists", "Folder with this name already exists");
+            exc.printStackTrace();
+            redirectAttributes.addFlashAttribute("failureAlert", "Folder with this name already exists");
         } catch (ObjectUploadException exc) {
-            bindingResult.rejectValue("files", "folder.errorUploading", "An error occurred during uploading");
+            exc.printStackTrace();
+            redirectAttributes.addFlashAttribute("failureAlert", "An error occurred during uploading");
         }
-        return "main";
+        return "redirect:/" + getPathParam(path);
     }
 
     @GetMapping("/download")
