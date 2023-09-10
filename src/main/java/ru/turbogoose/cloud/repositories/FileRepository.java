@@ -1,14 +1,10 @@
 package ru.turbogoose.cloud.repositories;
 
-import ru.turbogoose.cloud.dto.ObjectInfoDto;
-
 import java.io.InputStream;
 import java.util.List;
 
 public interface FileRepository {
     boolean isObjectExist(ObjectPath objectPath);
-
-    ObjectInfoDto getObjectInfo(ObjectPath objectPath);
 
     List<ObjectPath> listFolderObjects(ObjectPath folderPath);
 

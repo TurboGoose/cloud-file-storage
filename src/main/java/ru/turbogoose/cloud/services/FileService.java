@@ -4,7 +4,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import ru.turbogoose.cloud.dto.FileUploadDto;
-import ru.turbogoose.cloud.dto.ObjectInfoDto;
 import ru.turbogoose.cloud.dto.ObjectMoveDto;
 import ru.turbogoose.cloud.dto.ObjectRenameDto;
 import ru.turbogoose.cloud.exceptions.ObjectAlreadyExistsException;
@@ -27,6 +26,7 @@ public class FileService {
     private final FileRepository fileRepository;
     private final ObjectPathFactory objectPathFactory;
 
+    // TODO: remove return parameter
     public String saveFile(int userId, FileUploadDto creationDto) {
         ObjectPath parentFolderPath = objectPathFactory.compose(
                 userId, fromUrlParam(creationDto.getParentFolderPath()));
@@ -53,15 +53,6 @@ public class FileService {
                     String.format("File with name %s already exists", filePath.getFullPath()));
         }
         fileRepository.createFile(filePath, fileInputStream);
-    }
-
-    public ObjectInfoDto getFileInfo(int userId, String path) {
-        ObjectPath filePath = objectPathFactory.compose(userId, fromUrlParam(path, true));
-        if (!fileRepository.isObjectExist(filePath)) {
-            throw new ObjectNotExistsException(
-                    String.format("File with name %s does not exist", filePath.getFullPath()));
-        }
-        return fileRepository.getObjectInfo(filePath);
     }
 
     public InputStream getFileContent(int userId, String path) {

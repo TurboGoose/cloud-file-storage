@@ -1,21 +1,17 @@
 package ru.turbogoose.cloud.repositories.minio;
 
 import io.minio.*;
-import io.minio.errors.*;
+import io.minio.errors.ErrorResponseException;
 import io.minio.messages.DeleteError;
 import io.minio.messages.DeleteObject;
 import io.minio.messages.Item;
 import org.springframework.stereotype.Service;
 import ru.turbogoose.cloud.exceptions.MinioOperationException;
-import ru.turbogoose.cloud.dto.ObjectInfoDto;
 import ru.turbogoose.cloud.repositories.FileRepository;
 import ru.turbogoose.cloud.repositories.ObjectPath;
 
 import java.io.ByteArrayInputStream;
-import java.io.IOException;
 import java.io.InputStream;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -52,33 +48,17 @@ public class MinioRepository implements FileRepository {
     @Override
     public boolean isObjectExist(ObjectPath objectPath) {
         try {
-            getObjectInfoUnhandled(objectPath);
+            client.statObject(
+                    StatObjectArgs.builder()
+                            .bucket(ROOT_BUCKET)
+                            .object(objectPath.getFullPath())
+                            .build());
             return true;
         } catch (ErrorResponseException exc) {
             return false;
         } catch (Exception exc) {
             throw new MinioOperationException(exc);
         }
-    }
-
-    @Override
-    public ObjectInfoDto getObjectInfo(ObjectPath objectPath) {
-        try {
-            return getObjectInfoUnhandled(objectPath);
-        } catch (Exception exc) {
-            throw new MinioOperationException(exc);
-        }
-    }
-
-    private ObjectInfoDto getObjectInfoUnhandled(ObjectPath objectPath) throws ServerException, InsufficientDataException,
-            ErrorResponseException, IOException, NoSuchAlgorithmException, InvalidKeyException,
-            InvalidResponseException, XmlParserException, InternalException {
-        StatObjectResponse response = client.statObject(
-                StatObjectArgs.builder()
-                        .bucket(ROOT_BUCKET)
-                        .object(objectPath.getFullPath())
-                        .build());
-        return new ObjectInfoDto(objectPath.getObjectName(), response.size(), response.lastModified().toLocalDateTime());
     }
 
     @Override
