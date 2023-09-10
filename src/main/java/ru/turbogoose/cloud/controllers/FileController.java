@@ -8,6 +8,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.util.FileCopyUtils;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import ru.turbogoose.cloud.dto.FileUploadDto;
 import ru.turbogoose.cloud.dto.ObjectMoveDto;
 import ru.turbogoose.cloud.dto.ObjectRenameDto;
@@ -64,16 +65,18 @@ public class FileController {
             @AuthenticationPrincipal UserDetailsImpl userDetails,
             @RequestParam String path,
             @ModelAttribute("fileUploadDto") FileUploadDto fileUploadDto,
-            BindingResult bindingResult) {
+            RedirectAttributes redirectAttributes) {
         try {
             fileService.saveFile(userDetails.getUserId(), fileUploadDto);
-            return "redirect:/" + getPathParam(path);
+            redirectAttributes.addFlashAttribute("successAlert", "File uploaded successfully");
         } catch (ObjectAlreadyExistsException exc) {
-            bindingResult.rejectValue("file", "file.alreadyExists", "File with this name already exists");
+            exc.printStackTrace();
+            redirectAttributes.addFlashAttribute("failureAlert", "File with this name already exists");
         } catch (ObjectUploadException exc) {
-            bindingResult.rejectValue("file", "file.errorUploading", "An error occurred during uploading");
+            exc.printStackTrace();
+            redirectAttributes.addFlashAttribute("failureAlert", "An error occurred during uploading");
         }
-        return "main";
+        return "redirect:/" + getPathParam(path);
     }
 
     @PatchMapping("/rename")

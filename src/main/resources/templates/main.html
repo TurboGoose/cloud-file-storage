@@ -32,10 +32,10 @@
 <hr class="mt-1">
 
 <!--Alerts-->
-<!--<div th:if="${folderCreatedSuccessfully}" class="container col-4 alert alert-dismissible alert-success fade show">-->
-<!--  Folder created successfully-->
-<!--  <button type="button" class="btn-close" data-bs-dismiss="alert"></button>-->
-<!--</div>-->
+<div th:if="${successAlert}" class="container col-4 alert alert-dismissible alert-success fade show">
+  <span th:text="${successAlert}"></span>
+  <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+</div>
 <div th:if="${failureAlert}" class="container col-4 alert alert-dismissible alert-danger fade show">
   <span th:text="${failureAlert}"></span>
   <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
@@ -52,9 +52,7 @@
       <div class="modal-body">
         <form th:action="@{/file/upload(path=${param.path})}" method="POST" id="fileUploadForm" th:object="${fileUploadDto}" enctype="multipart/form-data">
           <input type="hidden" name="parentFolderPath" th:value="${param.path}">
-<!--          <input type="file" th:field="*{file}" required class="form-control">-->
-<!--          th:attrappend="class=${#fields.hasErrors('file') ? 'is-invalid' : 'is-valid'}"-->
-<!--          <div class="invalid-feedback" th:errors="*{file}"></div>-->
+          <input type="file" th:field="*{file}" required class="form-control">
         </form>
       </div>
       <div class="modal-footer">
@@ -76,10 +74,7 @@
       <div class="modal-body">
         <form th:action="@{/upload(path=${param.path})}" method="POST" id="folderUploadForm" th:object="${folderUploadDto}" enctype="multipart/form-data">
           <input type="hidden" name="parentFolderPath" th:value="${param.path}">
-<!--          <input type="file" th:field="*{files}" required webkitdirectory-->
-<!--                 class="form-control ">-->
-<!--          th:attrappend="class=${#fields.hasErrors('files') ? 'is-invalid' : 'is-valid'}"-->
-<!--          <div class="invalid-feedback" th:errors="*{files}"></div>-->
+<!--          <input type="file" th:field="*{files}" webkitdirectory class="form-control ">-->
         </form>
       </div>
       <div class="modal-footer">

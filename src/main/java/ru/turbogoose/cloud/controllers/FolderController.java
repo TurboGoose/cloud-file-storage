@@ -36,13 +36,13 @@ public class FolderController {
             model.addAttribute("breadcrumbs", assembleBreadcrumbsFromPath(path));
 
             model.addAttribute("folderCreationDto", new FolderCreationDto());
-            model.addAttribute("folderUploadDto", new FolderUploadDto());
-            model.addAttribute("folderRenameDto", new ObjectRenameDto());
+//            model.addAttribute("folderUploadDto", new FolderUploadDto());
+//            model.addAttribute("folderRenameDto", new ObjectRenameDto());
 //            model.addAttribute("folderMoveDto", new ObjectMoveDto());
 //            model.addAttribute("folderMoveCandidates", folderService.getMoveCandidatesForFolder(userId, path));
 
             model.addAttribute("fileUploadDto", new FileUploadDto());
-            model.addAttribute("fileRenameDto", new ObjectRenameDto());
+//            model.addAttribute("fileRenameDto", new ObjectRenameDto());
 //            model.addAttribute("fileMoveDto", new ObjectMoveDto());
 //            model.addAttribute("folderMoveCandidates", folderService.getMoveCandidatesForFolder(userId, path));
 
@@ -64,13 +64,14 @@ public class FolderController {
             RedirectAttributes redirectAttributes) {
         if (bindingResult.hasErrors()) {
             redirectAttributes.addFlashAttribute("failureAlert", bindingResult.getFieldError().getDefaultMessage());
-            return "redirect:/" + getPathParam(path);
-        }
-        try {
-            folderService.createSingleFolder(userDetails.getUserId(), folderCreationDto);
-        } catch (ObjectAlreadyExistsException exc) {
-            exc.printStackTrace();
-            redirectAttributes.addFlashAttribute("failureAlert", "This folder already exists");
+        } else {
+            try {
+                folderService.createSingleFolder(userDetails.getUserId(), folderCreationDto);
+                redirectAttributes.addFlashAttribute("successAlert", "Folder created successfully");
+            } catch (ObjectAlreadyExistsException exc) {
+                exc.printStackTrace();
+                redirectAttributes.addFlashAttribute("failureAlert", "This folder already exists");
+            }
         }
         return "redirect:/" + getPathParam(path);
     }
