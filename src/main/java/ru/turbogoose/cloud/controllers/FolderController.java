@@ -31,9 +31,8 @@ public class FolderController {
             @AuthenticationPrincipal UserDetailsImpl userDetails,
             @RequestParam(required = false) String path,
             Model model) {
-        int userId = userDetails.getUserId();
         try {
-            model.addAttribute("objects", folderService.getFolderObjects(userId, path));
+            model.addAttribute("objects", folderService.getFolderObjects(userDetails.getUserId(), path));
             model.addAttribute("breadcrumbs", assembleBreadcrumbsFromPath(path));
 
             model.addAttribute("folderCreationDto", new FolderCreationDto());
@@ -113,10 +112,17 @@ public class FolderController {
 
     @GetMapping("/rename")
     public String getFolderRenameForm(
+            @AuthenticationPrincipal UserDetailsImpl userDetails,
             @RequestParam String path,
             @ModelAttribute("objectRenameDto") ObjectRenameDto objectRenameDto,
             Model model,
             HttpServletRequest request) {
+        try {
+            folderService.validateFolderExists(userDetails.getUserId(), path);
+        }  catch (ObjectNotExistsException exc) {
+            exc.printStackTrace();
+            return "redirect:/";
+        }
         model.addAttribute("requestURI", request.getRequestURI());
         model.addAttribute("breadcrumbs", assembleBreadcrumbsFromPath(path));
         model.addAttribute("searchDto", new SearchDto());

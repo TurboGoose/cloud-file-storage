@@ -66,10 +66,17 @@ public class FileController {
 
     @GetMapping("/rename")
     public String getFileRenameForm(
+            @AuthenticationPrincipal UserDetailsImpl userDetails,
             @RequestParam String path,
             @ModelAttribute("objectRenameDto") ObjectRenameDto objectRenameDto,
             Model model,
             HttpServletRequest request) {
+        try {
+            fileService.validateFileExists(userDetails.getUserId(), path);
+        } catch (ObjectNotExistsException exc) {
+            exc.printStackTrace();
+            return "redirect:/";
+        }
         model.addAttribute("requestURI", request.getRequestURI());
         model.addAttribute("breadcrumbs", assembleBreadcrumbsFromPath(path));
         model.addAttribute("searchDto", new SearchDto());

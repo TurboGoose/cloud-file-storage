@@ -31,6 +31,14 @@ public class FolderService {
     private final FileService fileService;
     private final ObjectPathFactory objectPathFactory;
 
+    public void validateFolderExists(int userId, String path) {
+        ObjectPath folderPath = objectPathFactory.compose(userId, fromUrlParam(path));
+        if (!fileRepository.isObjectExist(folderPath)) {
+            throw new ObjectNotExistsException(
+                    String.format("Folder with name %s does not exist", folderPath));
+        }
+    }
+
     public List<ObjectPathDto> getFolderObjects(int userId, String path) {
         ObjectPath folderPath = objectPathFactory.compose(userId, fromUrlParam(path));
         if (!fileRepository.isObjectExist(folderPath)) {

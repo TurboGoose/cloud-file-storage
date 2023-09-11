@@ -26,6 +26,13 @@ public class FileService {
     private final FileRepository fileRepository;
     private final ObjectPathFactory objectPathFactory;
 
+    public void validateFileExists(int userId, String path) {
+        ObjectPath filePath = objectPathFactory.compose(userId, fromUrlParam(path, true));
+        if (!fileRepository.isObjectExist(filePath)) {
+            throw new ObjectNotExistsException(String.format("File %s not exists", filePath));
+        }
+    }
+
     public void saveFile(int userId, FileUploadDto creationDto) {
         ObjectPath parentFolderPath = objectPathFactory.compose(
                 userId, fromUrlParam(creationDto.getParentFolderPath()));
