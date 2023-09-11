@@ -18,7 +18,7 @@ public class User {
     @Size(min = 2, max = 100, message = "Username length must be in between 2 and 100 symbols")
     private String username;
     @Column(name = "password")
-    @Min(value = 3, message = "Password must have at least 3 symbols")
+    @Min(value = 5, message = "Password must have at least 5 symbols")
     private String password;
 
     public User(String username, String password) {
