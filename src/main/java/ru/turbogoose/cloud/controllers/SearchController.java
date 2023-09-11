@@ -23,6 +23,6 @@ public class SearchController {
             @ModelAttribute("searchDto") SearchDto searchDto,
             Model model) {
         model.addAttribute("objects", searchService.searchObjectsByString(userDetails.getUserId(), searchDto));
-        return "search/result";
+        return "search";
     }
 }

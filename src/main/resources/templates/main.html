@@ -9,161 +9,162 @@
 </head>
 <body>
 
-<div th:replace="~{fragments/navbar::navbar}"></div>
+<div th:replace="~{fragments/navbar::navbar (${searchDto})}"></div>
 
 <div th:if="${wrongPath}" class="container">
-  <h2>Wrong path!</h2>
-  <p th:text="'Folder \'' + ${wrongPath} + '\' not exists :('"></p>
+  <h1 class="mt-4">Wrong path!</h1>
+  <p th:text="'Folder \'' + ${wrongPath} + '\' not exists :('" class="mt-3"></p>
   <a th:href="@{/}" class="primary-link">Go home</a>
 </div>
 
-<div th:unless="${wrongPath}" class="container pt-4 d-flex justify-content-between align-items-baseline">
+<div th:unless="${wrongPath}">
+  <div  class="container pt-4 d-flex justify-content-between align-items-baseline">
 
-  <div th:replace="~{fragments/breadcrumbs::breadcrumbs (${breadcrumbs})}"></div>
+    <div th:replace="~{fragments/breadcrumbs::breadcrumbs (${breadcrumbs})}"></div>
 
-  <div>
-    <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#createFolderModal">New folder</button>
-    <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#uploadFileModal">Upload file</button>
-    <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#uploadFolderModal">Upload folder</button>
-  </div>
-</div>
-
-<hr class="mt-1">
-
-<!--Alerts-->
-<div th:if="${successAlert}" class="container col-4 alert alert-dismissible alert-success fade show">
-  <span th:text="${successAlert}"></span>
-  <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-</div>
-<div th:if="${failureAlert}" class="container col-4 alert alert-dismissible alert-danger fade show">
-  <span th:text="${failureAlert}"></span>
-  <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-</div>
-
-<!-- Upload file modal -->
-<div class="modal fade" id="uploadFileModal" tabindex="-1">
-  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h1 class="modal-title fs-5">Upload file</h1>
-        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-      </div>
-      <div class="modal-body">
-        <form th:action="@{/file/upload(path=${param.path})}" method="POST" id="fileUploadForm" th:object="${fileUploadDto}" enctype="multipart/form-data">
-          <input type="hidden" name="parentFolderPath" th:value="${param.path}">
-          <input type="file" th:field="*{file}" required class="form-control">
-        </form>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-        <button class="btn btn-primary" form="fileUploadForm">Upload</button>
-      </div>
+    <div>
+      <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#createFolderModal">New folder</button>
+      <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#uploadFileModal">Upload file</button>
+      <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#uploadFolderModal">Upload folder</button>
     </div>
   </div>
-</div>
 
-<!-- Upload folder modal -->
-<div class="modal fade" id="uploadFolderModal" tabindex="-1">
-  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h1 class="modal-title fs-5">Upload folder</h1>
-        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-      </div>
-      <div class="modal-body">
-        <form th:action="@{/upload(path=${param.path})}" method="POST" id="folderUploadForm" th:object="${folderUploadDto}" enctype="multipart/form-data">
-          <input type="hidden" name="parentFolderPath" th:value="${param.path}">
-          <input type="file" th:field="*{files}" required webkitdirectory class="form-control ">
-        </form>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-        <button class="btn btn-primary" form="folderUploadForm">Upload</button>
-      </div>
-    </div>
+  <hr class="mt-1">
+
+  <!--Alerts-->
+  <div th:if="${successAlert}" class="container col-4 alert alert-dismissible alert-success fade show">
+    <span th:text="${successAlert}"></span>
+    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
   </div>
-</div>
+  <div th:if="${failureAlert}" class="container col-4 alert alert-dismissible alert-danger fade show">
+    <span th:text="${failureAlert}"></span>
+    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+  </div>
 
-
-<!-- Create folder modal -->
-<div class="modal fade" id="createFolderModal" tabindex="-1">
-  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h1 class="modal-title fs-5">Create new folder</h1>
-        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-      </div>
-      <div class="modal-body">
-        <div>
-          <form method="POST" th:action="@{/(path=${param.path})}" th:object="${folderCreationDto}" class="form-floating" id="folderCreationForm">
+  <!-- Upload file modal -->
+  <div class="modal fade" id="uploadFileModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h1 class="modal-title fs-5">Upload file</h1>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <form th:action="@{/file/upload(path=${param.path})}" method="POST" id="fileUploadForm" th:object="${fileUploadDto}" enctype="multipart/form-data">
             <input type="hidden" name="parentFolderPath" th:value="${param.path}">
-            <div class="form-floating">
-              <input type="text" id="floatingName" placeholder="Folder name" required th:field="*{newFolderName}" class="form-control">
-              <label for="floatingName">Folder name</label>
-            </div>
+            <input type="file" th:field="*{file}" required class="form-control">
           </form>
         </div>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-        <button class="btn btn-primary" form="folderCreationForm">Create</button>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <button class="btn btn-primary" form="fileUploadForm">Upload</button>
+        </div>
       </div>
     </div>
   </div>
-</div>
 
-<!--Object list-->
-<div class="container">
-  <h2 th:unless="${objects}" class="text-center mt-5">This folder is empty</h2>
-  <div th:each="obj : ${objects}" th:with="baseUrl=${obj.folder} ? '' : '/file'" class="row">
-
-<!--    Object icon-->
-    <div class="col-auto">
-      <svg th:if="${obj.folder}" xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-folder" viewBox="0 0 16 16">
-        <path d="M.54 3.87.5 3a2 2 0 0 1 2-2h3.672a2 2 0 0 1 1.414.586l.828.828A2 2 0 0 0 9.828 3h3.982a2 2 0 0 1 1.992 2.181l-.637 7A2 2 0 0 1 13.174 14H2.826a2 2 0 0 1-1.991-1.819l-.637-7a1.99 1.99 0 0 1 .342-1.31zM2.19 4a1 1 0 0 0-.996 1.09l.637 7a1 1 0 0 0 .995.91h10.348a1 1 0 0 0 .995-.91l.637-7A1 1 0 0 0 13.81 4H2.19zm4.69-1.707A1 1 0 0 0 6.172 2H2.5a1 1 0 0 0-1 .981l.006.139C1.72 3.042 1.95 3 2.19 3h5.396l-.707-.707z"/>
-      </svg>
-      <svg th:unless="${obj.folder}" xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-file-earmark" viewBox="0 0 16 16">
-        <path d="M14 4.5V14a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V2a2 2 0 0 1 2-2h5.5L14 4.5zm-3 0A1.5 1.5 0 0 1 9.5 3V1H4a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V4.5h-2z"></path>
-      </svg>
-    </div>
-
-<!--    Object name-->
-    <div class="col-9 pt-1">
-      <a th:if="${obj.folder}" th:href="@{${baseUrl}(path=${obj.path})}" th:text="${obj.name}" class="link-secondary"></a>
-      <span th:unless="${obj.folder}" th:text="${obj.name}" class="text-secondary"></span>
-    </div>
-
-<!--    Download button-->
-    <div class="col-auto">
-      <a th:href="@{${baseUrl} + '/download'(path=${obj.path})}" type="button" class="btn btn-outline-secondary btn-sm">
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-download" viewBox="0 0 16 16">
-          <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z"></path>
-          <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z"></path>
-        </svg>
-      </a>
-    </div>
-
-<!--    Three dots with dropdown-->
-    <div class="col-auto dropdown">
-      <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-toggle="dropdown">
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-three-dots-vertical" viewBox="0 0 16 16">
-          <path d="M9.5 13a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0zm0-5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0zm0-5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"/>
-        </svg>
-      </button>
-      <ul class="dropdown-menu">
-        <li><a th:href="@{${baseUrl} + '/move'(path=${obj.path})}" class="dropdown-item">Move</a></li>
-        <li><a th:href="@{${baseUrl} + '/rename'(path=${obj.path})}" class="dropdown-item">Rename</a></li>
-        <li>
-          <form th:method="DELETE" th:action="@{${baseUrl}(path=${obj.path})}">
-            <button class="dropdown-item btn text-danger">Delete</button>
+  <!-- Upload folder modal -->
+  <div class="modal fade" id="uploadFolderModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h1 class="modal-title fs-5">Upload folder</h1>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <form th:action="@{/upload(path=${param.path})}" method="POST" id="folderUploadForm" th:object="${folderUploadDto}" enctype="multipart/form-data">
+            <input type="hidden" name="parentFolderPath" th:value="${param.path}">
+            <input type="file" th:field="*{files}" required webkitdirectory class="form-control ">
           </form>
-        </li>
-      </ul>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <button class="btn btn-primary" form="folderUploadForm">Upload</button>
+        </div>
+      </div>
     </div>
+  </div>
 
-    <hr class="mt-1">
+
+  <!-- Create folder modal -->
+  <div class="modal fade" id="createFolderModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h1 class="modal-title fs-5">Create new folder</h1>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <div>
+            <form method="POST" th:action="@{/(path=${param.path})}" th:object="${folderCreationDto}" class="form-floating" id="folderCreationForm">
+              <input type="hidden" name="parentFolderPath" th:value="${param.path}">
+              <div class="form-floating">
+                <input type="text" id="floatingName" placeholder="Folder name" required th:field="*{newFolderName}" class="form-control">
+                <label for="floatingName">Folder name</label>
+              </div>
+            </form>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <button class="btn btn-primary" form="folderCreationForm">Create</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!--Object list-->
+  <div class="container">
+    <h2 th:unless="${objects}" class="text-center mt-5">This folder is empty</h2>
+    <div th:each="obj : ${objects}" th:with="baseUrl=${obj.folder} ? '' : '/file'" class="row">
+
+      <!--    Object icon-->
+      <div class="col-auto">
+        <svg th:if="${obj.folder}" xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-folder" viewBox="0 0 16 16">
+          <path d="M.54 3.87.5 3a2 2 0 0 1 2-2h3.672a2 2 0 0 1 1.414.586l.828.828A2 2 0 0 0 9.828 3h3.982a2 2 0 0 1 1.992 2.181l-.637 7A2 2 0 0 1 13.174 14H2.826a2 2 0 0 1-1.991-1.819l-.637-7a1.99 1.99 0 0 1 .342-1.31zM2.19 4a1 1 0 0 0-.996 1.09l.637 7a1 1 0 0 0 .995.91h10.348a1 1 0 0 0 .995-.91l.637-7A1 1 0 0 0 13.81 4H2.19zm4.69-1.707A1 1 0 0 0 6.172 2H2.5a1 1 0 0 0-1 .981l.006.139C1.72 3.042 1.95 3 2.19 3h5.396l-.707-.707z"/>
+        </svg>
+        <svg th:unless="${obj.folder}" xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-file-earmark" viewBox="0 0 16 16">
+          <path d="M14 4.5V14a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V2a2 2 0 0 1 2-2h5.5L14 4.5zm-3 0A1.5 1.5 0 0 1 9.5 3V1H4a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V4.5h-2z"></path>
+        </svg>
+      </div>
+
+      <!--    Object name-->
+      <div class="col-9 pt-1">
+        <a th:if="${obj.folder}" th:href="@{${baseUrl}(path=${obj.path})}" th:text="${obj.name}" class="link-secondary"></a>
+        <span th:unless="${obj.folder}" th:text="${obj.name}" class="text-secondary"></span>
+      </div>
+
+      <!--    Download button-->
+      <div class="col-auto">
+        <a th:href="@{${baseUrl} + '/download'(path=${obj.path})}" type="button" class="btn btn-outline-secondary btn-sm">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-download" viewBox="0 0 16 16">
+            <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z"></path>
+            <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z"></path>
+          </svg>
+        </a>
+      </div>
+
+      <!--    Three dots with dropdown-->
+      <div class="col-auto dropdown">
+        <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-toggle="dropdown">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-three-dots-vertical" viewBox="0 0 16 16">
+            <path d="M9.5 13a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0zm0-5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0zm0-5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"/>
+          </svg>
+        </button>
+        <ul class="dropdown-menu">
+          <li><a th:href="@{${baseUrl} + '/move'(path=${obj.path})}" class="dropdown-item">Move</a></li>
+          <li><a th:href="@{${baseUrl} + '/rename'(path=${obj.path})}" class="dropdown-item">Rename</a></li>
+          <li>
+            <form th:method="DELETE" th:action="@{${baseUrl}(path=${obj.path})}">
+              <button class="dropdown-item btn text-danger">Delete</button>
+            </form>
+          </li>
+        </ul>
+      </div>
+
+      <hr class="mt-1">
+    </div>
   </div>
 </div>
-
 </body>
 </html>

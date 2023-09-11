@@ -14,6 +14,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import ru.turbogoose.cloud.dto.FileUploadDto;
 import ru.turbogoose.cloud.dto.ObjectMoveDto;
 import ru.turbogoose.cloud.dto.ObjectRenameDto;
+import ru.turbogoose.cloud.dto.SearchDto;
 import ru.turbogoose.cloud.exceptions.ObjectAlreadyExistsException;
 import ru.turbogoose.cloud.exceptions.ObjectNotExistsException;
 import ru.turbogoose.cloud.exceptions.ObjectUploadException;
@@ -71,6 +72,7 @@ public class FileController {
             HttpServletRequest request) {
         model.addAttribute("requestURI", request.getRequestURI());
         model.addAttribute("breadcrumbs", assembleBreadcrumbsFromPath(path));
+        model.addAttribute("searchDto", new SearchDto());
         objectRenameDto.setNewName(extractObjectName(path));
         return "rename";
     }
@@ -106,6 +108,7 @@ public class FileController {
         model.addAttribute("requestURI", request.getRequestURI());
         model.addAttribute("moveCandidates", fileService.getMoveCandidatesForFile(userDetails.getUserId(), path));
         model.addAttribute("breadcrumbs", assembleBreadcrumbsFromPath(path));
+        model.addAttribute("searchDto", new SearchDto());
         return "move";
     }
 

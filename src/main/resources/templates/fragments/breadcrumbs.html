@@ -6,7 +6,7 @@
 </head>
 <body>
 <div th:fragment="breadcrumbs (breadcrumbs)">
-  <nav style="--bs-breadcrumb-divider: '>">
+  <nav>
     <ol class="breadcrumb">
       <li class="breadcrumb-item"><a th:href="@{/}">Home</a></li>
       <li class="breadcrumb-item" th:classappend="${stat.last} ? 'active'" th:each="entry, stat : ${breadcrumbs}" th:with="folderName=${entry.key}, path=${entry.value}">

@@ -16,7 +16,6 @@ import static ru.turbogoose.cloud.utils.PathConverter.toUrlParam;
 @Service
 @RequiredArgsConstructor
 public class SearchService {
-    public enum SearchType {files, folders, all}
 
     private final FileRepository fileRepository;
     private final ObjectPathFactory objectPathFactory;
@@ -24,17 +23,16 @@ public class SearchService {
     public List<ObjectPathDto> searchObjectsByString(int userId, SearchDto searchDto) {
         ObjectPath rootFolder = objectPathFactory.getRootFolder(userId);
         return fileRepository.listFolderObjectsRecursive(rootFolder, false).stream()
-                .filter(path -> switch (searchDto.getType()) {
-                            case folders -> path.isFolder();
-                            case files -> !path.isFolder();
-                            case all -> true;
-                        }
-                        && (searchDto.isMatchCase()
-                                ? path.getObjectName().contains(searchDto.getQuery())
-                                : path.getObjectName().toLowerCase().contains(searchDto.getQuery().toLowerCase())))
+                .filter(path -> path.getObjectName().toLowerCase().contains(searchDto.getQuery().toLowerCase()))
                 .map(path -> new ObjectPathDto(
-                        path.getObjectName(), toUrlParam(path.getPath()), path.isFolder()))
+                        addSpacingForDelimiters(toUrlParam(path.getPath())),
+                        path.isFolder(),
+                        toUrlParam((path.isFolder() ? path : path.getParent()).getPath())))
                 .sorted(Comparator.comparing(ObjectPathDto::isFolder).reversed().thenComparing(ObjectPathDto::getName))
                 .toList();
+    }
+
+    private String addSpacingForDelimiters(String path) {
+        return path.replace("/", " / ");
     }
 }

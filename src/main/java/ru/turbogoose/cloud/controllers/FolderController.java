@@ -119,6 +119,7 @@ public class FolderController {
             HttpServletRequest request) {
         model.addAttribute("requestURI", request.getRequestURI());
         model.addAttribute("breadcrumbs", assembleBreadcrumbsFromPath(path));
+        model.addAttribute("searchDto", new SearchDto());
         objectRenameDto.setNewName(extractObjectName(path));
         return "rename";
     }
@@ -154,6 +155,7 @@ public class FolderController {
         model.addAttribute("requestURI", request.getRequestURI());
         model.addAttribute("moveCandidates", folderService.getMoveCandidatesForFolder(userDetails.getUserId(), path));
         model.addAttribute("breadcrumbs", assembleBreadcrumbsFromPath(path));
+        model.addAttribute("searchDto", new SearchDto());
         return "move";
     }
 

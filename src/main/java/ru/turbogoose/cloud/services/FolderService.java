@@ -39,7 +39,7 @@ public class FolderService {
         }
         return fileRepository.listFolderObjects(folderPath).stream()
                 .map(folder -> new ObjectPathDto(
-                        folder.getObjectName(), toUrlParam(folder.getPath()), folder.isFolder()))
+                        folder.getObjectName(), folder.isFolder(), toUrlParam(folder.getPath())))
                 .sorted(Comparator.comparing(ObjectPathDto::isFolder).reversed().thenComparing(ObjectPathDto::getName))
                 .toList();
     }

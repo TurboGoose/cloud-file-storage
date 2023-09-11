@@ -1,10 +1,12 @@
 package ru.turbogoose.cloud.dto;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
 
 @Data
+@AllArgsConstructor
 public class ObjectPathDto {
-    private final String name;
-    private final String path;
-    private final boolean isFolder;
+    private String name;
+    private boolean isFolder;
+    private String path;
 }
