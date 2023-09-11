@@ -17,6 +17,7 @@
 
 <div class="container mt-4">
   <form method="POST" th:action="@{/signup}" th:object="${user}">
+    <h2 class="mb-4">Create new account</h2>
     <div class="form-floating col-5">
       <input th:field="*{username}" id="floatingName" type="text" placeholder="Username" required
              class="form-control" th:classappend="${#fields.hasErrors('username')} ? ' is-invalid'">
