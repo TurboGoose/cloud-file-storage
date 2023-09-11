@@ -24,7 +24,7 @@
 <div class="container">
   <form th:method="PATCH" th:action="@{${requestURI}(path=${param.path})}" th:object="${objectRenameDto}">
     <input type="hidden" name="objectPath" th:value="${param.path}">
-    <div class="form-floating">
+    <div class="form-floating col-5">
       <input class="form-control" id="floatingName" type="text" th:field="*{newName}">
       <label for="floatingName">New name</label>
     </div>

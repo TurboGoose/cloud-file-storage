@@ -25,7 +25,7 @@
 <div class="container">
   <form th:method="PUT" th:action="@{${requestURI}(path=${param.path})}" th:object="${objectMoveDto}">
     <input type="hidden" name="oldObjectPath" th:value="${param.path}">
-    <div class="form-floating">
+    <div class="form-floating col-5">
       <select class="form-select" id="floatingLocation" required th:field="*{newObjectPath}">
         <option selected disabled value="default">Select folder</option>
         <option th:each="folderPath : ${moveCandidates}" th:value="${folderPath}" th:text="${folderPath}"></option>
