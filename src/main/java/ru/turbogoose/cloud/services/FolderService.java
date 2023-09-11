@@ -126,6 +126,10 @@ public class FolderService {
 
     public List<String> getMoveCandidatesForFolder(int userId, String path) {
         ObjectPath folderPathToMove = objectPathFactory.compose(userId, fromUrlParam(path));
+        if (!fileRepository.isObjectExist(folderPathToMove)) {
+            throw new ObjectNotExistsException(
+                    String.format("Folder with name %s does not exist", folderPathToMove));
+        }
         ObjectPath parentFolderPath = folderPathToMove.getParent();
         ObjectPath rootFolderPath = objectPathFactory.getRootFolder(userId);
         return fileRepository.listFolderObjectsRecursive(rootFolderPath, true).stream()

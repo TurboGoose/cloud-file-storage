@@ -152,8 +152,14 @@ public class FolderController {
             @ModelAttribute("objectMoveDto") ObjectMoveDto objectMoveDto,
             Model model,
             HttpServletRequest request) {
+        try {
+            model.addAttribute("moveCandidates", folderService.getMoveCandidatesForFolder(userDetails.getUserId(), path));
+        } catch (ObjectNotExistsException exc) {
+            exc.printStackTrace();
+            return "redirect:/";
+        }
+
         model.addAttribute("requestURI", request.getRequestURI());
-        model.addAttribute("moveCandidates", folderService.getMoveCandidatesForFolder(userDetails.getUserId(), path));
         model.addAttribute("breadcrumbs", assembleBreadcrumbsFromPath(path));
         model.addAttribute("searchDto", new SearchDto());
         return "move";

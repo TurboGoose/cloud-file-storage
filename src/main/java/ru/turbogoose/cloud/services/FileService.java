@@ -74,6 +74,10 @@ public class FileService {
 
     public List<String> getMoveCandidatesForFile(int userId, String path) {
         ObjectPath filePathToMove = objectPathFactory.compose(userId, fromUrlParam(path, true));
+        if (!fileRepository.isObjectExist(filePathToMove)) {
+            throw new ObjectNotExistsException(
+                    String.format("File with name %s does not exist", filePathToMove));
+        }
         ObjectPath parentFolderPath = filePathToMove.getParent();
         ObjectPath rootFolderPath = objectPathFactory.getRootFolder(userId);
         return fileRepository.listFolderObjectsRecursive(rootFolderPath, true).stream()
