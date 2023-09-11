@@ -10,10 +10,11 @@
 <body>
 <div th:replace="~{fragments/navbar::navbar (${searchDto})}"></div>
 
-<h1 th:if="${objects.isEmpty()}">Nothing was found</h1>
+<h2 th:if="${objects.isEmpty()}" class="container">Nothing was found</h2>
 
 <div th:unless="${objects.isEmpty()}" class="container">
-  <h1>Search results</h1>
+  <h2>Search results</h2>
+  <hr class="mt-1">
 
   <!--Object list-->
   <div th:each="obj : ${objects}" class="row">
@@ -32,7 +33,7 @@
     <div class="col-9 pt-1">
       <a th:href="@{/(path=${obj.path})}" th:text="${obj.name}" class="link-secondary"></a>
     </div>
-    <hr class="mt-1">
+    <hr class="mt-2 mb-2">
   </div>
 </div>
 
