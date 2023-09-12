@@ -1,0 +1,13 @@
+spring:
+  datasource:
+    username: ilya
+    password: bebra
+    url:
+
+  servlet:
+    multipart:
+      max-file-size: -1 # No file size limit
+      max-request-size: -1  # No limit on request size
+
+  session:
+    timeout: -1 # No timeout
