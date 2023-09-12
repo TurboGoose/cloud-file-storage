@@ -24,9 +24,11 @@
 <div class="container">
   <form th:method="PATCH" th:action="@{${requestURI}(path=${param.path})}" th:object="${objectRenameDto}">
     <input type="hidden" name="objectPath" th:value="${param.path}">
-    <div class="form-floating col-5">
-      <input class="form-control" id="floatingName" type="text" th:field="*{newName}">
+    <div class="form-floating col-6">
+      <input th:field="*{newName}" id="floatingName" type="text"
+             class="form-control" th:classappend="${#fields.hasErrors('newName')} ? ' is-invalid'">
       <label for="floatingName">New name</label>
+      <div class="invalid-feedback" th:errors="*{newName}"></div>
     </div>
     <button class="btn btn-primary mt-3">Rename</button>
   </form>

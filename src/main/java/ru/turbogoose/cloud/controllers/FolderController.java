@@ -114,19 +114,23 @@ public class FolderController {
     public String getFolderRenameForm(
             @AuthenticationPrincipal UserDetailsImpl userDetails,
             @RequestParam String path,
-            @ModelAttribute("objectRenameDto") ObjectRenameDto objectRenameDto,
             Model model,
             HttpServletRequest request) {
         try {
-            folderService.validateFolderExists(userDetails.getUserId(), path);
+            folderService.validateFolderExists(userDetails.getUserId(), path); // protection from manual url editing
         }  catch (ObjectNotExistsException exc) {
             exc.printStackTrace();
             return "redirect:/";
         }
+
+        if (!model.containsAttribute("objectRenameDto")) {
+            ObjectRenameDto renameDto = new ObjectRenameDto();
+            renameDto.setNewName(extractObjectName(path));
+            model.addAttribute("objectRenameDto", renameDto);
+        }
         model.addAttribute("requestURI", request.getRequestURI());
         model.addAttribute("breadcrumbs", assembleBreadcrumbsFromPath(path));
         model.addAttribute("searchDto", new SearchDto());
-        objectRenameDto.setNewName(extractObjectName(path));
         return "rename";
     }
 
@@ -138,17 +142,20 @@ public class FolderController {
             BindingResult bindingResult,
             RedirectAttributes redirectAttributes) {
         if (bindingResult.hasErrors()) {
-            redirectAttributes.addFlashAttribute("failureAlert", bindingResult.getFieldError().getDefaultMessage());
-        } else {
-            try {
-                String parentFolderPath = folderService.renameFolder(userDetails.getUserId(), objectRenameDto);
-                return "redirect:/" + getPathParam(parentFolderPath);
-            } catch (ObjectAlreadyExistsException exc) {
-                exc.printStackTrace();
-                redirectAttributes.addFlashAttribute("failureAlert", "Folder with this name already exists");
-            }
+            redirectAttributes.addFlashAttribute("org.springframework.validation.BindingResult.objectRenameDto", bindingResult);
+            redirectAttributes.addFlashAttribute("objectRenameDto", objectRenameDto);
+            return "redirect:/rename" + getPathParam(path);
         }
-        return "redirect:/rename" + getPathParam(path);
+
+        try {
+            String parentFolderPath = folderService.renameFolder(userDetails.getUserId(), objectRenameDto);
+            return "redirect:/" + getPathParam(parentFolderPath);
+        } catch (ObjectAlreadyExistsException exc) {
+            exc.printStackTrace();
+            redirectAttributes.addFlashAttribute("failureAlert", "Folder with this name already exists");
+            redirectAttributes.addFlashAttribute("objectRenameDto", objectRenameDto);
+            return "redirect:/rename" + getPathParam(path);
+        }
     }
 
     @GetMapping("/move")
