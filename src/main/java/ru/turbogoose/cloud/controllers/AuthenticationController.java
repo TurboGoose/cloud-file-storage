@@ -19,27 +19,27 @@ public class AuthenticationController {
 
     @GetMapping("/login")
     public String getLoginForm() {
-        return "login";
+        return "auth/login";
     }
 
     @GetMapping("/signup")
     public String getSignupForm(Model model) {
         model.addAttribute("user", new User());
-        return "signup";
+        return "auth/signup";
     }
 
     @PostMapping("/signup")
     public String signUpUser(@ModelAttribute("user") @Valid User user,
                              BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
-            return "signup";
+            return "auth/signup";
         }
         try {
             userService.createUser(user);
             return "redirect:/login";
         } catch (UsernameAlreadyExistsException exc) {
             bindingResult.rejectValue("username", "user.alreadyExists", "User with this username already exists");
-            return "signup";
+            return "auth/signup";
         }
     }
 }
