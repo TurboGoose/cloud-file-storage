@@ -68,7 +68,6 @@ public class FileController {
     public String getFileRenameForm(
             @AuthenticationPrincipal UserDetailsImpl userDetails,
             @RequestParam String path,
-            @ModelAttribute("objectRenameDto") ObjectRenameDto objectRenameDto,
             Model model,
             HttpServletRequest request) {
         try {
@@ -77,10 +76,15 @@ public class FileController {
             exc.printStackTrace();
             return "redirect:/";
         }
+
+        if (!model.containsAttribute("objectRenameDto")) {
+            ObjectRenameDto renameDto = new ObjectRenameDto();
+            renameDto.setNewName(extractObjectName(path));
+            model.addAttribute("objectRenameDto", renameDto);
+        }
         model.addAttribute("requestURI", request.getRequestURI());
         model.addAttribute("breadcrumbs", assembleBreadcrumbsFromPath(path));
         model.addAttribute("searchDto", new SearchDto());
-        objectRenameDto.setNewName(extractObjectName(path));
         return "rename";
     }
 
@@ -92,17 +96,20 @@ public class FileController {
             BindingResult bindingResult,
             RedirectAttributes redirectAttributes) {
         if (bindingResult.hasErrors()) {
-            redirectAttributes.addFlashAttribute("failureAlert", bindingResult.getFieldError().getDefaultMessage());
-        } else {
-            try {
-                String parentFolderPath = fileService.renameFile(userDetails.getUserId(), objectRenameDto);
-                return "redirect:/" + getPathParam(parentFolderPath);
-            } catch (ObjectAlreadyExistsException exc) {
-                exc.printStackTrace();
-                redirectAttributes.addFlashAttribute("failureAlert", "File with this name already exists");
-            }
+            redirectAttributes.addFlashAttribute("org.springframework.validation.BindingResult.objectRenameDto", bindingResult);
+            redirectAttributes.addFlashAttribute("objectRenameDto", objectRenameDto);
+            return "redirect:/file/rename" + getPathParam(path);
         }
-        return "redirect:/file/rename" + getPathParam(path);
+
+        try {
+            String parentFolderPath = fileService.renameFile(userDetails.getUserId(), objectRenameDto);
+            return "redirect:/" + getPathParam(parentFolderPath);
+        } catch (ObjectAlreadyExistsException exc) {
+            exc.printStackTrace();
+            redirectAttributes.addFlashAttribute("failureAlert", "File with this name already exists");
+            redirectAttributes.addFlashAttribute("objectRenameDto", objectRenameDto);
+            return "redirect:/file/rename" + getPathParam(path);
+        }
     }
 
     @GetMapping("/move")
