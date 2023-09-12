@@ -38,7 +38,7 @@ public class FolderController {
             model.addAttribute("folderCreationDto", new FolderCreationDto());
             model.addAttribute("folderUploadDto", new FolderUploadDto());
 
-            model.addAttribute("fileUploadDto", new FileUploadDto());
+            model.addAttribute("filesUploadDto", new FilesUploadDto());
 
             model.addAttribute("searchDto", new SearchDto());
         } catch (ObjectNotExistsException exc) {

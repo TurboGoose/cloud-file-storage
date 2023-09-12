@@ -11,7 +11,7 @@ import org.springframework.util.FileCopyUtils;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
-import ru.turbogoose.cloud.dto.FileUploadDto;
+import ru.turbogoose.cloud.dto.FilesUploadDto;
 import ru.turbogoose.cloud.dto.ObjectMoveDto;
 import ru.turbogoose.cloud.dto.ObjectRenameDto;
 import ru.turbogoose.cloud.dto.SearchDto;
@@ -47,13 +47,13 @@ public class FileController {
     }
 
     @PostMapping("/upload")
-    public String uploadFile(
+    public String uploadFiles(
             @AuthenticationPrincipal UserDetailsImpl userDetails,
             @RequestParam String path,
-            @ModelAttribute("fileUploadDto") FileUploadDto fileUploadDto,
+            @ModelAttribute("filesUploadDto") FilesUploadDto filesUploadDto,
             RedirectAttributes redirectAttributes) {
         try {
-            fileService.saveFile(userDetails.getUserId(), fileUploadDto);
+            fileService.saveFiles(userDetails.getUserId(), filesUploadDto);
         } catch (ObjectAlreadyExistsException exc) {
             exc.printStackTrace();
             redirectAttributes.addFlashAttribute("failureAlert", "File with this name already exists");

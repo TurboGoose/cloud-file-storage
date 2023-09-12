@@ -3,7 +3,7 @@ package ru.turbogoose.cloud.services;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
-import ru.turbogoose.cloud.dto.FileUploadDto;
+import ru.turbogoose.cloud.dto.FilesUploadDto;
 import ru.turbogoose.cloud.dto.ObjectMoveDto;
 import ru.turbogoose.cloud.dto.ObjectRenameDto;
 import ru.turbogoose.cloud.exceptions.ObjectAlreadyExistsException;
@@ -33,24 +33,26 @@ public class FileService {
         }
     }
 
-    public void saveFile(int userId, FileUploadDto creationDto) {
-        ObjectPath parentFolderPath = objectPathFactory.compose(
-                userId, fromUrlParam(creationDto.getParentFolderPath()));
-        MultipartFile file = creationDto.getFile();
-        if (file == null || file.isEmpty()) {
-            throw new ObjectUploadException("An error occurred during uploading file to " + parentFolderPath);
+    public void saveFiles(int userId, FilesUploadDto filesUploadDto) {
+        MultipartFile[] files = filesUploadDto.getFiles();
+        if (files == null || files.length == 0) {
+            throw new ObjectUploadException("No files were provided");
         }
-        ObjectPath newFilePath = parentFolderPath.resolve(file.getOriginalFilename());
-        try {
-            saveFile(newFilePath, file.getInputStream());
-        } catch (IOException exc) {
-            throw new ObjectUploadException("An error occurred during uploading file to " + parentFolderPath, exc);
+
+        ObjectPath parentFolderPath = objectPathFactory.compose(userId, fromUrlParam(filesUploadDto.getParentFolderPath()));
+        for (MultipartFile file : files) {
+            try {
+                ObjectPath newFilePath = parentFolderPath.resolve(file.getOriginalFilename());
+                saveFile(newFilePath, file.getInputStream());
+            } catch (IOException exc) {
+                throw new ObjectUploadException("An error occurred during uploading file to " + parentFolderPath, exc);
+            }
         }
     }
 
     public void saveFile(ObjectPath filePath, InputStream fileInputStream) {
         if (filePath.isFolder()) {
-            throw new IllegalArgumentException("Saved object is not a file: " + filePath);
+            throw new IllegalArgumentException("Еhe object being saved is not a file: " + filePath);
         }
         if (fileRepository.isObjectExist(filePath)) {
             throw new ObjectAlreadyExistsException(

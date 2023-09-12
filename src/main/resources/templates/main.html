@@ -50,9 +50,9 @@
           <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
         </div>
         <div class="modal-body">
-          <form th:action="@{/file/upload(path=${param.path})}" method="POST" id="fileUploadForm" th:object="${fileUploadDto}" enctype="multipart/form-data">
+          <form th:action="@{/file/upload(path=${param.path})}" method="POST" id="fileUploadForm" th:object="${filesUploadDto}" enctype="multipart/form-data">
             <input type="hidden" name="parentFolderPath" th:value="${param.path}">
-            <input type="file" th:field="*{file}" required class="form-control">
+            <input type="file" th:field="*{files}" class="form-control" required multiple>
           </form>
         </div>
         <div class="modal-footer">
