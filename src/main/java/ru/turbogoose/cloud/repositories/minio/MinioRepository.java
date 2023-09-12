@@ -5,6 +5,7 @@ import io.minio.errors.ErrorResponseException;
 import io.minio.messages.DeleteError;
 import io.minio.messages.DeleteObject;
 import io.minio.messages.Item;
+import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 import ru.turbogoose.cloud.exceptions.MinioOperationException;
 import ru.turbogoose.cloud.repositories.FileRepository;
@@ -20,11 +21,14 @@ public class MinioRepository implements FileRepository {
     private static final String ROOT_BUCKET = "user-files";
     private final MinioClient client;
 
-    // TODO: move to config
-    public MinioRepository() {
+    public MinioRepository(Environment env) {
+        String endpoint = env.getProperty("minio.endpoint", "localhost");
+        String accessKey = env.getRequiredProperty("minio.username");
+        String secretKey = env.getRequiredProperty("minio.password");
+
         client = MinioClient.builder()
-                .endpoint("localhost", 9000, false)
-                .credentials("ilya", "bebrabebra")
+                .endpoint(endpoint)
+                .credentials(accessKey, secretKey)
                 .build();
 
         createRootBucket();

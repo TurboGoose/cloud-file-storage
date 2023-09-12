@@ -1,13 +1,19 @@
 spring:
+  data:
+    redis:
+      host: redis
+
   datasource:
     username: ilya
     password: bebra
-    url:
+    url: jdbc:postgresql://postgres:5432/cloud-storage
 
   servlet:
     multipart:
       max-file-size: -1 # No file size limit
       max-request-size: -1  # No limit on request size
 
-  session:
-    timeout: -1 # No timeout
+minio:
+  endpoint: http://minio:9000
+  username: ilya
+  password: bebrabebra
