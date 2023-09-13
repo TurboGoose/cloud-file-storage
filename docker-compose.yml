@@ -14,7 +14,7 @@ services:
     volumes:
       - ~/data/postgres:/var/lib/postgresql/data/
     environment:
-      - POSTGRES_DB=cloud-storage
+      - POSTGRES_DB=cloud-file-storage
       - POSTGRES_USER=ilya
       - POSTGRES_PASSWORD=bebra
     restart: always

@@ -6,7 +6,7 @@ spring:
   datasource:
     username: ilya
     password: bebra
-    url: jdbc:postgresql://postgres:5432/cloud-storage
+    url: jdbc:postgresql://postgres:5432/cloud-file-storage
 
   servlet:
     multipart:
