@@ -1,11 +1,21 @@
-FROM maven:3.9.4-amazoncorretto-20-al2023 AS build
-WORKDIR /
-COPY /src /src
-COPY pom.xml /
-RUN mvn -f /pom.xml clean package -DskipTests
+FROM eclipse-temurin:20.0.2_9-jdk AS build
+WORKDIR /build
 
-FROM amazoncorretto:20.0.2-alpine3.18
+COPY mvnw .
+ADD .mvn ./.mvn
+
+COPY pom.xml .
+COPY /src /src
+
+RUN ./mvnw clean package -DskipTests
+
+
+FROM eclipse-temurin:20.0.2_9-jre
+
 WORKDIR /
-COPY --from=build /target/*.jar cloud-storage.jar
+
+COPY --from=build /build/target/*.jar cloud-storage.jar
+
 EXPOSE 8080
+
 ENTRYPOINT ["java", "-jar", "cloud-storage.jar"]
