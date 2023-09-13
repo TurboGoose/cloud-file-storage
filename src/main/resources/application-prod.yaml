@@ -1,7 +1,7 @@
 spring:
   servlet:
     multipart:
-      max-file-size: 10MB
+      max-file-size: 20MB
       max-request-size: 20MB
 
   datasource:
@@ -12,7 +12,6 @@ spring:
   data:
     redis:
       host: redis
-      username: ${REDIS_USERNAME}
       password: ${REDIS_PASSWORD}
 
   session:

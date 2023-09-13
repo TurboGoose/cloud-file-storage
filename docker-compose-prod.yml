@@ -1,0 +1,40 @@
+version: "3.9"
+
+services:
+  cloud-file-storage:
+    build: .
+    ports:
+      - "80:8080"
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      POSTGRES_USERNAME: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
+      MINIO_USERNAME: ${MINIO_USER}
+      MINIO_PASSWORD: ${MINIO_PASSWORD}
+
+  postgres:
+    image: postgres:15
+    volumes:
+      - ~/data/postgres:/var/lib/postgresql/data/
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+
+  redis:
+    image: redis:alpine
+    command: redis-server
+    environment:
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
+    volumes:
+      - ~/data/redis:/var/lib/redis
+
+  minio:
+    image: quay.io/minio/minio
+    command: server /data
+    volumes:
+      - ~/data/minio:/data
+    environment:
+      MINIO_ROOT_USER: ${MINIO_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_PASSWORD}
