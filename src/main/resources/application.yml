@@ -10,3 +10,7 @@ spring:
   servlet:
     multipart:
       enabled: true
+
+server:
+  tomcat:
+    max-swallow-size: -1
