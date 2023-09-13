@@ -4,16 +4,15 @@ spring:
     password: bebra
     url: jdbc:postgresql://localhost:5432/cloud_storage
 
-  servlet:
-    multipart:
-      max-file-size: 1KB # No file size limit
-      max-request-size: 1KB  # No limit on request size
+#  servlet:
+#    multipart:
+#      max-file-size: -1 # No file size limit
+#      max-request-size: -1  # No limit on request size
 
   session:
-    timeout: -1 # No timeout
+    timeout: 1D
 
 minio:
-  endpoint: localhost
-  port: 9000
+  endpoint: http://localhost:9000
   username: ilya
   password: bebrabebra
