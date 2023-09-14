@@ -1,6 +1,6 @@
 version: "3.9"
 
-# container stack for development
+# container stack for local development
 services:
   postgres:
     image: postgres:15

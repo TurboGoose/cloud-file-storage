@@ -1,6 +1,6 @@
 version: "3.9"
 
-# testing containers interconnection localy
+# testing application container integration locally
 services:
   cloud-file-storage:
     build: ..
