@@ -9,7 +9,7 @@ import java.util.List;
 @Data
 public class FilesUploadDto {
     private String parentFolderPath;
-    @FilenamesPattern(regexp = "^[\\w !.*'()\\-]+$",
-            message = "One of the file names contains unsupported characters. Supported are: !.*'()-_")
+    @FilenamesPattern(regexp = "^([\\w !.*+\\[\\]'()\\-]+/)*[\\w !.*+\\[\\]'()\\-]+$",
+            message = "File names must not contain unsupported characters")
     private List<MultipartFile> files;
 }

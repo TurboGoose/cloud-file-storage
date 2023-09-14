@@ -16,8 +16,11 @@ public class FileNameValidator implements ConstraintValidator<FilenamesPattern, 
 
     @Override
     public boolean isValid(List<MultipartFile> multipartFiles, ConstraintValidatorContext constraintValidatorContext) {
+        if (regexp == null) {
+            return true;
+        }
         for (MultipartFile file : multipartFiles) {
-            if (file == null || (regexp != null && !file.getOriginalFilename().matches(regexp))) {
+            if (!file.getOriginalFilename().matches(regexp)) {
                 return false;
             }
         }
