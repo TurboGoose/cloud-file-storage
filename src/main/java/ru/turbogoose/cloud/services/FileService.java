@@ -34,8 +34,8 @@ public class FileService {
     }
 
     public void saveFiles(int userId, FilesUploadDto filesUploadDto) {
-        MultipartFile[] files = filesUploadDto.getFiles();
-        if (files == null || files.length == 0) {
+        List<MultipartFile> files = filesUploadDto.getFiles();
+        if (files == null || files.isEmpty()) {
             throw new ObjectUploadException("No files were provided");
         }
 
