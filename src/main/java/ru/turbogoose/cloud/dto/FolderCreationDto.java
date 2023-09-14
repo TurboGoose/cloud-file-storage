@@ -6,6 +6,6 @@ import lombok.Data;
 @Data
 public class FolderCreationDto {
     private String parentFolderPath;
-    @Pattern(regexp = "^[\\w !.*'()\\-]+$", message = "Wrong path format")
+    @Pattern(regexp = "^[\\w !.*'()\\-]+$", message = "Folder name contains unsupported characters. Supported are: !.*'()-_")
     private String newFolderName;
 }

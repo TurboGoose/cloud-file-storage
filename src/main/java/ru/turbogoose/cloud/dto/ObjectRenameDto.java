@@ -8,6 +8,6 @@ import java.io.Serializable;
 @Data
 public class ObjectRenameDto implements Serializable {
     private String objectPath;
-    @Pattern(regexp = "^[\\w !.*'()\\-]+$", message = "Name must not contain unsupported characters")
+    @Pattern(regexp = "^[\\w !.*'()\\-]+$", message = "Name contains unsupported characters. Supported are: !.*'()-_")
     private String newName;
 }
