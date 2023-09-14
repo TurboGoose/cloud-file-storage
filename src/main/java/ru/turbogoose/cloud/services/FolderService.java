@@ -52,15 +52,15 @@ public class FolderService {
                 .toList();
     }
 
-    public void saveFolder(int userId, FolderUploadDto folderUploadDto) {
-        List<MultipartFile> files = folderUploadDto.getFiles();
+    public void saveFolder(int userId, FilesUploadDto filesUploadDto) {
+        List<MultipartFile> files = filesUploadDto.getFiles();
 
         if (files.size() == 0) {
             return;
         }
 
         ObjectPath parentFolderPath = objectPathFactory.compose(
-                userId, fromUrlParam(folderUploadDto.getParentFolderPath()));
+                userId, fromUrlParam(filesUploadDto.getParentFolderPath()));
         String uploadedFolderName = extractFirstFolderName(
                 Objects.requireNonNull(files.get(0).getOriginalFilename()));
 

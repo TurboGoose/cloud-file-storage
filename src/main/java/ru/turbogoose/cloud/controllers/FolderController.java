@@ -36,7 +36,7 @@ public class FolderController {
             model.addAttribute("breadcrumbs", assembleBreadcrumbsFromPath(path));
 
             model.addAttribute("folderCreationDto", new FolderCreationDto());
-            model.addAttribute("folderUploadDto", new FolderUploadDto());
+            model.addAttribute("folderUploadDto", new FilesUploadDto());
 
             model.addAttribute("filesUploadDto", new FilesUploadDto());
 
@@ -72,10 +72,10 @@ public class FolderController {
     public String uploadFolder(
             @AuthenticationPrincipal UserDetailsImpl userDetails,
             @RequestParam String path,
-            @ModelAttribute("folderUploadDto") @Valid FolderUploadDto folderUploadDto,
+            @ModelAttribute("folderUploadDto") @Valid FilesUploadDto filesUploadDto,
             RedirectAttributes redirectAttributes) {
         try {
-            folderService.saveFolder(userDetails.getUserId(), folderUploadDto);
+            folderService.saveFolder(userDetails.getUserId(), filesUploadDto);
         } catch (ObjectAlreadyExistsException exc) {
             exc.printStackTrace();
             redirectAttributes.addFlashAttribute("failureAlert", "Folder with this name already exists");
