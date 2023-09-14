@@ -1,4 +1,4 @@
-package ru.turbogoose.cloud.controllers.validators;
+package ru.turbogoose.cloud.validators;
 
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;

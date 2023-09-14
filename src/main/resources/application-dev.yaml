@@ -4,10 +4,10 @@ spring:
     password: bebra
     url: jdbc:postgresql://localhost:5432/cloud_storage
 
-#  servlet:
-#    multipart:
-#      max-file-size: -1 # No file size limit
-#      max-request-size: -1  # No limit on request size
+  servlet:
+    multipart:
+      max-file-size: -1 # No file size limit
+      max-request-size: -1  # No limit on request size
 
   session:
     timeout: 1D

@@ -2,7 +2,7 @@ package ru.turbogoose.cloud.dto;
 
 import lombok.Data;
 import org.springframework.web.multipart.MultipartFile;
-import ru.turbogoose.cloud.controllers.validators.FilenamesPattern;
+import ru.turbogoose.cloud.validators.FilenamesPattern;
 
 import java.util.List;
 
