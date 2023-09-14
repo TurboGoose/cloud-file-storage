@@ -5,7 +5,7 @@ COPY mvnw .
 ADD .mvn ./.mvn
 
 COPY pom.xml .
-COPY /src /src
+COPY src src
 
 RUN --mount=type=cache,target=/root/.m2 ./mvnw -f pom.xml clean package -DskipTests
 
