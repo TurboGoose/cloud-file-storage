@@ -7,7 +7,7 @@ ADD .mvn ./.mvn
 COPY pom.xml .
 COPY /src /src
 
-RUN ./mvnw clean package -DskipTests
+RUN --mount=type=cache,target=/root/.m2 ./mvnw -f pom.xml clean package -DskipTests
 
 
 FROM eclipse-temurin:20.0.2_9-jre
