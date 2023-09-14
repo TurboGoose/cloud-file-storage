@@ -2,7 +2,7 @@ version: "3.9"
 
 services:
   cloud-file-storage:
-    image: turbogoosen/cloud-file-storage:prod
+    image: turbogoosen/cloud-file-storage:prod-linux
     ports:
       - "80:8080"
     environment:
