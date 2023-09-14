@@ -73,7 +73,13 @@ public class FolderController {
             @AuthenticationPrincipal UserDetailsImpl userDetails,
             @RequestParam String path,
             @ModelAttribute("folderUploadDto") @Valid FilesUploadDto filesUploadDto,
+            BindingResult bindingResult,
             RedirectAttributes redirectAttributes) {
+        if (bindingResult.hasErrors()) {
+            redirectAttributes.addFlashAttribute("failureAlert", bindingResult.getFieldError().getDefaultMessage());
+            return "redirect:/" + getPathParam(path);
+        }
+
         try {
             folderService.saveFolder(userDetails.getUserId(), filesUploadDto);
         } catch (ObjectAlreadyExistsException exc) {

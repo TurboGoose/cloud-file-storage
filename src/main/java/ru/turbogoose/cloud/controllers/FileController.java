@@ -50,8 +50,13 @@ public class FileController {
     public String uploadFiles(
             @AuthenticationPrincipal UserDetailsImpl userDetails,
             @RequestParam String path,
-            @ModelAttribute("filesUploadDto") FilesUploadDto filesUploadDto,
+            @ModelAttribute("filesUploadDto") @Valid FilesUploadDto filesUploadDto,
+            BindingResult bindingResult,
             RedirectAttributes redirectAttributes) {
+        if (bindingResult.hasErrors()) {
+            redirectAttributes.addFlashAttribute("failureAlert", bindingResult.getFieldError().getDefaultMessage());
+            return "redirect:/" + getPathParam(path);
+        }
         try {
             fileService.saveFiles(userDetails.getUserId(), filesUploadDto);
         } catch (ObjectAlreadyExistsException exc) {
