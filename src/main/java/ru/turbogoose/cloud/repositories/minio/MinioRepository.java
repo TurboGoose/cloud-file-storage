@@ -5,6 +5,8 @@ import io.minio.errors.ErrorResponseException;
 import io.minio.messages.DeleteError;
 import io.minio.messages.DeleteObject;
 import io.minio.messages.Item;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 import ru.turbogoose.cloud.exceptions.MinioOperationException;
@@ -18,6 +20,7 @@ import java.util.List;
 
 @Service
 public class MinioRepository implements FileRepository {
+    private static final Logger LOGGER = LoggerFactory.getLogger(MinioRepository.class);
     private static final String ROOT_BUCKET = "user-files";
     private final MinioClient client;
 
@@ -30,6 +33,7 @@ public class MinioRepository implements FileRepository {
                 .endpoint(endpoint)
                 .credentials(accessKey, secretKey)
                 .build();
+        LOGGER.info("Connected to MinIO server successfully. Endpoint: {}", endpoint);
 
         createRootBucket();
     }
@@ -43,7 +47,9 @@ public class MinioRepository implements FileRepository {
                 client.makeBucket(MakeBucketArgs.builder()
                         .bucket(ROOT_BUCKET)
                         .build());
+                LOGGER.info("Root bucket created");
             }
+            LOGGER.debug("Root bucket not created: already exists");
         } catch (Exception exc) {
             throw new MinioOperationException(exc);
         }
@@ -218,7 +224,8 @@ public class MinioRepository implements FileRepository {
                             .objects(objectsToDelete)
                             .build());
             for (Result<DeleteError> result : results) {
-                result.get(); // TODO: add logging of DeleteError here
+                DeleteError deleteError = result.get();
+                LOGGER.debug("Error deleting object {}: {}", deleteError.objectName(), deleteError.message());
             }
         } catch (Exception exc) {
             throw new MinioOperationException(exc);
