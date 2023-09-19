@@ -30,7 +30,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(Throwable.class)
     public String logAllUnhandledExceptions(Exception exception) {
-        LOGGER.error("An error occurred:", exception);
+        LOGGER.error("An error occurred", exception);
         return "redirect:/error";
     }
 }

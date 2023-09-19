@@ -45,7 +45,7 @@ public class FolderController {
 
             model.addAttribute("searchDto", new SearchDto());
         } catch (ObjectNotExistsException exc) {
-            LOGGER.debug("Failed to list folder \"{}\":", path, exc);
+            LOGGER.debug("Failed to list folder \"{}\"", path == null || path.isEmpty() ? "/" : path, exc);
             model.addAttribute("wrongPath", path);
         }
         return "main";
@@ -64,7 +64,7 @@ public class FolderController {
             try {
                 folderService.createSingleFolder(userDetails.getUserId(), folderCreationDto);
             } catch (ObjectAlreadyExistsException exc) {
-                LOGGER.debug("Failed to create folder \"{}\":", path, exc);
+                LOGGER.debug("Failed to create folder", exc);
                 redirectAttributes.addFlashAttribute("failureAlert", "This folder already exists");
             }
         }
@@ -86,10 +86,10 @@ public class FolderController {
         try {
             folderService.saveFolder(userDetails.getUserId(), filesUploadDto);
         } catch (ObjectAlreadyExistsException exc) {
-            LOGGER.debug("Failed to upload folder \"{}\":", path, exc);
+            LOGGER.debug("Failed to upload folder", exc);
             redirectAttributes.addFlashAttribute("failureAlert", "Folder with this name already exists");
         } catch (ObjectUploadException exc) {
-            LOGGER.warn("Failed to upload folder \"{}\":", path, exc);
+            LOGGER.warn("Failed to upload folder", exc);
             redirectAttributes.addFlashAttribute("failureAlert", "An error occurred during uploading");
         }
         return "redirect:/" + getPathParam(path);
@@ -105,7 +105,7 @@ public class FolderController {
         try {
             folderService.writeFolderContent(userDetails.getUserId(), path, response.getOutputStream());
         } catch (IOException exc) {
-            LOGGER.warn("Failed to download folder \"{}\":", path, exc);
+            LOGGER.warn("Failed to download folder", exc);
         }
     }
 
@@ -128,7 +128,7 @@ public class FolderController {
         try {
             folderService.validateFolderExists(userDetails.getUserId(), path); // protection from manual url editing
         }  catch (ObjectNotExistsException exc) {
-            LOGGER.warn("Failed to get folder rename form for \"{}\":", path, exc);
+            LOGGER.warn("Failed to get folder rename form for path \"{}\"", path, exc);
             return "redirect:/";
         }
 
@@ -160,7 +160,7 @@ public class FolderController {
             String parentFolderPath = folderService.renameFolder(userDetails.getUserId(), objectRenameDto);
             return "redirect:/" + getPathParam(parentFolderPath);
         } catch (ObjectAlreadyExistsException exc) {
-            LOGGER.debug("Failed to rename folder \"{}\":", path, exc);
+            LOGGER.debug("Failed to rename folder", exc);
             redirectAttributes.addFlashAttribute("failureAlert", "Folder with this name already exists");
             redirectAttributes.addFlashAttribute("objectRenameDto", objectRenameDto);
             return "redirect:/rename" + getPathParam(path);
@@ -177,7 +177,7 @@ public class FolderController {
         try {
             model.addAttribute("moveCandidates", folderService.getMoveCandidatesForFolder(userDetails.getUserId(), path));
         } catch (ObjectNotExistsException exc) {
-            LOGGER.warn("Failed to get folder moving form for \"{}\":", path, exc);
+            LOGGER.warn("Failed to get folder moving form for path \"{}\"", path, exc);
             return "redirect:/";
         }
 
@@ -198,7 +198,7 @@ public class FolderController {
             redirectAttributes.addFlashAttribute("successAlert", "Folder was moved successfully");
             return "redirect:/" + getPathParam(oldParentPath);
         } catch (ObjectAlreadyExistsException exc) {
-            LOGGER.warn("Failed to move folder \"{}\":", path, exc);
+            LOGGER.warn("Failed to move folder", exc);
             redirectAttributes.addFlashAttribute("failureAlert",
                     "Folder with this name already exists in target location");
         }

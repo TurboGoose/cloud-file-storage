@@ -63,10 +63,10 @@ public class FileController {
         try {
             fileService.saveFiles(userDetails.getUserId(), filesUploadDto);
         } catch (ObjectAlreadyExistsException exc) {
-            LOGGER.debug("Failed to upload file \"{}\":", path, exc);
+            LOGGER.debug("Failed to upload files", exc);
             redirectAttributes.addFlashAttribute("failureAlert", "File with this name already exists");
         } catch (ObjectUploadException exc) {
-            LOGGER.warn("Failed to upload file \"{}\":", path, exc);
+            LOGGER.warn("Failed to upload files", exc);
             redirectAttributes.addFlashAttribute("failureAlert", "An error occurred during uploading");
         }
         return "redirect:/" + getPathParam(path);
@@ -81,7 +81,7 @@ public class FileController {
         try {
             fileService.validateFileExists(userDetails.getUserId(), path);
         } catch (ObjectNotExistsException exc) {
-            LOGGER.warn("Failed to get file renaming form for \"{}\":", path, exc);
+            LOGGER.warn("Failed to get file renaming form for path \"{}\":", path, exc);
             return "redirect:/";
         }
 
@@ -113,7 +113,7 @@ public class FileController {
             String parentFolderPath = fileService.renameFile(userDetails.getUserId(), objectRenameDto);
             return "redirect:/" + getPathParam(parentFolderPath);
         } catch (ObjectAlreadyExistsException exc) {
-            LOGGER.debug("Failed to rename file \"{}\":", path, exc);
+            LOGGER.debug("Failed to rename file", exc);
             redirectAttributes.addFlashAttribute("failureAlert", "File with this name already exists");
             redirectAttributes.addFlashAttribute("objectRenameDto", objectRenameDto);
             return "redirect:/file/rename" + getPathParam(path);
@@ -130,7 +130,7 @@ public class FileController {
         try {
             model.addAttribute("moveCandidates", fileService.getMoveCandidatesForFile(userDetails.getUserId(), path));
         } catch (ObjectNotExistsException exc) {
-            LOGGER.warn("Failed to get file moving form for \"{}\":", path, exc);
+            LOGGER.warn("Failed to get file moving form for path \"{}\":", path, exc);
             return "redirect:/";
         }
         model.addAttribute("requestURI", request.getRequestURI());
@@ -150,7 +150,7 @@ public class FileController {
             redirectAttributes.addFlashAttribute("successAlert", "File was moved successfully");
             return "redirect:/" + getPathParam(oldParentPath);
         } catch (ObjectAlreadyExistsException exc) {
-            LOGGER.debug("Failed to move file \"{}\":", path, exc);
+            LOGGER.debug("Failed to move file", exc);
             redirectAttributes.addFlashAttribute("failureAlert",
                     "File with this name already exists in target location");
         }
