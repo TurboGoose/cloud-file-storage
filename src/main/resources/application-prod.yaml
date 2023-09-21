@@ -21,3 +21,7 @@ minio:
   endpoint: http://minio:9000
   username: ${MINIO_USERNAME}
   password: ${MINIO_PASSWORD}
+
+logs:
+  folder:
+    path: /logs

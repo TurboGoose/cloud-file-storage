@@ -8,9 +8,8 @@ services:
       - "8080:8080"
     environment:
       - SPRING_PROFILES_ACTIVE=test
-      - LOGS_FOLDER_PATH=${LOGS_FOLDER_PATH}
     volumes:
-      - ~/logs:${LOGS_FOLDER_PATH}
+      - ~/logs:/logs
     restart: always
 
   postgres:

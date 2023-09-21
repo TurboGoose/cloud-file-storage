@@ -4,7 +4,7 @@
             %d{HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n
         </Property>
         <Property name="LOGS_FOLDER_PATH">
-            $${env:LOGS_FOLDER_PATH:-logs}
+            $${spring:logs.folder.path:-logs}
         </Property>
     </Properties>
     <Appenders>
