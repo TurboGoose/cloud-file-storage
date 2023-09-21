@@ -12,8 +12,9 @@ services:
       REDIS_PASSWORD: ${REDIS_PASSWORD}
       MINIO_USERNAME: ${MINIO_USER}
       MINIO_PASSWORD: ${MINIO_PASSWORD}
+      LOGS_FOLDER_PATH: ${LOGS_FOLDER_PATH}
     volumes:
-      - ~/logs:/logs
+      - ~/logs:${LOGS_FOLDER_PATH}
 
   postgres:
     image: postgres:15
