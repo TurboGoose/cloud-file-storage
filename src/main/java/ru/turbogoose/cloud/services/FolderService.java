@@ -39,16 +39,16 @@ public class FolderService {
         }
     }
 
-    public List<ObjectPathDto> getFolderObjects(int userId, String path) {
+    public List<ObjectInfoDto> getFolderObjects(int userId, String path) {
         ObjectPath folderPath = objectPathFactory.compose(userId, fromUrlParam(path));
         if (!fileRepository.isObjectExist(folderPath)) {
             throw new ObjectNotExistsException(
                     String.format("Folder with name %s does not exist", folderPath));
         }
         return fileRepository.listFolderObjects(folderPath).stream()
-                .map(folder -> new ObjectPathDto(
+                .map(folder -> new ObjectInfoDto(
                         folder.getObjectName(), folder.isFolder(), toUrlParam(folder.getPath())))
-                .sorted(Comparator.comparing(ObjectPathDto::isFolder).reversed().thenComparing(ObjectPathDto::getName))
+                .sorted(Comparator.comparing(ObjectInfoDto::isFolder).reversed().thenComparing(ObjectInfoDto::getName))
                 .toList();
     }
 

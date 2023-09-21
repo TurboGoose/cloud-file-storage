@@ -1,14 +1,16 @@
 package ru.turbogoose.cloud.repositories;
 
+import ru.turbogoose.cloud.models.ObjectInfo;
+
 import java.io.InputStream;
 import java.util.List;
 
 public interface FileRepository {
     boolean isObjectExist(ObjectPath objectPath);
 
-    List<ObjectPath> listFolderObjects(ObjectPath folderPath);
+    List<ObjectInfo> listFolderObjects(ObjectPath folderPath);
 
-    List<ObjectPath> listFolderObjectsRecursive(ObjectPath folderPath, boolean includeSelf);
+    List<ObjectInfo> listFolderObjectsRecursive(ObjectPath folderPath, boolean includeSelf);
 
     void createFile(ObjectPath filePath, InputStream fileInputStream);
 

@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 import ru.turbogoose.cloud.exceptions.MinioOperationException;
+import ru.turbogoose.cloud.models.ObjectInfo;
 import ru.turbogoose.cloud.repositories.FileRepository;
 import ru.turbogoose.cloud.repositories.ObjectPath;
 
@@ -72,16 +73,16 @@ public class MinioRepository implements FileRepository {
     }
 
     @Override
-    public List<ObjectPath> listFolderObjects(ObjectPath folderPath) {
+    public List<ObjectInfo> listFolderObjects(ObjectPath folderPath) {
         return listFolderObjectsWithParams(folderPath, false, false);
     }
 
     @Override
-    public List<ObjectPath> listFolderObjectsRecursive(ObjectPath folderPath, boolean includeSelf) {
+    public List<ObjectInfo> listFolderObjectsRecursive(ObjectPath folderPath, boolean includeSelf) {
         return listFolderObjectsWithParams(folderPath, true, includeSelf);
     }
 
-    private List<ObjectPath> listFolderObjectsWithParams(
+    private List<ObjectInfo> listFolderObjectsWithParams(
             ObjectPath folderPath, boolean recursive, boolean includeSelf) {
         validateFolderPath(folderPath);
         try {
@@ -91,13 +92,18 @@ public class MinioRepository implements FileRepository {
                             .prefix(folderPath.getFullPath())
                             .recursive(recursive)
                             .build());
-            List<ObjectPath> objects = new ArrayList<>();
+            List<ObjectInfo> objects = new ArrayList<>();
             for (Result<Item> result : results) {
-                String objectPath = result.get().objectName();
+                Item item = result.get();
+                String objectPath = item.objectName();
                 if (objectPath.equals(folderPath.getFullPath()) && !includeSelf) {
                     continue;
                 }
-                objects.add(MinioObjectPath.parse(objectPath));
+                objects.add(new ObjectInfo(
+                        MinioObjectPath.parse(objectPath),
+                        item.size(),
+                        item.lastModified().toLocalDateTime()
+                ));
             }
             return objects;
         } catch (Exception exc) {

@@ -2,7 +2,7 @@ package ru.turbogoose.cloud.services;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import ru.turbogoose.cloud.dto.ObjectPathDto;
+import ru.turbogoose.cloud.dto.ObjectInfoDto;
 import ru.turbogoose.cloud.dto.SearchDto;
 import ru.turbogoose.cloud.repositories.FileRepository;
 import ru.turbogoose.cloud.repositories.ObjectPath;
@@ -20,15 +20,15 @@ public class SearchService {
     private final FileRepository fileRepository;
     private final ObjectPathFactory objectPathFactory;
 
-    public List<ObjectPathDto> searchObjectsByString(int userId, SearchDto searchDto) {
+    public List<ObjectInfoDto> searchObjectsByString(int userId, SearchDto searchDto) {
         ObjectPath rootFolder = objectPathFactory.getRootFolder(userId);
         return fileRepository.listFolderObjectsRecursive(rootFolder, false).stream()
                 .filter(path -> path.getObjectName().toLowerCase().contains(searchDto.getQuery().toLowerCase()))
-                .map(path -> new ObjectPathDto(
+                .map(path -> new ObjectInfoDto(
                         addSpacingForDelimiters(toUrlParam(path.getPath())),
                         path.isFolder(),
                         toUrlParam((path.isFolder() ? path : path.getParent()).getPath())))
-                .sorted(Comparator.comparing(ObjectPathDto::isFolder).reversed().thenComparing(ObjectPathDto::getName))
+                .sorted(Comparator.comparing(ObjectInfoDto::isFolder).reversed().thenComparing(ObjectInfoDto::getName))
                 .toList();
     }
 
