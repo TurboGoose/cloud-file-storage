@@ -8,6 +8,8 @@ services:
       - "8080:8080"
     environment:
       - SPRING_PROFILES_ACTIVE=test
+    volumes:
+      - ~/logs:/logs
     restart: always
 
   postgres:

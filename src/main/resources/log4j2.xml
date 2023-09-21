@@ -3,13 +3,16 @@
         <Property name="LOG_PATTERN">
             %d{HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n
         </Property>
+        <Property name="LOGS_FOLDER_PATH">
+            /logs
+        </Property>
     </Properties>
     <Appenders>
         <Console name="console" target="SYSTEM_OUT">
             <PatternLayout pattern="${LOG_PATTERN}"/>
         </Console>
-        <RollingFile name="rollingFile" fileName="logs/app.log"
-                     filePattern="logs/$${date:yyyy-MM}/app-%d{MM-dd-yyyy}-%i.log.gz">
+        <RollingFile name="rollingFile" fileName="${LOGS_FOLDER_PATH}/app.log"
+                     filePattern="${LOGS_FOLDER_PATH}/$${date:yyyy-MM}/app-%d{MM-dd-yyyy}-%i.log.gz">
             <PatternLayout pattern="${LOG_PATTERN}"/>
             <Policies>
                 <TimeBasedTriggeringPolicy interval="1"/>
