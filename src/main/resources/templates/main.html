@@ -114,12 +114,27 @@
   </div>
 
   <!--Object list-->
-  <div class="container align-center">
-    <h2 th:unless="${objects}" class="text-center mt-5">This folder is empty</h2>
-    <div th:each="obj : ${objects}" th:with="baseUrl=${obj.folder} ? '' : '/file'" class="row">
+  <div class="container">
+    <h2 th:if="${objects.isEmpty()}" class="text-center mt-4">This folder is empty</h2>
+
+    <!-- Table header-->
+    <div th:unless="${objects.isEmpty()}" class="row">
+      <!-- Name -->
+      <strong class="col-6 ps-5 text-secondary">Name</strong>
+      <!-- Size -->
+      <strong class="col-1 text-secondary">Size</strong>
+      <!-- Last modified -->
+      <strong class="col-2 text-secondary">Last modified</strong>
+      <!-- Buttons -->
+      <div class="col"></div>
+
+      <hr class="mt-2 mb-2">
+    </div>
+
+    <div th:each="obj : ${objects}" th:with="baseUrl=${obj.folder} ? '' : '/file'" class="row pt-1 pb-1">
 
       <div class="col-6 d-inline-flex">
-        <!--    Object icon-->
+        <!-- Object icon-->
         <div>
           <svg th:if="${obj.folder}" xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-folder" viewBox="0 0 16 16">
             <path d="M.54 3.87.5 3a2 2 0 0 1 2-2h3.672a2 2 0 0 1 1.414.586l.828.828A2 2 0 0 0 9.828 3h3.982a2 2 0 0 1 1.992 2.181l-.637 7A2 2 0 0 1 13.174 14H2.826a2 2 0 0 1-1.991-1.819l-.637-7a1.99 1.99 0 0 1 .342-1.31zM2.19 4a1 1 0 0 0-.996 1.09l.637 7a1 1 0 0 0 .995.91h10.348a1 1 0 0 0 .995-.91l.637-7A1 1 0 0 0 13.81 4H2.19zm4.69-1.707A1 1 0 0 0 6.172 2H2.5a1 1 0 0 0-1 .981l.006.139C1.72 3.042 1.95 3 2.19 3h5.396l-.707-.707z"/>
@@ -138,13 +153,13 @@
 
 
       <!-- Size -->
-      <div class="col pt-1">
+      <div class="col-1 text-secondary">
         <span th:text="${obj.folder} ? '—' : ${obj.size}" ></span>
       </div>
 
       <!-- Last modified -->
-      <div class="col pt-1">
-        <span th:text="${#temporals.format(obj.lastModified, 'dd-MM-yyyy HH:mm')}"></span>
+      <div class="col-2 text-secondary">
+        <span th:text="${#temporals.format(obj.lastModified, 'dd MMM yyyy, HH:mm')}"></span>
       </div>
 
       <div class="col d-inline-flex justify-content-end">
@@ -177,7 +192,7 @@
         </div>
       </div>
 
-      <hr class="mt-2 mb-2">
+      <hr class="mt-2 mb-1">
     </div>
   </div>
 </div>
