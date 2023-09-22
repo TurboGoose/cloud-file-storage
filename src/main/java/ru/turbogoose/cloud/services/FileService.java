@@ -9,6 +9,7 @@ import ru.turbogoose.cloud.dto.ObjectRenameDto;
 import ru.turbogoose.cloud.exceptions.ObjectAlreadyExistsException;
 import ru.turbogoose.cloud.exceptions.ObjectNotExistsException;
 import ru.turbogoose.cloud.exceptions.ObjectUploadException;
+import ru.turbogoose.cloud.models.ObjectInfo;
 import ru.turbogoose.cloud.repositories.FileRepository;
 import ru.turbogoose.cloud.repositories.ObjectPath;
 import ru.turbogoose.cloud.repositories.ObjectPathFactory;
@@ -90,6 +91,7 @@ public class FileService {
         ObjectPath parentFolderPath = filePathToMove.getParent();
         ObjectPath rootFolderPath = objectPathFactory.getRootFolder(userId);
         return fileRepository.listFolderObjectsRecursive(rootFolderPath, true).stream()
+                .map(ObjectInfo::getObjectPath)
                 .filter(objectPath -> objectPath.isFolder() && !objectPath.equals(parentFolderPath))
                 .map(folderPath -> toUrlParam(folderPath.getPath()))
                 .toList();

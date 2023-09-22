@@ -11,6 +11,7 @@ import ru.turbogoose.cloud.repositories.ObjectPathFactory;
 import java.util.Comparator;
 import java.util.List;
 
+import static ru.turbogoose.cloud.utils.FileSizeConverter.toHumanReadableSize;
 import static ru.turbogoose.cloud.utils.PathConverter.toUrlParam;
 
 @Service
@@ -23,13 +24,19 @@ public class SearchService {
     public List<ObjectInfoDto> searchObjectsByString(int userId, SearchDto searchDto) {
         ObjectPath rootFolder = objectPathFactory.getRootFolder(userId);
         return fileRepository.listFolderObjectsRecursive(rootFolder, false).stream()
-                .filter(path -> path.getObjectName().toLowerCase().contains(searchDto.getQuery().toLowerCase()))
-                .map(path -> new ObjectInfoDto(
-                        addSpacingForDelimiters(toUrlParam(path.getPath())),
-                        path.isFolder(),
-                        toUrlParam((path.isFolder() ? path : path.getParent()).getPath())))
+                .filter(objectInfo -> isNameMatch(objectInfo.getObjectPath().getObjectName(), searchDto.getQuery()))
+                .map(objectInfo -> new ObjectInfoDto(
+                        addSpacingForDelimiters(toUrlParam(objectInfo.getObjectPath().getPath())),
+                        objectInfo.getObjectPath().isFolder(),
+                        toUrlParam((objectInfo.getObjectPath().isFolder() ? objectInfo.getObjectPath() : objectInfo.getObjectPath().getParent()).getPath()),
+                        toHumanReadableSize(objectInfo.getSize()),
+                        objectInfo.getLastModified()))
                 .sorted(Comparator.comparing(ObjectInfoDto::isFolder).reversed().thenComparing(ObjectInfoDto::getName))
                 .toList();
+    }
+
+    private boolean isNameMatch(String objectName, String nameFromQuery) {
+        return objectName.toLowerCase().contains(nameFromQuery.toLowerCase());
     }
 
     private String addSpacingForDelimiters(String path) {

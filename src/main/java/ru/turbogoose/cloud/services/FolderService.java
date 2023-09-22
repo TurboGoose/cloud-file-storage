@@ -7,9 +7,11 @@ import ru.turbogoose.cloud.dto.*;
 import ru.turbogoose.cloud.exceptions.ObjectAlreadyExistsException;
 import ru.turbogoose.cloud.exceptions.ObjectNotExistsException;
 import ru.turbogoose.cloud.exceptions.ObjectUploadException;
+import ru.turbogoose.cloud.models.ObjectInfo;
 import ru.turbogoose.cloud.repositories.FileRepository;
 import ru.turbogoose.cloud.repositories.ObjectPath;
 import ru.turbogoose.cloud.repositories.ObjectPathFactory;
+import ru.turbogoose.cloud.utils.FileSizeConverter;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -20,6 +22,7 @@ import java.util.Objects;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
+import static ru.turbogoose.cloud.utils.FileSizeConverter.toHumanReadableSize;
 import static ru.turbogoose.cloud.utils.PathConverter.fromUrlParam;
 import static ru.turbogoose.cloud.utils.PathConverter.toUrlParam;
 import static ru.turbogoose.cloud.utils.PathUtils.extractFirstFolderName;
@@ -47,7 +50,11 @@ public class FolderService {
         }
         return fileRepository.listFolderObjects(folderPath).stream()
                 .map(folder -> new ObjectInfoDto(
-                        folder.getObjectName(), folder.isFolder(), toUrlParam(folder.getPath())))
+                        folder.getObjectPath().getObjectName(),
+                        folder.getObjectPath().isFolder(),
+                        toUrlParam(folder.getObjectPath().getPath()),
+                        toHumanReadableSize(folder.getSize()),
+                        folder.getLastModified()))
                 .sorted(Comparator.comparing(ObjectInfoDto::isFolder).reversed().thenComparing(ObjectInfoDto::getName))
                 .toList();
     }
@@ -141,6 +148,7 @@ public class FolderService {
         ObjectPath parentFolderPath = folderPathToMove.getParent();
         ObjectPath rootFolderPath = objectPathFactory.getRootFolder(userId);
         return fileRepository.listFolderObjectsRecursive(rootFolderPath, true).stream()
+                .map(ObjectInfo::getObjectPath)
                 .filter(objectPath -> objectPath.isFolder()
                         && !objectPath.isInFolder(folderPathToMove)
                         && !objectPath.equals(parentFolderPath))
@@ -160,11 +168,12 @@ public class FolderService {
 
     public void writeFolderContent(int userId, String path, OutputStream target) {
         ObjectPath folderPath = objectPathFactory.compose(userId, fromUrlParam(path));
-        List<ObjectPath> objects = fileRepository.listFolderObjectsRecursive(folderPath, false);
+        List<ObjectInfo> objects = fileRepository.listFolderObjectsRecursive(folderPath, false);
         try (ZipOutputStream zipOut = new ZipOutputStream(target)) {
-            for (ObjectPath object : objects) {
-                if (!object.isFolder()) {
-                    writeObjectToZip(zipOut, object);
+            for (ObjectInfo object : objects) {
+                ObjectPath objectPath = object.getObjectPath();
+                if (!objectPath.isFolder()) {
+                    writeObjectToZip(zipOut, objectPath);
                 }
             }
         } catch (IOException e) {

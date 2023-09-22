@@ -196,7 +196,8 @@ public class MinioRepository implements FileRepository {
         }
 
         listFolderObjectsWithParams(oldFolderPath, true, true).forEach(
-                oldSubfolderObjectPath -> {
+                objectInfo -> {
+                    ObjectPath oldSubfolderObjectPath = objectInfo.getObjectPath();
                     ObjectPath newSubfolderObjectPath = oldSubfolderObjectPath.replacePrefix(
                             oldFolderPath.getPath(), newFolderPath.getPath());
                     moveObject(oldSubfolderObjectPath, newSubfolderObjectPath);
@@ -221,7 +222,7 @@ public class MinioRepository implements FileRepository {
     public void deleteFolder(ObjectPath folderPath) {
         validateFolderPath(folderPath);
         List<DeleteObject> objectsToDelete = listFolderObjectsRecursive(folderPath, true).stream()
-                .map(path -> new DeleteObject(path.getFullPath()))
+                .map(objInfo -> new DeleteObject(objInfo.getObjectPath().getFullPath()))
                 .toList();
         try {
             Iterable<Result<DeleteError>> results = client.removeObjects(
