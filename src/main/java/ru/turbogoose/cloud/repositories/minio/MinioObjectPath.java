@@ -44,7 +44,7 @@ public class MinioObjectPath implements ObjectPath {
     }
 
     private static void validatePathFormat(String objectPath) {
-        if (!objectPath.matches("(^/([\\w !.*+'\\[\\]()\\-]+/)*$|^/?([\\w !.*+'\\[\\]()\\-]+/)*[\\w !.*+'\\[\\]()\\-]+$)")) {
+        if (!objectPath.matches("(^/([\\p{L}\\w !.*+'\\[\\]()\\-]+/)*$|^/?([\\w !.*+'\\[\\]()\\-]+/)*[\\p{L}\\w !.*+'\\[\\]()\\-]+$)")) {
             throw new IllegalArgumentException("Invalid path format: " + objectPath);
         }
     }
@@ -132,7 +132,7 @@ public class MinioObjectPath implements ObjectPath {
     }
 
     private void validateFolderPathFormat(String folderPath) {
-        if (!folderPath.matches("^/([\\w !.*'()\\-]+/)*$")) {
+        if (!folderPath.matches("^/([\\p{L}\\w !.*'()\\-]+/)*$")) {
             throw new IllegalArgumentException("Invalid folder path format: " + folderPath);
         }
     }
