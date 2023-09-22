@@ -11,7 +11,6 @@ import ru.turbogoose.cloud.models.ObjectInfo;
 import ru.turbogoose.cloud.repositories.FileRepository;
 import ru.turbogoose.cloud.repositories.ObjectPath;
 import ru.turbogoose.cloud.repositories.ObjectPathFactory;
-import ru.turbogoose.cloud.utils.FileSizeConverter;
 
 import java.io.IOException;
 import java.io.InputStream;
