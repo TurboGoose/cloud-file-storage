@@ -97,23 +97,30 @@ public class MinioRepository implements FileRepository {
             List<ObjectInfo> objects = new ArrayList<>();
             for (Result<Item> result : results) {
                 Item item = result.get();
-                String objectPath = item.objectName();
-                if (objectPath.equals(folderPath.getFullPath()) && !includeSelf) {
+                if (isSameFolder(item, folderPath) && !includeSelf) {
                     continue;
                 }
-                LocalDateTime lastModified = item.isDir()
-                        ? null
-                        : item.lastModified().withZoneSameInstant(ZoneOffset.of("+03:00")).toLocalDateTime();
-                objects.add(new ObjectInfo(
-                        MinioObjectPath.parse(objectPath),
-                        item.size(),
-                        lastModified
-                ));
+                objects.add(composeObjectInfo(item));
             }
             return objects;
         } catch (Exception exc) {
             throw new MinioOperationException(exc);
         }
+    }
+
+    private boolean isSameFolder(Item item, ObjectPath folderPath) {
+        return item.objectName().equals(folderPath.getFullPath());
+    }
+
+    private ObjectInfo composeObjectInfo(Item item) {
+        LocalDateTime lastModified = item.isDir()
+                ? null
+                : item.lastModified().withZoneSameInstant(ZoneOffset.of("+03:00")).toLocalDateTime();
+        return new ObjectInfo(
+                MinioObjectPath.parse(item.objectName()),
+                item.size(),
+                lastModified
+        );
     }
 
     @Override

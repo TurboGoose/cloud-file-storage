@@ -12,4 +12,6 @@ public class ObjectInfo {
     private ObjectPath objectPath;
     private long size;
     private LocalDateTime lastModified;
+
+
 }

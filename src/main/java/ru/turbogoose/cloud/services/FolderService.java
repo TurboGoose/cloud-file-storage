@@ -7,6 +7,7 @@ import ru.turbogoose.cloud.dto.*;
 import ru.turbogoose.cloud.exceptions.ObjectAlreadyExistsException;
 import ru.turbogoose.cloud.exceptions.ObjectNotExistsException;
 import ru.turbogoose.cloud.exceptions.ObjectUploadException;
+import ru.turbogoose.cloud.utils.ObjectInfoMapper;
 import ru.turbogoose.cloud.models.ObjectInfo;
 import ru.turbogoose.cloud.repositories.FileRepository;
 import ru.turbogoose.cloud.repositories.ObjectPath;
@@ -21,7 +22,6 @@ import java.util.Objects;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
-import static ru.turbogoose.cloud.utils.FileSizeConverter.toHumanReadableSize;
 import static ru.turbogoose.cloud.utils.PathConverter.fromUrlParam;
 import static ru.turbogoose.cloud.utils.PathConverter.toUrlParam;
 import static ru.turbogoose.cloud.utils.PathUtils.extractFirstFolderName;
@@ -48,12 +48,7 @@ public class FolderService {
                     String.format("Folder with name %s does not exist", folderPath));
         }
         return fileRepository.listFolderObjects(folderPath).stream()
-                .map(folder -> new ObjectInfoDto(
-                        folder.getObjectPath().getObjectName(),
-                        folder.getObjectPath().isFolder(),
-                        toUrlParam(folder.getObjectPath().getPath()),
-                        toHumanReadableSize(folder.getSize()),
-                        folder.getLastModified()))
+                .map(ObjectInfoMapper::toDto)
                 .sorted(Comparator.comparing(ObjectInfoDto::isFolder).reversed().thenComparing(ObjectInfoDto::getName))
                 .toList();
     }
