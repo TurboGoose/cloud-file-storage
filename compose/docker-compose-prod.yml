@@ -13,7 +13,7 @@ services:
       MINIO_USERNAME: ${MINIO_USER}
       MINIO_PASSWORD: ${MINIO_PASSWORD}
     volumes:
-      - ~/logs:/logs
+      - ~/logs:/opt/applogs
 
   postgres:
     image: postgres:15

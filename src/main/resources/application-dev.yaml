@@ -16,8 +16,3 @@ minio:
   endpoint: http://localhost:9000
   username: ilya
   password: bebrabebra
-
-
-logs:
-  folder:
-    path: ~/logs

@@ -9,7 +9,7 @@ services:
     environment:
       - SPRING_PROFILES_ACTIVE=test
     volumes:
-      - ~/logs:/logs
+      - ~/logs:/opt/applogs
     restart: always
 
   postgres:

@@ -20,7 +20,3 @@ minio:
   endpoint: http://minio:9000
   username: ilya
   password: bebrabebra
-
-logs:
-  folder:
-    path: /logs
