@@ -20,7 +20,7 @@ Multi-user file cloud. Users of the service can use it to upload and store files
 - Spring MVC + Thymeleaf + Bootstrap
 - Spring Sessions + Redis
 - Data persistence:
-  - Spring Data JPA + PostgreSQL for User info
+  - Spring Data JPA + PostgreSQL for User info + Flyway for migrations
   - MinIO for files
 - Junit5 + Testcontainers + Hamcrest for testing
 - Docker compose for deployment
