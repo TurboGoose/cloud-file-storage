@@ -10,6 +10,6 @@ import java.util.List;
 public class FilesUploadDto {
     private String parentFolderPath;
     @FilenamesPattern(regexp = "^([\\w !.*+\\[\\]'()\\-]+/)*[\\w !.*+\\[\\]'()\\-]+$",
-            message = "File names must not contain unsupported characters")
+            message = "File names must not contain unsupported characters or non-English letters")
     private List<MultipartFile> files;
 }
