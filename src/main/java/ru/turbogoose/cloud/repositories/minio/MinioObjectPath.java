@@ -44,7 +44,7 @@ public class MinioObjectPath implements ObjectPath {
     }
 
     private static void validatePathFormat(String objectPath) {
-        if (!objectPath.matches("(^/([\\w !.*+'\\[\\]()\\-]+/)*$|^/?([\\w !.*+'\\[\\]()\\-]+/)*[\\w !.*+'\\[\\]()\\-]+$)")) {
+        if (!objectPath.matches("(^/([^/]+/)*$|^/?([^/]+/)*[^/]+$)")) {
             throw new IllegalArgumentException("Invalid path format: " + objectPath);
         }
     }
