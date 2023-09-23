@@ -17,6 +17,7 @@ import ru.turbogoose.cloud.repositories.ObjectPath;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -100,14 +101,13 @@ public class MinioRepository implements FileRepository {
                 if (objectPath.equals(folderPath.getFullPath()) && !includeSelf) {
                     continue;
                 }
-                // FIXME
-//                LocalDateTime lastModified = item.lastModified() != null
-//                        ? item.lastModified().toLocalDateTime()
-//                        : null;
+                LocalDateTime lastModified = item.isDir()
+                        ? null
+                        : item.lastModified().withZoneSameInstant(ZoneOffset.of("+03:00")).toLocalDateTime();
                 objects.add(new ObjectInfo(
                         MinioObjectPath.parse(objectPath),
                         item.size(),
-                        LocalDateTime.now()
+                        lastModified
                 ));
             }
             return objects;

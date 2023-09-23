@@ -159,7 +159,7 @@
 
       <!-- Last modified -->
       <div class="col-2 text-secondary">
-        <span th:text="${#temporals.format(obj.lastModified, 'dd MMM yyyy, HH:mm')}"></span>
+        <span th:text="${obj.lastModified} ? ${#temporals.format(obj.lastModified, 'dd MMM yyyy, HH:mm')} : '—'"></span>
       </div>
 
       <div class="col d-inline-flex justify-content-end">
