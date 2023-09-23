@@ -48,7 +48,7 @@ public class FolderService {
                     String.format("Folder with name %s does not exist", folderPath));
         }
         return fileRepository.listFolderObjects(folderPath).stream()
-                .map(ObjectInfoMapper::toDto)
+                .map(ObjectInfoMapper::toDtoForList)
                 .sorted(Comparator.comparing(ObjectInfoDto::isFolder).reversed().thenComparing(ObjectInfoDto::getName))
                 .toList();
     }
