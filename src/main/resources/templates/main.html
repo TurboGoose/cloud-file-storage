@@ -32,14 +32,17 @@
   <hr class="mt-1">
 
   <!--Alerts-->
-  <div th:if="${successAlert}" class="container col-4 alert alert-dismissible alert-success fade show">
-    <span th:text="${successAlert}"></span>
-    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+  <div class="row">
+    <div th:if="${successAlert}" class="container col-auto alert alert-dismissible alert-success fade show">
+      <span th:text="${successAlert}"></span>
+      <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    <div th:if="${failureAlert}" class="container col-auto alert alert-dismissible alert-danger fade show">
+      <span th:text="${failureAlert}"></span>
+      <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
   </div>
-  <div th:if="${failureAlert}" class="container col-4 alert alert-dismissible alert-danger fade show">
-    <span th:text="${failureAlert}"></span>
-    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-  </div>
+
 
   <!-- Upload file modal -->
   <div class="modal fade" id="uploadFileModal" tabindex="-1">

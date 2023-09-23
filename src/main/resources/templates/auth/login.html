@@ -14,11 +14,6 @@
   </div>
 </nav>
 
-<div th:if="${param.error}" class="container col-3 alert alert-dismissible alert-danger fade show mt-3">
-  <span>Wrong login or password</span>
-  <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-</div>
-
 <div class="container mt-4">
   <form method="POST" th:action="@{/login/process}">
     <h2 class="mb-4">Welcome to Drive!</h2>
@@ -35,6 +30,17 @@
       <a class="btn btn-secondary ms-2" role="button" th:href="@{/signup}">Sign up</a>
     </div>
   </form>
+</div>
+
+<!--Alert-->
+<div class="container">
+  <div class="row ms-0">
+    <div th:if="${param.error}" class="col-auto alert alert-dismissible alert-danger fade show mt-3">
+      <span>Wrong login or password</span>
+      <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    <div class="col"></div>
+  </div>
 </div>
 
 </body>
