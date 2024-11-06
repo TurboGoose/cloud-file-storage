@@ -5,8 +5,7 @@ import io.minio.errors.ErrorResponseException;
 import io.minio.messages.DeleteError;
 import io.minio.messages.DeleteObject;
 import io.minio.messages.Item;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 import ru.turbogoose.cloud.exceptions.MinioOperationException;
@@ -21,9 +20,9 @@ import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
 
+@Slf4j
 @Service
 public class MinioRepository implements FileRepository {
-    private static final Logger LOGGER = LoggerFactory.getLogger(MinioRepository.class);
     private static final String ROOT_BUCKET = "user-files";
     private final MinioClient client;
 
@@ -36,7 +35,7 @@ public class MinioRepository implements FileRepository {
                 .endpoint(endpoint)
                 .credentials(accessKey, secretKey)
                 .build();
-        LOGGER.info("Connected to MinIO server successfully. Endpoint: {}", endpoint);
+        log.info("Connected to MinIO server successfully. Endpoint: {}", endpoint);
 
         createRootBucket();
     }
@@ -50,9 +49,9 @@ public class MinioRepository implements FileRepository {
                 client.makeBucket(MakeBucketArgs.builder()
                         .bucket(ROOT_BUCKET)
                         .build());
-                LOGGER.info("Root bucket created");
+                log.info("Root bucket created");
             }
-            LOGGER.debug("Root bucket not created: already exists");
+            log.debug("Root bucket not created: already exists");
         } catch (Exception exc) {
             throw new MinioOperationException(exc);
         }
@@ -244,7 +243,7 @@ public class MinioRepository implements FileRepository {
                             .build());
             for (Result<DeleteError> result : results) {
                 DeleteError deleteError = result.get();
-                LOGGER.debug("Error deleting object {}: {}", deleteError.objectName(), deleteError.message());
+                log.debug("Error deleting object {}: {}", deleteError.objectName(), deleteError.message());
             }
         } catch (Exception exc) {
             throw new MinioOperationException(exc);

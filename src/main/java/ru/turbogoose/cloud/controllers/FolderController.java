@@ -4,8 +4,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -23,10 +22,10 @@ import java.io.IOException;
 
 import static ru.turbogoose.cloud.utils.PathUtils.*;
 
+@Slf4j
 @Controller
 @RequiredArgsConstructor
 public class FolderController {
-    private static final Logger LOGGER = LoggerFactory.getLogger(FileController.class);
     private final FolderService folderService;
 
     @GetMapping
@@ -45,7 +44,7 @@ public class FolderController {
 
             model.addAttribute("searchDto", new SearchDto());
         } catch (ObjectNotExistsException exc) {
-            LOGGER.debug("Failed to list folder \"{}\"", path == null || path.isEmpty() ? "/" : path, exc);
+            log.debug("Failed to list folder \"{}\"", path == null || path.isEmpty() ? "/" : path, exc);
             model.addAttribute("wrongPath", path);
         }
         return "main";
@@ -64,7 +63,7 @@ public class FolderController {
             try {
                 folderService.createSingleFolder(userDetails.getUserId(), folderCreationDto);
             } catch (ObjectAlreadyExistsException exc) {
-                LOGGER.debug("Failed to create folder", exc);
+                log.debug("Failed to create folder", exc);
                 redirectAttributes.addFlashAttribute("failureAlert", "This folder already exists");
             }
         }
@@ -86,10 +85,10 @@ public class FolderController {
         try {
             folderService.saveFolder(userDetails.getUserId(), filesUploadDto);
         } catch (ObjectAlreadyExistsException exc) {
-            LOGGER.debug("Failed to upload folder", exc);
+            log.debug("Failed to upload folder", exc);
             redirectAttributes.addFlashAttribute("failureAlert", "Folder with this name already exists");
         } catch (ObjectUploadException exc) {
-            LOGGER.warn("Failed to upload folder", exc);
+            log.warn("Failed to upload folder", exc);
             redirectAttributes.addFlashAttribute("failureAlert", "An error occurred during uploading");
         }
         return "redirect:/" + getPathParam(path);
@@ -105,7 +104,7 @@ public class FolderController {
         try {
             folderService.writeFolderContent(userDetails.getUserId(), path, response.getOutputStream());
         } catch (IOException exc) {
-            LOGGER.warn("Failed to download folder", exc);
+            log.warn("Failed to download folder", exc);
         }
     }
 
@@ -128,7 +127,7 @@ public class FolderController {
         try {
             folderService.validateFolderExists(userDetails.getUserId(), path); // protection from manual url editing
         }  catch (ObjectNotExistsException exc) {
-            LOGGER.warn("Failed to get folder rename form for path \"{}\"", path, exc);
+            log.warn("Failed to get folder rename form for path \"{}\"", path, exc);
             return "redirect:/";
         }
 
@@ -160,7 +159,7 @@ public class FolderController {
             String parentFolderPath = folderService.renameFolder(userDetails.getUserId(), objectRenameDto);
             return "redirect:/" + getPathParam(parentFolderPath);
         } catch (ObjectAlreadyExistsException exc) {
-            LOGGER.debug("Failed to rename folder", exc);
+            log.debug("Failed to rename folder", exc);
             redirectAttributes.addFlashAttribute("failureAlert", "Folder with this name already exists");
             redirectAttributes.addFlashAttribute("objectRenameDto", objectRenameDto);
             return "redirect:/rename" + getPathParam(path);
@@ -177,7 +176,7 @@ public class FolderController {
         try {
             model.addAttribute("moveCandidates", folderService.getMoveCandidatesForFolder(userDetails.getUserId(), path));
         } catch (ObjectNotExistsException exc) {
-            LOGGER.warn("Failed to get folder moving form for path \"{}\"", path, exc);
+            log.warn("Failed to get folder moving form for path \"{}\"", path, exc);
             return "redirect:/";
         }
 
@@ -198,7 +197,7 @@ public class FolderController {
             redirectAttributes.addFlashAttribute("successAlert", "Folder was moved successfully");
             return "redirect:/" + getPathParam(oldParentPath);
         } catch (ObjectAlreadyExistsException exc) {
-            LOGGER.warn("Failed to move folder", exc);
+            log.warn("Failed to move folder", exc);
             redirectAttributes.addFlashAttribute("failureAlert",
                     "Folder with this name already exists in target location");
         }

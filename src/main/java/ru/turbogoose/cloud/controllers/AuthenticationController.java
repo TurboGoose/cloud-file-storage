@@ -2,8 +2,7 @@ package ru.turbogoose.cloud.controllers;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -14,10 +13,10 @@ import ru.turbogoose.cloud.exceptions.UsernameAlreadyExistsException;
 import ru.turbogoose.cloud.models.User;
 import ru.turbogoose.cloud.services.UserService;
 
+@Slf4j
 @Controller
 @RequiredArgsConstructor
 public class AuthenticationController {
-    private static final Logger LOGGER = LoggerFactory.getLogger(AuthenticationController.class);
     private final UserService userService;
 
     @GetMapping("/login")
@@ -39,10 +38,10 @@ public class AuthenticationController {
         }
         try {
             userService.createUser(user);
-            LOGGER.debug("Sign up successful for user \"{}\" (id={})", user.getUsername(), user.getId());
+            log.debug("Sign up successful for user \"{}\" (id={})", user.getUsername(), user.getId());
             return "redirect:/login";
         } catch (UsernameAlreadyExistsException exc) {
-            LOGGER.debug("Sign up failed for user \"{}\"", user.getUsername(), exc);
+            log.debug("Sign up failed for user \"{}\"", user.getUsername(), exc);
             bindingResult.rejectValue("username", "user.alreadyExists", "User with this username already exists");
             return "auth/signup";
         }

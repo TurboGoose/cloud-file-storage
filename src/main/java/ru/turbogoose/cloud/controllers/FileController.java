@@ -4,8 +4,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -28,11 +27,11 @@ import java.io.InputStream;
 
 import static ru.turbogoose.cloud.utils.PathUtils.*;
 
+@Slf4j
 @Controller
 @RequestMapping("/file")
 @RequiredArgsConstructor
 public class FileController {
-    private static final Logger LOGGER = LoggerFactory.getLogger(FileController.class);
     private final FileService fileService;
 
     @GetMapping("/download")
@@ -45,7 +44,7 @@ public class FileController {
                     String.format("attachment; filename=\"%s\"", extractObjectName(path)));
             FileCopyUtils.copy(fileContentStream, response.getOutputStream());
         } catch (ObjectNotExistsException | IOException exc) {
-            LOGGER.warn("Failed to download file \"{}\":", path, exc);
+            log.warn("Failed to download file \"{}\":", path, exc);
         }
     }
 
@@ -63,10 +62,10 @@ public class FileController {
         try {
             fileService.saveFiles(userDetails.getUserId(), filesUploadDto);
         } catch (ObjectAlreadyExistsException exc) {
-            LOGGER.debug("Failed to upload files", exc);
+            log.debug("Failed to upload files", exc);
             redirectAttributes.addFlashAttribute("failureAlert", "File with this name already exists");
         } catch (ObjectUploadException exc) {
-            LOGGER.warn("Failed to upload files", exc);
+            log.warn("Failed to upload files", exc);
             redirectAttributes.addFlashAttribute("failureAlert", "An error occurred during uploading");
         }
         return "redirect:/" + getPathParam(path);
@@ -81,7 +80,7 @@ public class FileController {
         try {
             fileService.validateFileExists(userDetails.getUserId(), path);
         } catch (ObjectNotExistsException exc) {
-            LOGGER.warn("Failed to get file renaming form for path \"{}\":", path, exc);
+            log.warn("Failed to get file renaming form for path \"{}\":", path, exc);
             return "redirect:/";
         }
 
@@ -113,7 +112,7 @@ public class FileController {
             String parentFolderPath = fileService.renameFile(userDetails.getUserId(), objectRenameDto);
             return "redirect:/" + getPathParam(parentFolderPath);
         } catch (ObjectAlreadyExistsException exc) {
-            LOGGER.debug("Failed to rename file", exc);
+            log.debug("Failed to rename file", exc);
             redirectAttributes.addFlashAttribute("failureAlert", "File with this name already exists");
             redirectAttributes.addFlashAttribute("objectRenameDto", objectRenameDto);
             return "redirect:/file/rename" + getPathParam(path);
@@ -130,7 +129,7 @@ public class FileController {
         try {
             model.addAttribute("moveCandidates", fileService.getMoveCandidatesForFile(userDetails.getUserId(), path));
         } catch (ObjectNotExistsException exc) {
-            LOGGER.warn("Failed to get file moving form for path \"{}\":", path, exc);
+            log.warn("Failed to get file moving form for path \"{}\":", path, exc);
             return "redirect:/";
         }
         model.addAttribute("requestURI", request.getRequestURI());
@@ -150,7 +149,7 @@ public class FileController {
             redirectAttributes.addFlashAttribute("successAlert", "File was moved successfully");
             return "redirect:/" + getPathParam(oldParentPath);
         } catch (ObjectAlreadyExistsException exc) {
-            LOGGER.debug("Failed to move file", exc);
+            log.debug("Failed to move file", exc);
             redirectAttributes.addFlashAttribute("failureAlert",
                     "File with this name already exists in target location");
         }
